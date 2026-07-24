@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f6f5f1;
+  --foreground: #161312;
+  --surface: #ffffff;
+  --line: #e5ddd3;
+  --muted: #6b6157;
+  --pitch: #16a34a;
+  --pitch-dark: #0f7a37;
+  --brand: #ce1126;
+  --brand-dark: #a10d1e;
+  --live: #ce1126;
+}
+
+:root[data-theme="dark"] {
+  --background: #120e0d;
+  --foreground: #f2ece6;
+  --surface: #1b1615;
+  --line: #322824;
+  --muted: #ab9d92;
+  --pitch: #22c55e;
+  --pitch-dark: #16a34a;
+  --brand: #ef4453;
+  --brand-dark: #ce1126;
+  --live: #ef4453;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-line: var(--line);
+  --color-muted: var(--muted);
+  --color-pitch: var(--pitch);
+  --color-pitch-dark: var(--pitch-dark);
+  --color-brand: var(--brand);
+  --color-brand-dark: var(--brand-dark);
+  --color-live: var(--live);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-display);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.heading-display {
+  font-family: var(--font-display);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+

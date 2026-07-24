@@ -1,0 +1,108 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum RoundType {
+  LEAGUE
+  SEMIFINAL
+  FINAL
+}
+
+enum MatchStatus {
+  SCHEDULED
+  LIVE
+  FINISHED
+}
+
+enum MatchEventType {
+  GOAL
+  ASSIST
+  YELLOW_CARD
+  RED_CARD
+}
+
+enum Position {
+  GK
+  DEF
+  MID
+  FWD
+}
+
+model Team {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  shortName   String?
+  managerName String?
+  logoUrl     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  players     Player[]
+  homeMatches Match[]      @relation("HomeTeam")
+  awayMatches Match[]      @relation("AwayTeam")
+  events      MatchEvent[]
+}
+
+model Player {
+  id           String    @id @default(cuid())
+  name         String
+  jerseyNumber Int
+  position     Position?
+  isCaptain    Boolean   @default(false)
+  photoUrl     String?
+  teamId       String
+  team         Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  events MatchEvent[]
+
+  @@unique([teamId, jerseyNumber])
+}
+
+model Match {
+  id          String      @id @default(cuid())
+  round       RoundType
+  label       String?
+  homeTeamId  String?
+  awayTeamId  String?
+  homeTeam    Team?       @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeam    Team?       @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  scheduledAt DateTime?
+  venue       String?
+  status      MatchStatus @default(SCHEDULED)
+  homeScore   Int         @default(0)
+  awayScore   Int         @default(0)
+  startedAt   DateTime?
+  finishedAt  DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  events MatchEvent[]
+
+  @@index([status])
+  @@index([round])
+}
+
+model MatchEvent {
+  id       String         @id @default(cuid())
+  matchId  String
+  match    Match          @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  type     MatchEventType
+  teamId   String
+  team     Team           @relation(fields: [teamId], references: [id])
+  playerId String
+  player   Player         @relation(fields: [playerId], references: [id])
+  minute   Int?
+  groupId  String
+  sequence Int            @default(autoincrement())
+  createdAt DateTime      @default(now())
+
+  @@index([matchId])
+  @@index([groupId])
+}
