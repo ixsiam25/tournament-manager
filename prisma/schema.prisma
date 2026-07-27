@@ -34,18 +34,28 @@ enum Position {
 }
 
 model Team {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  shortName   String?
-  managerName String?
-  logoUrl     String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                  String   @id @default(cuid())
+  name                String   @unique
+  shortName           String?
+  managerName         String?
+  logoUrl             String?
+  managerPasswordHash String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 
   players     Player[]
   homeMatches Match[]      @relation("HomeTeam")
   awayMatches Match[]      @relation("AwayTeam")
   events      MatchEvent[]
+}
+
+/// Small key/value store for settings that need to be changeable from the
+/// admin UI without an env var + redeploy (currently just the admin
+/// password hash).
+model AppSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
 }
 
 model Player {
@@ -90,19 +100,21 @@ model Match {
 }
 
 model MatchEvent {
-  id       String         @id @default(cuid())
-  matchId  String
-  match    Match          @relation(fields: [matchId], references: [id], onDelete: Cascade)
-  type     MatchEventType
-  teamId   String
-  team     Team           @relation(fields: [teamId], references: [id])
-  playerId String
-  player   Player         @relation(fields: [playerId], references: [id])
-  minute   Int?
-  groupId  String
-  sequence Int            @default(autoincrement())
-  createdAt DateTime      @default(now())
+  id        String         @id @default(cuid())
+  matchId   String
+  match     Match          @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  type      MatchEventType
+  teamId    String
+  team      Team           @relation(fields: [teamId], references: [id])
+  playerId  String
+  player    Player         @relation(fields: [playerId], references: [id])
+  minute    Int?
+  groupId   String
+  sequence  Int            @default(autoincrement())
+  createdAt DateTime       @default(now())
 
   @@index([matchId])
   @@index([groupId])
+  @@index([playerId])
+  @@index([type])
 }

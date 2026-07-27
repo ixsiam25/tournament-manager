@@ -6,7 +6,7 @@ import { PitchFormation } from "@/components/PitchFormation";
 import { PlayerCard } from "@/components/PlayerCard";
 import { Crest } from "@/components/Crest";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 20;
 
 export default async function TeamSquadPage({
   params,
@@ -21,7 +21,11 @@ export default async function TeamSquadPage({
 
   if (!team) notFound();
 
-  const extras = team.players.filter((p) => !p.position);
+  // Main squad = first 5 players (by jersey number, the team's established
+  // squad order) regardless of whether an admin has tagged their position;
+  // everyone else is a bench extra.
+  const mainSquad = team.players.slice(0, 5);
+  const extras = team.players.slice(5);
 
   return (
     <div>
@@ -35,7 +39,7 @@ export default async function TeamSquadPage({
             alt={team.name}
             width={40}
             height={40}
-            className="rounded-full object-cover"
+            className="rounded-block border-2 border-line-strong object-cover"
           />
         ) : (
           <Crest size={36} />
@@ -49,7 +53,7 @@ export default async function TeamSquadPage({
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_220px]">
-        <PitchFormation players={team.players} />
+        <PitchFormation players={mainSquad} />
 
         <div>
           <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted">Extras</h2>

@@ -2,22 +2,9 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { EventList, type EventItem } from "@/components/EventList";
 
 type Team = { id: string; name: string; logoUrl: string | null } | null;
-
-type EventRow = {
-  id: string;
-  type: "GOAL" | "ASSIST" | "YELLOW_CARD" | "RED_CARD";
-  player: { name: string };
-  team: { name: string };
-};
-
-const EVENT_LABELS: Record<EventRow["type"], string> = {
-  GOAL: "⚽",
-  ASSIST: "🅰️",
-  YELLOW_CARD: "🟨",
-  RED_CARD: "🟥",
-};
 
 type LiveMatch = {
   id: string;
@@ -25,7 +12,7 @@ type LiveMatch = {
   awayTeam: Team;
   homeScore: number;
   awayScore: number;
-  events: EventRow[];
+  events: EventItem[];
 };
 
 type LiveResponse =
@@ -33,10 +20,11 @@ type LiveResponse =
   | {
       status: "IDLE";
       nextFixture: (LiveMatch & { scheduledAt: string | null; venue: string | null }) | null;
-      lastResult: LiveMatch | null;
+      recentResults: LiveMatch[];
     };
 
-const POLL_INTERVAL_MS = 7000;
+const LIVE_POLL_MS = 7000;
+const IDLE_POLL_MS = 20000;
 
 export function LiveStatusWidget({ initial }: { initial: LiveResponse }) {
   const [data, setData] = useState<LiveResponse>(initial);
@@ -54,9 +42,9 @@ export function LiveStatusWidget({ initial }: { initial: LiveResponse }) {
       }
     }
 
-    if (data.status === "LIVE") {
-      intervalRef.current = setInterval(poll, POLL_INTERVAL_MS);
-    }
+    // Poll at all times, not just while LIVE — otherwise a visitor sitting on
+    // the idle state never learns a match just kicked off without reloading.
+    intervalRef.current = setInterval(poll, data.status === "LIVE" ? LIVE_POLL_MS : IDLE_POLL_MS);
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
@@ -66,11 +54,11 @@ export function LiveStatusWidget({ initial }: { initial: LiveResponse }) {
   if (data.status === "LIVE") {
     const { match } = data;
     return (
-      <div className="rounded-2xl border border-line bg-surface p-6 shadow-sm">
+      <div className="animate-card-in rounded-block-lg border-2 border-line-strong bg-surface p-6 shadow-block">
         <div className="mb-4 flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-live/10 px-2.5 py-1 text-xs font-bold text-live">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-live" />
-            LIVE
+          <span className="inline-flex items-center gap-1.5 rounded-block bg-live px-2.5 py-1 text-xs font-black uppercase tracking-wide text-white">
+            <span className="h-1.5 w-1.5 animate-pulse-live rounded-full bg-white" />
+            Live
           </span>
         </div>
         <div className="flex items-center justify-between text-center">
@@ -79,34 +67,23 @@ export function LiveStatusWidget({ initial }: { initial: LiveResponse }) {
             logoUrl={match.homeTeam?.logoUrl}
             score={match.homeScore}
           />
-          <span className="text-sm font-medium text-muted">vs</span>
+          <span className="text-sm font-bold uppercase text-muted">vs</span>
           <TeamScore
             name={match.awayTeam?.name ?? "TBD"}
             logoUrl={match.awayTeam?.logoUrl}
             score={match.awayScore}
           />
         </div>
-        {match.events.length > 0 && (
-          <ul className="mt-6 space-y-1.5 border-t border-line pt-4 text-sm">
-            {match.events.map((e) => (
-              <li key={e.id} className="flex justify-between text-muted">
-                <span>
-                  {EVENT_LABELS[e.type]} {e.player.name}
-                  <span className="text-xs"> ({e.team.name})</span>
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
+        <EventList events={match.events} className="mt-6 border-t-2 border-line pt-4" />
       </div>
     );
   }
 
-  const { nextFixture, lastResult } = data;
+  const { nextFixture, recentResults } = data;
   return (
     <div className="space-y-4">
       {nextFixture && (
-        <div className="rounded-2xl border border-line bg-surface p-6 shadow-sm">
+        <div className="animate-card-in rounded-block-lg border-2 border-line-strong bg-surface p-6 shadow-block">
           <p className="mb-3 text-xs font-bold uppercase tracking-wide text-muted">Next match</p>
           <div className="flex items-center justify-between text-center">
             <span className="flex flex-1 flex-col items-center gap-1 font-semibold">
@@ -116,12 +93,12 @@ export function LiveStatusWidget({ initial }: { initial: LiveResponse }) {
                   alt={nextFixture.homeTeam.name}
                   width={28}
                   height={28}
-                  className="rounded-full object-cover"
+                  className="rounded-block object-cover"
                 />
               )}
               {nextFixture.homeTeam?.name ?? "TBD"}
             </span>
-            <span className="text-sm text-muted">vs</span>
+            <span className="text-sm font-bold uppercase text-muted">vs</span>
             <span className="flex flex-1 flex-col items-center gap-1 font-semibold">
               {nextFixture.awayTeam?.logoUrl && (
                 <Image
@@ -129,7 +106,7 @@ export function LiveStatusWidget({ initial }: { initial: LiveResponse }) {
                   alt={nextFixture.awayTeam.name}
                   width={28}
                   height={28}
-                  className="rounded-full object-cover"
+                  className="rounded-block object-cover"
                 />
               )}
               {nextFixture.awayTeam?.name ?? "TBD"}
@@ -143,30 +120,50 @@ export function LiveStatusWidget({ initial }: { initial: LiveResponse }) {
           )}
         </div>
       )}
-      {lastResult && (
-        <div className="rounded-2xl border border-line bg-surface p-6 shadow-sm">
+      {recentResults.length > 0 && (
+        <div className="animate-card-in rounded-block-lg border-2 border-line-strong bg-surface p-6 shadow-block">
           <p className="mb-3 text-xs font-bold uppercase tracking-wide text-muted">
-            Most recent result
+            Recent results
           </p>
-          <div className="flex items-center justify-between text-center">
-            <TeamScore
-              name={lastResult.homeTeam?.name ?? "TBD"}
-              logoUrl={lastResult.homeTeam?.logoUrl}
-              score={lastResult.homeScore}
-            />
-            <span className="text-sm font-medium text-muted">–</span>
-            <TeamScore
-              name={lastResult.awayTeam?.name ?? "TBD"}
-              logoUrl={lastResult.awayTeam?.logoUrl}
-              score={lastResult.awayScore}
-            />
-          </div>
+          <ul className="divide-y-2 divide-line">
+            {recentResults.map((m) => (
+              <li key={m.id} className="py-2.5">
+                <div className="flex items-center gap-3 text-sm">
+                  <span className="flex flex-1 items-center justify-end gap-2 text-right font-medium">
+                    {m.homeTeam?.name ?? "TBD"}
+                    <ResultLogo logoUrl={m.homeTeam?.logoUrl} name={m.homeTeam?.name} />
+                  </span>
+                  <span className="min-w-14 shrink-0 rounded-block bg-background px-3 py-1 text-center text-xs font-bold tabular-nums">
+                    {m.homeScore} – {m.awayScore}
+                  </span>
+                  <span className="flex flex-1 items-center gap-2 font-medium">
+                    <ResultLogo logoUrl={m.awayTeam?.logoUrl} name={m.awayTeam?.name} />
+                    {m.awayTeam?.name ?? "TBD"}
+                  </span>
+                </div>
+                <EventList events={m.events} className="mt-2 pl-2" />
+              </li>
+            ))}
+          </ul>
         </div>
       )}
-      {!nextFixture && !lastResult && (
+      {!nextFixture && recentResults.length === 0 && (
         <p className="text-center text-muted">No matches scheduled yet.</p>
       )}
     </div>
+  );
+}
+
+function ResultLogo({ logoUrl, name }: { logoUrl?: string | null; name?: string }) {
+  if (!logoUrl) return <span className="h-6 w-6 shrink-0 rounded-block bg-line" />;
+  return (
+    <Image
+      src={logoUrl}
+      alt={name ?? ""}
+      width={24}
+      height={24}
+      className="shrink-0 rounded-block object-cover"
+    />
   );
 }
 
@@ -182,7 +179,13 @@ function TeamScore({
   return (
     <div className="flex flex-1 flex-col items-center">
       {logoUrl ? (
-        <Image src={logoUrl} alt={name} width={32} height={32} className="mb-1 rounded-full object-cover" />
+        <Image
+          src={logoUrl}
+          alt={name}
+          width={32}
+          height={32}
+          className="mb-1 rounded-block object-cover"
+        />
       ) : null}
       <p className="font-semibold">{name}</p>
       <p className="heading-display text-3xl tabular-nums">{score}</p>

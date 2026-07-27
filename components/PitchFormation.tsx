@@ -18,9 +18,10 @@ const ROWS: { key: "FWD" | "MID" | "DEF" | "GK"; label: string }[] = [
 
 export function PitchFormation({ players }: { players: Player[] }) {
   const byPosition = (pos: string) => players.filter((p) => p.position === pos);
+  const unassigned = players.filter((p) => !p.position);
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-line bg-pitch p-4 sm:p-6">
+    <div className="relative overflow-hidden rounded-block-lg border-2 border-line-strong bg-pitch p-4 shadow-block sm:p-6">
       {/* Pitch markings */}
       <svg
         className="pointer-events-none absolute inset-0 h-full w-full opacity-40"
@@ -54,9 +55,22 @@ export function PitchFormation({ players }: { players: Player[] }) {
             </div>
           );
         })}
-        {ROWS.every((row) => byPosition(row.key).length === 0) && (
+        {unassigned.length > 0 && (
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            {unassigned.map((p) => (
+              <PlayerCard
+                key={p.id}
+                name={p.name}
+                jerseyNumber={p.jerseyNumber}
+                isCaptain={p.isCaptain}
+                photoUrl={p.photoUrl}
+              />
+            ))}
+          </div>
+        )}
+        {players.length === 0 && (
           <p className="py-12 text-center text-sm font-medium text-white/80">
-            No starting positions assigned yet.
+            No squad players yet.
           </p>
         )}
       </div>

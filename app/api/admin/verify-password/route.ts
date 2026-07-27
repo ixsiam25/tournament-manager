@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null);
   const password = typeof body?.password === "string" ? body.password : "";
 
-  if (!password || !checkAdminPassword(password)) {
+  if (!password || !(await checkAdminPassword(password))) {
     return NextResponse.json({ error: "Incorrect password" }, { status: 401 });
   }
   return NextResponse.json({ ok: true });

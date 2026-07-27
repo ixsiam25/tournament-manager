@@ -23,18 +23,25 @@ export async function getLiveStatus() {
     return { status: "LIVE" as const, match: live };
   }
 
-  const [nextFixture, lastResult] = await Promise.all([
+  const [nextFixture, recentResults] = await Promise.all([
     prisma.match.findFirst({
       where: { status: "SCHEDULED", homeTeamId: { not: null }, awayTeamId: { not: null } },
       include: matchWithTeams,
       orderBy: [{ scheduledAt: "asc" }, { createdAt: "asc" }],
     }),
-    prisma.match.findFirst({
+    prisma.match.findMany({
       where: { status: "FINISHED" },
-      include: matchWithTeams,
+      include: {
+        ...matchWithTeams,
+        events: {
+          include: { player: true, team: true },
+          orderBy: { sequence: "desc" as const },
+        },
+      },
       orderBy: { finishedAt: "desc" },
+      take: 5,
     }),
   ]);
 
-  return { status: "IDLE" as const, nextFixture, lastResult };
+  return { status: "IDLE" as const, nextFixture, recentResults };
 }

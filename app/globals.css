@@ -5,12 +5,14 @@
   --foreground: #161312;
   --surface: #ffffff;
   --line: #e5ddd3;
+  --line-strong: #161312;
   --muted: #6b6157;
   --pitch: #16a34a;
   --pitch-dark: #0f7a37;
   --brand: #ce1126;
   --brand-dark: #a10d1e;
-  --live: #ce1126;
+  --live: #ea580c;
+  --live-dark: #c2410c;
 }
 
 :root[data-theme="dark"] {
@@ -18,12 +20,14 @@
   --foreground: #f2ece6;
   --surface: #1b1615;
   --line: #322824;
+  --line-strong: #f2ece6;
   --muted: #ab9d92;
   --pitch: #22c55e;
   --pitch-dark: #16a34a;
   --brand: #ef4453;
   --brand-dark: #ce1126;
-  --live: #ef4453;
+  --live: #fb923c;
+  --live-dark: #ea580c;
 }
 
 @theme inline {
@@ -31,15 +35,58 @@
   --color-foreground: var(--foreground);
   --color-surface: var(--surface);
   --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
   --color-muted: var(--muted);
   --color-pitch: var(--pitch);
   --color-pitch-dark: var(--pitch-dark);
   --color-brand: var(--brand);
   --color-brand-dark: var(--brand-dark);
   --color-live: var(--live);
+  --color-live-dark: var(--live-dark);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-display: var(--font-display);
+
+  /* Blocky geometry — hard-edged, not pill-shaped. Everything in the app
+   * used to be rounded-full/rounded-2xl; this is the one dial that controls
+   * the whole "strong, sporty" redesign. */
+  --radius-block: 4px;
+  --radius-block-lg: 6px;
+
+  --animate-pulse-live: pulse-live 1.6s ease-in-out infinite;
+  --animate-score-flash: score-flash 0.7s ease-out;
+  --animate-card-in: card-in 0.4s ease-out both;
+}
+
+@keyframes pulse-live {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@keyframes score-flash {
+  0% {
+    background-color: var(--pitch);
+    color: var(--surface);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 body {
@@ -48,9 +95,35 @@ body {
   transition: background-color 0.15s ease, color 0.15s ease;
 }
 
+/* Every interactive element gets a visible keyboard focus ring — inputs and
+ * buttons across the app previously relied on `outline-none` with no
+ * fallback. One rule here covers all of them instead of a per-component
+ * sweep. */
+:focus-visible {
+  outline: 2px solid var(--pitch);
+  outline-offset: 2px;
+}
+
 .heading-display {
   font-family: var(--font-display);
   letter-spacing: 0.02em;
   text-transform: uppercase;
 }
 
+/* Hard-edged "brutalist" offset shadow — the signature card treatment for
+ * the redesign, used instead of soft blurred shadows. */
+.shadow-block {
+  box-shadow: 3px 3px 0 0 var(--line-strong);
+}
+
+/* Repeating diagonal stripe texture for hero/section backgrounds — graphic,
+ * not photographic. */
+.stripe-texture {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    color-mix(in srgb, var(--foreground) 6%, transparent) 0,
+    color-mix(in srgb, var(--foreground) 6%, transparent) 2px,
+    transparent 2px,
+    transparent 14px
+  );
+}

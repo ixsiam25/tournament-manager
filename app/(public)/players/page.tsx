@@ -1,13 +1,15 @@
 import Image from "next/image";
 import { getTopScorers, getTopAssists } from "@/lib/playerStats";
+import { AutoRefresh } from "@/components/AutoRefresh";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 15;
 
 export default async function PlayerStandingsPage() {
   const [scorers, assists] = await Promise.all([getTopScorers(), getTopAssists()]);
 
   return (
     <div>
+      <AutoRefresh />
       <h1 className="mb-6 heading-display text-2xl">Player Standings</h1>
       <div className="grid gap-6 sm:grid-cols-2">
         <StatList title="Top Scorers" icon="⚽" rows={scorers} />
@@ -27,8 +29,8 @@ function StatList({
   rows: { playerId: string; playerName: string; teamName: string; photoUrl: string | null; count: number }[];
 }) {
   return (
-    <div className="rounded-2xl border border-line bg-surface p-5">
-      <h2 className="mb-3 font-bold">
+    <div className="rounded-block-lg border-2 border-line-strong bg-surface p-5 shadow-block">
+      <h2 className="mb-3 font-black uppercase tracking-wide">
         {icon} {title}
       </h2>
       {rows.length === 0 ? (
@@ -45,10 +47,10 @@ function StatList({
                     alt={row.playerName}
                     width={24}
                     height={24}
-                    className="rounded-full object-cover"
+                    className="rounded-block border border-line-strong object-cover"
                   />
                 ) : (
-                  <span className="h-6 w-6 rounded-full bg-line" />
+                  <span className="h-6 w-6 rounded-block bg-line" />
                 )}
                 {row.playerName}
                 <span className="text-xs text-muted">({row.teamName})</span>

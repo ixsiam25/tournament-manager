@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { href: "/admin/teams", label: "Teams" },
   { href: "/admin/players", label: "Players" },
   { href: "/admin/fixtures", label: "Fixtures" },
+  { href: "/admin/security", label: "Security" },
 ];
 
 export function AdminNav() {
@@ -33,11 +34,20 @@ export function AdminNav() {
             BFL Admin
           </span>
           <nav className="flex flex-wrap gap-x-4 gap-y-1 text-sm font-medium text-muted">
-            {NAV_ITEMS.map((item) => (
-              <Link key={item.href} href={item.href} className="hover:text-foreground">
-                {item.label}
-              </Link>
-            ))}
+            {NAV_ITEMS.map((item) => {
+              const active = pathname === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  prefetch={false}
+                  aria-current={active ? "page" : undefined}
+                  className={active ? "text-foreground" : "hover:text-foreground"}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
           </nav>
         </div>
         <div className="flex items-center gap-3">

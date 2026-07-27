@@ -3,7 +3,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { Crest } from "@/components/Crest";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 20;
 
 export default async function TeamsPage() {
   const teams = await prisma.team.findMany({
@@ -19,7 +19,7 @@ export default async function TeamsPage() {
           <Link
             key={team.id}
             href={`/teams/${team.id}`}
-            className="flex flex-col items-center gap-2 rounded-2xl border border-line bg-surface p-5 text-center hover:border-pitch"
+            className="flex flex-col items-center gap-2 rounded-block-lg border-2 border-line-strong bg-surface p-5 text-center shadow-block transition-transform hover:-translate-y-0.5 hover:bg-background"
           >
             {team.logoUrl ? (
               <Image
@@ -27,12 +27,12 @@ export default async function TeamsPage() {
                 alt={team.name}
                 width={48}
                 height={48}
-                className="rounded-full object-cover"
+                className="rounded-block border border-line-strong object-cover"
               />
             ) : (
               <Crest size={36} />
             )}
-            <span className="font-bold">{team.name}</span>
+            <span className="font-black uppercase tracking-wide">{team.name}</span>
             {team.managerName && (
               <span className="text-xs text-muted">Manager: {team.managerName}</span>
             )}

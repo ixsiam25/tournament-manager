@@ -4,6 +4,7 @@ export const teamSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(60),
   shortName: z.string().trim().max(20).optional().nullable(),
   managerName: z.string().trim().max(80).optional().nullable(),
+  logoUrl: z.string().trim().max(500).optional().nullable(),
 });
 
 export const playerSchema = z.object({
@@ -12,6 +13,7 @@ export const playerSchema = z.object({
   teamId: z.string().trim().min(1, "Team is required"),
   position: z.enum(["GK", "DEF", "MID", "FWD"]).optional().nullable(),
   isCaptain: z.coerce.boolean().optional(),
+  photoUrl: z.string().trim().max(500).optional().nullable(),
 });
 
 export const fixtureSchema = z.object({

@@ -11,7 +11,14 @@ export default async function HomePage() {
 
   return (
     <div>
-      <h1 className="mb-6 heading-display text-2xl">Current Status</h1>
+      <div className="stripe-texture relative mb-8 overflow-hidden rounded-block-lg border-2 border-line-strong bg-surface px-6 py-10 shadow-block sm:px-10 sm:py-14">
+        <p className="mb-2 text-xs font-bold uppercase tracking-[0.3em] text-brand">
+          Bangladesh Football League
+        </p>
+        <h1 className="heading-display text-4xl leading-none sm:text-6xl">
+          Season <span className="text-pitch">VIII</span>
+        </h1>
+      </div>
       <LiveStatusWidget initial={initial} />
     </div>
   );

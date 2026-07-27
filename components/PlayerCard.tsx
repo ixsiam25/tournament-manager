@@ -21,17 +21,17 @@ export function PlayerCard({
   photoUrl?: string | null;
 }) {
   return (
-    <div className="group relative flex w-24 flex-col items-center gap-1.5 rounded-xl border border-line bg-surface/95 p-1.5 text-center shadow-sm backdrop-blur-sm transition-transform hover:-translate-y-0.5 hover:shadow-md">
+    <div className="group relative flex w-24 flex-col items-center gap-1.5 rounded-block-lg border-2 border-line bg-surface/95 p-1.5 text-center shadow-block transition-transform hover:-translate-y-0.5 hover:border-line-strong">
       {photoUrl ? (
-        <div className="relative aspect-[3/5] w-full overflow-hidden rounded-lg">
+        <div className="relative aspect-[3/5] w-full overflow-hidden rounded-block">
           <Image src={photoUrl} alt={name} fill sizes="96px" className="object-cover" />
-          <span className="absolute bottom-1 left-1 flex h-6 w-6 items-center justify-center rounded-full bg-brand text-xs font-extrabold text-white shadow-sm">
+          <span className="absolute bottom-1 left-1 flex h-6 w-6 items-center justify-center rounded-block bg-brand text-xs font-extrabold text-white shadow-sm">
             {jerseyNumber}
           </span>
           {isCaptain && (
             <span
               title="Captain"
-              className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-pitch text-[10px] font-extrabold text-white shadow-sm"
+              className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-block bg-pitch text-[10px] font-extrabold text-white shadow-sm"
             >
               C
             </span>
@@ -39,13 +39,13 @@ export function PlayerCard({
         </div>
       ) : (
         <div className="relative py-1.5">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-b from-brand to-brand-dark text-sm font-extrabold text-white shadow-sm">
+          <span className="flex h-9 w-9 items-center justify-center rounded-block bg-gradient-to-b from-brand to-brand-dark text-sm font-extrabold text-white shadow-sm">
             {jerseyNumber}
           </span>
           {isCaptain && (
             <span
               title="Captain"
-              className="absolute -right-1.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-pitch text-[9px] font-extrabold text-white shadow-sm"
+              className="absolute -right-1.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-block bg-pitch text-[9px] font-extrabold text-white shadow-sm"
             >
               C
             </span>
@@ -56,7 +56,7 @@ export function PlayerCard({
         {name}
       </span>
       {position && (
-        <span className="rounded-full bg-pitch/15 px-1.5 py-0.5 text-[10px] font-bold text-pitch-dark">
+        <span className="rounded-block bg-pitch/15 px-1.5 py-0.5 text-[10px] font-bold text-pitch-dark">
           {POSITION_LABELS[position] ?? position}
         </span>
       )}

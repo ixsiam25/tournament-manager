@@ -1,11 +1,12 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { usePasswordConfirm } from "@/components/PasswordConfirm";
 
 type Team = { id: string; name: string };
-type Player = { id: string; name: string; jerseyNumber: number };
+type Player = { id: string; name: string; jerseyNumber: number; photoUrl: string | null };
 type EventRow = {
   id: string;
   type: "GOAL" | "ASSIST" | "YELLOW_CARD" | "RED_CARD";
@@ -338,33 +339,20 @@ function TeamPanel({
           </button>
         </div>
       ) : open === "goal" ? (
-        <div className="space-y-2 text-left">
-          <select
-            value={scorerId}
-            onChange={(e) => setScorerId(e.target.value)}
-            className="w-full rounded-lg border border-line bg-background px-2 py-1.5 text-sm outline-none focus:border-pitch"
-          >
-            <option value="">Scorer…</option>
-            {players.map((p) => (
-              <option key={p.id} value={p.id}>
-                #{p.jerseyNumber} {p.name}
-              </option>
-            ))}
-          </select>
-          <select
-            value={assistId}
-            onChange={(e) => setAssistId(e.target.value)}
-            className="w-full rounded-lg border border-line bg-background px-2 py-1.5 text-sm outline-none focus:border-pitch"
-          >
-            <option value="">No assist</option>
-            {players
-              .filter((p) => p.id !== scorerId)
-              .map((p) => (
-                <option key={p.id} value={p.id}>
-                  #{p.jerseyNumber} {p.name}
-                </option>
-              ))}
-          </select>
+        <div className="space-y-2.5 text-left">
+          <div>
+            <p className="mb-1 text-xs font-bold uppercase tracking-wide text-muted">Scorer</p>
+            <PlayerPicker players={players} value={scorerId} onChange={setScorerId} placeholder="Scorer…" />
+          </div>
+          <div>
+            <p className="mb-1 text-xs font-bold uppercase tracking-wide text-muted">Assist</p>
+            <PlayerPicker
+              players={players.filter((p) => p.id !== scorerId)}
+              value={assistId}
+              onChange={setAssistId}
+              placeholder="No assist"
+            />
+          </div>
           <div className="flex gap-2">
             <button
               onClick={onSubmitGoal}
@@ -379,19 +367,11 @@ function TeamPanel({
           </div>
         </div>
       ) : (
-        <div className="space-y-2 text-left">
-          <select
-            value={cardPlayerId}
-            onChange={(e) => setCardPlayerId(e.target.value)}
-            className="w-full rounded-lg border border-line bg-background px-2 py-1.5 text-sm outline-none focus:border-pitch"
-          >
-            <option value="">Player…</option>
-            {players.map((p) => (
-              <option key={p.id} value={p.id}>
-                #{p.jerseyNumber} {p.name}
-              </option>
-            ))}
-          </select>
+        <div className="space-y-2.5 text-left">
+          <div>
+            <p className="mb-1 text-xs font-bold uppercase tracking-wide text-muted">Player</p>
+            <PlayerPicker players={players} value={cardPlayerId} onChange={setCardPlayerId} placeholder="Player…" />
+          </div>
           <div className="flex gap-2">
             <button
               type="button"
@@ -428,6 +408,56 @@ function TeamPanel({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function PlayerPicker({
+  players,
+  value,
+  onChange,
+  placeholder,
+}: {
+  players: Player[];
+  value: string;
+  onChange: (id: string) => void;
+  placeholder: string;
+}) {
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      <button
+        type="button"
+        onClick={() => onChange("")}
+        className={
+          "rounded-full border px-2.5 py-1.5 text-xs font-medium " +
+          (value === "" ? "border-pitch bg-pitch/10" : "border-line text-muted")
+        }
+      >
+        {placeholder}
+      </button>
+      {players.map((p) => (
+        <button
+          key={p.id}
+          type="button"
+          onClick={() => onChange(p.id)}
+          title={`#${p.jerseyNumber} ${p.name}`}
+          className={
+            "flex max-w-28 items-center gap-1.5 rounded-full border py-1 pl-1 pr-2.5 text-xs font-medium " +
+            (value === p.id ? "border-pitch bg-pitch/10" : "border-line")
+          }
+        >
+          {p.photoUrl ? (
+            <span className="relative h-6 w-6 shrink-0 overflow-hidden rounded-full">
+              <Image src={p.photoUrl} alt={p.name} fill sizes="24px" className="object-cover" />
+            </span>
+          ) : (
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-line text-[10px] font-bold">
+              {p.jerseyNumber}
+            </span>
+          )}
+          <span className="truncate">{p.name}</span>
+        </button>
+      ))}
     </div>
   );
 }
