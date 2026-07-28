@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminSecurityPage() {
   const teams = await prisma.team.findMany({
-    select: { id: true, name: true, managerPasswordHash: true },
+    select: { id: true, name: true, managerPasswordHash: true, managerLoginBlocked: true },
     orderBy: { name: "asc" },
   });
 
@@ -15,6 +15,7 @@ export default async function AdminSecurityPage() {
         id: t.id,
         name: t.name,
         hasManagerPassword: !!t.managerPasswordHash,
+        blocked: t.managerLoginBlocked,
       }))}
     />
   );

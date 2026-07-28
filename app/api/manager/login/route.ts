@@ -16,6 +16,12 @@ export async function POST(request: NextRequest) {
   if (!team?.managerPasswordHash || !(await verifyPassword(password, team.managerPasswordHash))) {
     return NextResponse.json({ error: "Incorrect team or password" }, { status: 401 });
   }
+  if (team.managerLoginBlocked) {
+    return NextResponse.json(
+      { error: "This team's login has been blocked by the admin" },
+      { status: 403 },
+    );
+  }
 
   const response = NextResponse.json({ ok: true, teamName: team.name });
   response.cookies.set(MANAGER_COOKIE_NAME, await createManagerSessionToken(team.id), {

@@ -31,3 +31,18 @@ export const eventSchema = z.object({
   playerId: z.string().trim().min(1, "Player is required"),
   assistPlayerId: z.string().trim().min(1).optional().nullable(),
 });
+
+export const predictionSchema = z.object({
+  matchId: z.string().trim().min(1, "Match is required"),
+  teamId: z.string().trim().min(1, "Team is required"),
+  voterId: z.string().trim().min(1, "Voter id is required").max(100),
+  voterName: z.string().trim().max(60).optional().nullable(),
+  voterSemester: z.string().trim().max(30).optional().nullable(),
+});
+
+export const championPredictionSchema = z.object({
+  teamId: z.string().trim().min(1, "Team is required"),
+  voterId: z.string().trim().min(1, "Voter id is required").max(100),
+  voterName: z.string().trim().max(60).optional().nullable(),
+  voterSemester: z.string().trim().max(30).optional().nullable(),
+});

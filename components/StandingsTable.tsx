@@ -40,12 +40,17 @@ export function StandingsTable({ rows }: { rows: StandingRow[] }) {
             <th className="px-3 py-4 text-center">GF</th>
             <th className="px-3 py-4 text-center">GA</th>
             <th className="px-3 py-4 text-center">GD</th>
-            <th className="px-5 py-4 text-center font-bold">Pts</th>
+            <th className="sticky right-0 bg-surface px-5 py-4 text-center font-bold shadow-[-8px_0_8px_-8px_rgba(0,0,0,0.2)]">
+              Pts
+            </th>
           </tr>
         </thead>
         <tbody>
           {rows.map((row, i) => {
             const selected = selectedId === row.teamId;
+            // Shared with the sticky Pts cell below so it doesn't show a
+            // mismatched background while the row is scrolled horizontally.
+            const rowBg = selected ? "bg-pitch/20" : i < 4 ? "bg-pitch/5" : "bg-surface";
             return (
               <tr
                 key={row.teamId}
@@ -61,10 +66,12 @@ export function StandingsTable({ rows }: { rows: StandingRow[] }) {
                 }
                 className={
                   "cursor-pointer border-b border-line outline-none transition-colors last:border-b-0 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-pitch " +
+                  rowBg +
+                  " " +
                   (selected
-                    ? "bg-pitch/20"
+                    ? ""
                     : i < 4
-                      ? "border-l-4 border-l-pitch bg-pitch/5 hover:bg-pitch/10"
+                      ? "border-l-4 border-l-pitch hover:bg-pitch/10"
                       : "border-l-4 border-l-transparent hover:bg-background")
                 }
               >
@@ -92,7 +99,14 @@ export function StandingsTable({ rows }: { rows: StandingRow[] }) {
                 <td className="px-3 py-4 text-center">{row.goalsFor}</td>
                 <td className="px-3 py-4 text-center">{row.goalsAgainst}</td>
                 <td className="px-3 py-4 text-center">{row.goalDifference}</td>
-                <td className="px-5 py-4 text-center text-lg font-extrabold">{row.points}</td>
+                <td
+                  className={
+                    "sticky right-0 px-5 py-4 text-center text-lg font-extrabold shadow-[-8px_0_8px_-8px_rgba(0,0,0,0.2)] " +
+                    rowBg
+                  }
+                >
+                  {row.points}
+                </td>
               </tr>
             );
           })}

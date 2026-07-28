@@ -28,7 +28,7 @@ export default async function ManagerPortalPage() {
         {players.map((p) => (
           <div
             key={p.id}
-            className="flex flex-col items-center gap-3 rounded-2xl border border-line bg-surface p-4 text-center"
+            className="flex flex-col items-center gap-3 rounded-block-lg border-2 border-line-strong bg-surface p-4 text-center shadow-block"
           >
             <PlayerCard
               name={p.name}

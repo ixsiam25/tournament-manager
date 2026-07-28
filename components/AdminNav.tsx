@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Crest } from "@/components/Crest";
+import { BrandLogo } from "@/components/BrandLogo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 const NAV_ITEMS = [
@@ -26,14 +26,14 @@ export function AdminNav() {
   }
 
   return (
-    <header className="sticky top-0 z-10 border-b border-line bg-surface/90 backdrop-blur">
+    <header className="sticky top-0 z-10 border-b-2 border-black bg-black">
       <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-5 py-4">
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-          <span className="heading-display flex items-center gap-2 text-lg">
-            <Crest size={24} />
+          <span className="heading-display flex items-center gap-2 text-lg text-white">
+            <BrandLogo size={24} />
             BFL Admin
           </span>
-          <nav className="flex flex-wrap gap-x-4 gap-y-1 text-sm font-medium text-muted">
+          <nav className="flex flex-wrap gap-x-4 gap-y-1 text-sm font-medium text-white/60">
             {NAV_ITEMS.map((item) => {
               const active = pathname === item.href;
               return (
@@ -42,7 +42,7 @@ export function AdminNav() {
                   href={item.href}
                   prefetch={false}
                   aria-current={active ? "page" : undefined}
-                  className={active ? "text-foreground" : "hover:text-foreground"}
+                  className={active ? "text-white" : "hover:text-white"}
                 >
                   {item.label}
                 </Link>
@@ -52,7 +52,7 @@ export function AdminNav() {
         </div>
         <div className="flex items-center gap-3">
           <ThemeToggle />
-          <button onClick={logout} className="text-sm font-medium text-muted hover:text-foreground">
+          <button onClick={logout} className="text-sm font-medium text-white/60 hover:text-white">
             Log out
           </button>
         </div>

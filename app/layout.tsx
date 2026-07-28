@@ -20,7 +20,7 @@ const anton = Anton({
 });
 
 export const metadata: Metadata = {
-  title: "BFL Season VIII",
+  title: "BFL Season IX",
   description: "League standings, fixtures, and live scores.",
 };
 

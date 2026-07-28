@@ -13,6 +13,9 @@
   --brand-dark: #a10d1e;
   --live: #ea580c;
   --live-dark: #c2410c;
+  --maroon: #7a1128;
+  --gold: #b8860b;
+  --royal: #1e3a8a;
 }
 
 :root[data-theme="dark"] {
@@ -28,6 +31,9 @@
   --brand-dark: #ce1126;
   --live: #fb923c;
   --live-dark: #ea580c;
+  --maroon: #a3253f;
+  --gold: #d4af37;
+  --royal: #3b5fc4;
 }
 
 @theme inline {
@@ -43,6 +49,9 @@
   --color-brand-dark: var(--brand-dark);
   --color-live: var(--live);
   --color-live-dark: var(--live-dark);
+  --color-maroon: var(--maroon);
+  --color-gold: var(--gold);
+  --color-royal: var(--royal);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-display: var(--font-display);

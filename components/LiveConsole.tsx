@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { usePasswordConfirm } from "@/components/PasswordConfirm";
 
@@ -192,7 +192,7 @@ export function LiveConsole({ matchId }: { matchId: string }) {
         </span>
       </div>
 
-      <div className="mb-6 grid grid-cols-2 gap-4">
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
         <TeamPanel
           team={match.homeTeam}
           score={match.homeScore}
@@ -342,7 +342,7 @@ function TeamPanel({
         <div className="space-y-2.5 text-left">
           <div>
             <p className="mb-1 text-xs font-bold uppercase tracking-wide text-muted">Scorer</p>
-            <PlayerPicker players={players} value={scorerId} onChange={setScorerId} placeholder="Scorer…" />
+            <PlayerPicker players={players} value={scorerId} onChange={setScorerId} placeholder="Select scorer…" />
           </div>
           <div>
             <p className="mb-1 text-xs font-bold uppercase tracking-wide text-muted">Assist</p>
@@ -370,7 +370,7 @@ function TeamPanel({
         <div className="space-y-2.5 text-left">
           <div>
             <p className="mb-1 text-xs font-bold uppercase tracking-wide text-muted">Player</p>
-            <PlayerPicker players={players} value={cardPlayerId} onChange={setCardPlayerId} placeholder="Player…" />
+            <PlayerPicker players={players} value={cardPlayerId} onChange={setCardPlayerId} placeholder="Select player…" />
           </div>
           <div className="flex gap-2">
             <button
@@ -412,6 +412,10 @@ function TeamPanel({
   );
 }
 
+/** Dropdown player select — a compact button showing the current pick that
+ * expands into a scrollable list of photo+name rows, instead of an
+ * always-expanded grid (which ate too much space with two pickers per
+ * team panel, especially on a phone pitch-side). */
 function PlayerPicker({
   players,
   value,
@@ -423,41 +427,116 @@ function PlayerPicker({
   onChange: (id: string) => void;
   placeholder: string;
 }) {
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const selected = players.find((p) => p.id === value) ?? null;
+
+  useEffect(() => {
+    if (!open) return;
+
+    function handlePointerDown(e: PointerEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open]);
+
+  function pick(id: string) {
+    onChange(id);
+    setOpen(false);
+  }
+
   return (
-    <div className="flex flex-wrap gap-1.5">
+    <div ref={containerRef} className="relative">
       <button
         type="button"
-        onClick={() => onChange("")}
-        className={
-          "rounded-full border px-2.5 py-1.5 text-xs font-medium " +
-          (value === "" ? "border-pitch bg-pitch/10" : "border-line text-muted")
-        }
+        onClick={() => setOpen((v) => !v)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        className="flex w-full items-center gap-2 rounded-block border-2 border-line bg-background px-2.5 py-2 text-sm font-medium"
       >
-        {placeholder}
-      </button>
-      {players.map((p) => (
-        <button
-          key={p.id}
-          type="button"
-          onClick={() => onChange(p.id)}
-          title={`#${p.jerseyNumber} ${p.name}`}
-          className={
-            "flex max-w-28 items-center gap-1.5 rounded-full border py-1 pl-1 pr-2.5 text-xs font-medium " +
-            (value === p.id ? "border-pitch bg-pitch/10" : "border-line")
-          }
+        {selected ? (
+          <>
+            <PlayerAvatar player={selected} />
+            <span className="min-w-0 flex-1 truncate text-left">{selected.name}</span>
+          </>
+        ) : (
+          <span className="min-w-0 flex-1 truncate text-left text-muted">{placeholder}</span>
+        )}
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          className={"shrink-0 transition-transform duration-150 " + (open ? "rotate-180" : "")}
+          aria-hidden
         >
-          {p.photoUrl ? (
-            <span className="relative h-6 w-6 shrink-0 overflow-hidden rounded-full">
-              <Image src={p.photoUrl} alt={p.name} fill sizes="24px" className="object-cover" />
-            </span>
-          ) : (
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-line text-[10px] font-bold">
-              {p.jerseyNumber}
-            </span>
-          )}
-          <span className="truncate">{p.name}</span>
-        </button>
-      ))}
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </button>
+
+      {open && (
+        <div
+          role="listbox"
+          className="absolute left-0 right-0 top-[calc(100%+4px)] z-30 max-h-60 overflow-y-auto rounded-block-lg border-2 border-line-strong bg-surface shadow-block"
+        >
+          <button
+            type="button"
+            onClick={() => pick("")}
+            className={
+              "block w-full px-3 py-2 text-left text-sm " +
+              (value === "" ? "bg-pitch/10 font-bold text-pitch-dark" : "text-muted hover:bg-background")
+            }
+          >
+            {placeholder}
+          </button>
+          {players.map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => pick(p.id)}
+              role="option"
+              aria-selected={value === p.id}
+              className={
+                "flex w-full items-center gap-2 px-3 py-2 text-left text-sm " +
+                (value === p.id ? "bg-pitch/10 font-bold" : "hover:bg-background")
+              }
+            >
+              <PlayerAvatar player={p} />
+              <span className="truncate">
+                #{p.jerseyNumber} {p.name}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
     </div>
+  );
+}
+
+function PlayerAvatar({ player }: { player: Player }) {
+  if (player.photoUrl) {
+    return (
+      <span className="relative h-7 w-7 shrink-0 overflow-hidden rounded-block border border-line-strong">
+        <Image src={player.photoUrl} alt={player.name} fill sizes="28px" className="object-cover" />
+      </span>
+    );
+  }
+  return (
+    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-block bg-line text-[10px] font-bold">
+      {player.jerseyNumber}
+    </span>
   );
 }

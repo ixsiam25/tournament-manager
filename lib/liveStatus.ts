@@ -5,43 +5,47 @@ const matchWithTeams = {
   awayTeam: true,
 } as const;
 
-export async function getLiveStatus() {
-  const live = await prisma.match.findFirst({
-    where: { status: "LIVE" },
-    include: {
-      ...matchWithTeams,
-      events: {
-        include: { player: true, team: true },
-        orderBy: { sequence: "desc" as const },
-        take: 10,
-      },
+const recentResultsQuery = {
+  where: { status: "FINISHED" as const },
+  include: {
+    ...matchWithTeams,
+    events: {
+      include: { player: true, team: true },
+      orderBy: { sequence: "desc" as const },
     },
-    orderBy: { startedAt: "asc" },
-  });
+  },
+  orderBy: { finishedAt: "desc" as const },
+  take: 5,
+};
 
-  if (live) {
-    return { status: "LIVE" as const, match: live };
-  }
-
-  const [nextFixture, recentResults] = await Promise.all([
+export async function getLiveStatus() {
+  const [live, recentResults] = await Promise.all([
     prisma.match.findFirst({
-      where: { status: "SCHEDULED", homeTeamId: { not: null }, awayTeamId: { not: null } },
-      include: matchWithTeams,
-      orderBy: [{ scheduledAt: "asc" }, { createdAt: "asc" }],
-    }),
-    prisma.match.findMany({
-      where: { status: "FINISHED" },
+      where: { status: "LIVE" },
       include: {
         ...matchWithTeams,
         events: {
           include: { player: true, team: true },
           orderBy: { sequence: "desc" as const },
+          take: 10,
         },
       },
-      orderBy: { finishedAt: "desc" },
-      take: 5,
+      orderBy: { startedAt: "asc" },
     }),
+    prisma.match.findMany(recentResultsQuery),
   ]);
+
+  if (live) {
+    // Recent results stay visible even while a match is live, instead of
+    // vanishing until the live match finishes.
+    return { status: "LIVE" as const, match: live, recentResults };
+  }
+
+  const nextFixture = await prisma.match.findFirst({
+    where: { status: "SCHEDULED", homeTeamId: { not: null }, awayTeamId: { not: null } },
+    include: matchWithTeams,
+    orderBy: [{ scheduledAt: "asc" }, { createdAt: "asc" }],
+  });
 
   return { status: "IDLE" as const, nextFixture, recentResults };
 }

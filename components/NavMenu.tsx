@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { href: "/standings", label: "Standings" },
   { href: "/players", label: "Player Standings" },
   { href: "/teams", label: "Teams" },
+  { href: "/predictions", label: "Champions Prediction" },
 ];
 
 export function NavMenu() {
@@ -54,7 +55,7 @@ export function NavMenu() {
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="menu"
         aria-expanded={open}
-        className="flex items-center gap-1.5 rounded-block border-2 border-line-strong px-3.5 py-1.5 text-sm font-bold uppercase tracking-wide hover:bg-foreground hover:text-background"
+        className="flex items-center gap-1.5 rounded-block border-2 border-white/25 px-3.5 py-1.5 text-sm font-bold uppercase tracking-wide text-white hover:border-white hover:bg-white hover:text-black"
       >
         Menu
         <svg

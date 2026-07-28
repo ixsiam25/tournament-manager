@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { StartMatchButton } from "@/components/StartMatchButton";
@@ -52,16 +53,20 @@ export default async function AdminDashboardPage() {
       ) : (
         <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
           {upcoming.map((m) => (
-            <li key={m.id} className="flex items-center justify-between gap-3 px-5 py-3.5">
-              <div>
-                <p className="text-sm font-medium">
-                  {m.homeTeam?.name ?? "TBD"} vs {m.awayTeam?.name ?? "TBD"}
-                </p>
+            <li key={m.id} className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+              <div className="flex min-w-0 flex-wrap items-center gap-2 sm:flex-1 sm:gap-3">
+                <DashboardTeamLogo logoUrl={m.homeTeam?.logoUrl} name={m.homeTeam?.name} />
+                <span className="text-sm font-bold sm:text-base">{m.homeTeam?.name ?? "TBD"}</span>
+                <span className="shrink-0 text-xs text-muted sm:text-sm">vs</span>
+                <span className="text-sm font-bold sm:text-base">{m.awayTeam?.name ?? "TBD"}</span>
+                <DashboardTeamLogo logoUrl={m.awayTeam?.logoUrl} name={m.awayTeam?.name} />
+              </div>
+              <div className="flex shrink-0 items-center justify-between gap-3 sm:justify-end">
                 {m.scheduledAt && (
                   <p className="text-xs text-muted">{new Date(m.scheduledAt).toLocaleString()}</p>
                 )}
+                <StartMatchButton matchId={m.id} disabled={!m.homeTeamId || !m.awayTeamId} />
               </div>
-              <StartMatchButton matchId={m.id} disabled={!m.homeTeamId || !m.awayTeamId} />
             </li>
           ))}
         </ul>
@@ -79,6 +84,19 @@ export default async function AdminDashboardPage() {
         </Link>
       </div>
     </div>
+  );
+}
+
+function DashboardTeamLogo({ logoUrl, name }: { logoUrl?: string | null; name?: string }) {
+  if (!logoUrl) return <span className="h-7 w-7 shrink-0 rounded-full bg-line sm:h-10 sm:w-10" />;
+  return (
+    <Image
+      src={logoUrl}
+      alt={name ?? ""}
+      width={40}
+      height={40}
+      className="h-7 w-7 shrink-0 rounded-full object-cover sm:h-10 sm:w-10"
+    />
   );
 }
 

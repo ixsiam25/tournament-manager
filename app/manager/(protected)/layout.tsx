@@ -10,7 +10,7 @@ export default async function ManagerProtectedLayout({ children }: { children: R
   if (!teamId) redirect("/manager/login");
 
   const team = await prisma.team.findUnique({ where: { id: teamId } });
-  if (!team) redirect("/manager/login");
+  if (!team || team.managerLoginBlocked) redirect("/manager/login");
 
   return (
     <div className="flex min-h-full flex-col">

@@ -97,21 +97,30 @@ export default async function FixturesPage({
               </h2>
               <ul className="divide-y-2 divide-line overflow-hidden rounded-block-lg border-2 border-line-strong bg-surface shadow-block">
                 {list.map(({ match, number }) => (
-                  <li key={match.id} className="flex items-center gap-4 px-6 py-5">
-                    <span className="w-8 shrink-0 text-center text-sm font-bold text-muted tabular-nums">
+                  <li
+                    key={match.id}
+                    className={
+                      "flex items-center gap-3 border-l-4 px-4 py-4 sm:gap-4 sm:px-6 sm:py-5 " +
+                      statusRowClass(match.status)
+                    }
+                  >
+                    <span className="w-5 shrink-0 text-center text-xs font-bold text-muted tabular-nums sm:w-8 sm:text-sm">
                       {number}
                     </span>
-                    <div className="flex flex-1 items-center justify-between gap-3">
-                      <span className="flex flex-1 items-center justify-end gap-3 text-right text-lg font-medium">
+                    <div className="flex min-w-0 flex-1 items-center justify-center gap-2 sm:gap-3">
+                      <span className="min-w-0 flex-1 truncate text-right text-sm font-medium sm:text-lg">
                         {match.homeTeam?.name ?? "TBD"}
-                        <TeamLogo logoUrl={match.homeTeam?.logoUrl} name={match.homeTeam?.name} />
                       </span>
-                      <ScoreOrTime match={match} />
-                      <span className="flex flex-1 items-center gap-3 text-lg font-medium">
+                      <span className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+                        <TeamLogo logoUrl={match.homeTeam?.logoUrl} name={match.homeTeam?.name} />
+                        <span className="text-sm font-bold text-muted sm:text-base">-</span>
                         <TeamLogo logoUrl={match.awayTeam?.logoUrl} name={match.awayTeam?.name} />
+                      </span>
+                      <span className="min-w-0 flex-1 truncate text-sm font-medium sm:text-lg">
                         {match.awayTeam?.name ?? "TBD"}
                       </span>
                     </div>
+                    <ScoreOrTime match={match} />
                   </li>
                 ))}
               </ul>
@@ -128,15 +137,21 @@ export default async function FixturesPage({
   );
 }
 
+function statusRowClass(status: string): string {
+  if (status === "LIVE") return "border-l-live bg-live/10";
+  if (status === "FINISHED") return "border-l-pitch bg-pitch/5";
+  return "border-l-transparent bg-background/60";
+}
+
 function TeamLogo({ logoUrl, name }: { logoUrl?: string | null; name?: string }) {
-  if (!logoUrl) return <span className="h-9 w-9 shrink-0 rounded-block bg-line" />;
+  if (!logoUrl) return <span className="h-6 w-6 shrink-0 rounded-block bg-line sm:h-9 sm:w-9" />;
   return (
     <Image
       src={logoUrl}
       alt={name ?? ""}
       width={36}
       height={36}
-      className="shrink-0 rounded-block border border-line-strong object-cover"
+      className="h-6 w-6 shrink-0 rounded-block border border-line-strong object-cover sm:h-9 sm:w-9"
     />
   );
 }
@@ -148,13 +163,13 @@ function ScoreOrTime({
 }) {
   if (match.status === "FINISHED" || match.status === "LIVE") {
     return (
-      <span className="min-w-20 shrink-0 rounded-block bg-background px-4 py-1.5 text-center text-base font-bold tabular-nums">
+      <span className="min-w-14 shrink-0 rounded-block bg-background px-2.5 py-1 text-center text-sm font-bold tabular-nums sm:min-w-20 sm:px-4 sm:py-1.5 sm:text-base">
         {match.homeScore} – {match.awayScore}
       </span>
     );
   }
   return (
-    <span className="min-w-20 shrink-0 text-center text-sm text-muted">
+    <span className="min-w-14 shrink-0 text-center text-xs text-muted sm:min-w-20 sm:text-sm">
       {match.scheduledAt ? new Date(match.scheduledAt).toLocaleDateString() : "TBD"}
     </span>
   );

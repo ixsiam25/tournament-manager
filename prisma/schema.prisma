@@ -40,13 +40,16 @@ model Team {
   managerName         String?
   logoUrl             String?
   managerPasswordHash String?
+  managerLoginBlocked Boolean  @default(false)
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
   players     Player[]
   homeMatches Match[]      @relation("HomeTeam")
   awayMatches Match[]      @relation("AwayTeam")
-  events      MatchEvent[]
+  events              MatchEvent[]
+  predictions         Prediction[]
+  championPredictions ChampionPrediction[]
 }
 
 /// Small key/value store for settings that need to be changeable from the
@@ -93,10 +96,45 @@ model Match {
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 
-  events MatchEvent[]
+  events      MatchEvent[]
+  predictions Prediction[]
 
   @@index([status])
   @@index([round])
+}
+
+/// One audience vote for who wins a given match — the "who wins this game"
+/// bar shown on the current/next match blocks. Anonymous but deduped per
+/// browser via a client-generated voterId, so a visitor can change their
+/// pick and it recalculates rather than double-counting.
+model Prediction {
+  id            String   @id @default(cuid())
+  matchId       String
+  match         Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  teamId        String
+  team          Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  voterId       String
+  voterName     String?
+  voterSemester String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([matchId, voterId])
+  @@index([matchId])
+}
+
+/// One audience pick for who wins the whole season — the "Champions
+/// Prediction" game on its own page. One pick per browser (voterId is
+/// unique, not scoped to a match); submitting again overwrites it.
+model ChampionPrediction {
+  id            String   @id @default(cuid())
+  teamId        String
+  team          Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  voterId       String   @unique
+  voterName     String?
+  voterSemester String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model MatchEvent {

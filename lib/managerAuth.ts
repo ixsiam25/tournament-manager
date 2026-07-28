@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { createSignedToken, verifySignedToken } from "@/lib/signing";
+import { prisma } from "@/lib/db";
 
 export const MANAGER_COOKIE_NAME = "manager_session";
 const SESSION_TTL_MS = 1000 * 60 * 60 * 12; // 12 hours
@@ -37,6 +38,16 @@ export async function requireManager(): Promise<{ teamId: string } | NextRespons
   const token = (await cookies()).get(MANAGER_COOKIE_NAME)?.value;
   const teamId = await verifyManagerSessionToken(token);
   if (!teamId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  // Re-checked on every request (not just at login) so a mid-session block
+  // by the admin takes effect immediately instead of waiting for the
+  // session to expire.
+  const team = await prisma.team.findUnique({
+    where: { id: teamId },
+    select: { managerLoginBlocked: true },
+  });
+  if (!team || team.managerLoginBlocked) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   return { teamId };
