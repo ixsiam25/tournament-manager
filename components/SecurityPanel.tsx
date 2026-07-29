@@ -18,6 +18,7 @@ export function SecurityPanel({ teams: initialTeams }: { teams: Team[] }) {
   const [savingTeamId, setSavingTeamId] = useState<string | null>(null);
   const [teamError, setTeamError] = useState<string | null>(null);
   const [teamMessage, setTeamMessage] = useState<string | null>(null);
+  const [savingAll, setSavingAll] = useState(false);
 
   async function handleAdminPasswordChange(e: React.FormEvent) {
     e.preventDefault();
@@ -110,6 +111,26 @@ export function SecurityPanel({ teams: initialTeams }: { teams: Team[] }) {
     }
   }
 
+  async function handleToggleBlockAll(nextBlocked: boolean) {
+    const confirmed = await confirmWithPassword(
+      nextBlocked
+        ? "Block every team's manager login?"
+        : "Unblock every team's manager login?",
+    );
+    if (!confirmed) return;
+
+    setSavingAll(true);
+    const res = await fetch("/api/admin/security/team-block-all", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ blocked: nextBlocked }),
+    });
+    setSavingAll(false);
+    if (res.ok) {
+      setTeams((prev) => prev.map((t) => ({ ...t, blocked: nextBlocked })));
+    }
+  }
+
   return (
     <div>
       {modal}
@@ -141,7 +162,25 @@ export function SecurityPanel({ teams: initialTeams }: { teams: Team[] }) {
       </section>
 
       <section className="rounded-block-lg border-2 border-line-strong bg-surface p-6 shadow-block">
-        <h2 className="mb-1 font-black uppercase tracking-wide">Team manager logins</h2>
+        <div className="mb-1 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="font-black uppercase tracking-wide">Team manager logins</h2>
+          <div className="flex shrink-0 gap-2">
+            <button
+              onClick={() => handleToggleBlockAll(true)}
+              disabled={savingAll}
+              className="rounded-block border-2 border-live px-3 py-1.5 text-xs font-bold text-live disabled:opacity-40"
+            >
+              Block all
+            </button>
+            <button
+              onClick={() => handleToggleBlockAll(false)}
+              disabled={savingAll}
+              className="rounded-block border-2 border-pitch px-3 py-1.5 text-xs font-bold text-pitch-dark disabled:opacity-40"
+            >
+              Unblock all
+            </button>
+          </div>
+        </div>
         <p className="mb-4 text-sm text-muted">
           Set a password for a team so its manager/captain can log in at{" "}
           <code className="rounded bg-background px-1 py-0.5">/manager/login</code> and upload

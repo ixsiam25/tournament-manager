@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { MANAGER_COOKIE_NAME, verifyManagerSessionToken } from "@/lib/managerAuth";
 import { PlayerCard } from "@/components/PlayerCard";
 import { PhotoUploader } from "@/components/PhotoUploader";
+import { TeamSettingsForm } from "@/components/TeamSettingsForm";
 
 export const dynamic = "force-dynamic";
 
@@ -12,13 +13,16 @@ export default async function ManagerPortalPage() {
   const teamId = await verifyManagerSessionToken(token);
   if (!teamId) redirect("/manager/login");
 
-  const players = await prisma.player.findMany({
-    where: { teamId },
-    orderBy: { jerseyNumber: "asc" },
-  });
+  const [team, players] = await Promise.all([
+    prisma.team.findUnique({ where: { id: teamId }, select: { name: true, logoUrl: true } }),
+    prisma.player.findMany({ where: { teamId }, orderBy: { jerseyNumber: "asc" } }),
+  ]);
+  if (!team) redirect("/manager/login");
 
   return (
     <div>
+      <TeamSettingsForm initialName={team.name} initialLogoUrl={team.logoUrl} />
+
       <h1 className="mb-2 heading-display text-2xl">Player Photos</h1>
       <p className="mb-6 text-sm text-muted">
         Upload a clear headshot for each player — it becomes their player card across the site
