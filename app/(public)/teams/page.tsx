@@ -30,7 +30,7 @@ export default async function TeamsPage() {
                 className="rounded-block border border-line-strong object-cover"
               />
             ) : (
-              <Crest size={36} />
+              <Crest size={36} name={team.name} />
             )}
             <span className="font-black uppercase tracking-wide">{team.name}</span>
             {team.managerName && (

@@ -2,8 +2,8 @@
 
 ## 1. What this is
 
-A tournament management system for **BFL Season VIII** — 8 teams, 5-a-side,
-6-player squads:
+A tournament management system for **BFL Season IX** (4 August 2026) — 8 teams,
+5-a-side, 6–8-player squads, one team per APU semester/batch:
 
 - **Public site** — read-only, for spectators: live match status, fixtures,
   league standings, top scorers/assists, and a per-team squad/pitch view.
@@ -155,12 +155,28 @@ See `prisma/schema.prisma`. Summary:
   `groupId` (pairs a goal with its assist for atomic undo; card events get
   a groupId of their own).
 
-Seed script (`prisma/seed.ts`): the real BFL Season VIII data — 8 teams
-(FC Protichobi, Banglar Bagh, Beppu Passers, Chingri Maach, Goal Diggers,
-BAF FC, Son of Pitches, Cha Champions), each with a manager and 6 players
-(first player = captain), the official 28-match single round-robin fixture
-order, 2 semifinal placeholders (1st v 3rd, 2nd v 4th per BFL's own
-bracket — not the more common 1v4/2v3), and 1 final placeholder.
+Seed script (`prisma/seed.ts`): the real BFL Season IX data, taken from the
+inter-batch registration form — 8 teams (Molom Bahini, Big Banana FC,
+Koshai-7, GENJAM-101, কমিটির টীম, Fall 25, ৭ এ ৭ FC, The Bottleneck), each
+with its batch representative as `managerName` and a 6–8 player squad, plus
+the full 4 August match schedule: a 28-match single round-robin with real
+kickoff times and pitch assignments, 2 semifinal placeholders (1st v 3rd,
+2nd v 4th per BFL's own bracket — not the more common 1v4/2v3), and 1 final
+placeholder.
+
+**The seed rewrites the season from scratch** — it deletes every event,
+prediction, match, player and team before inserting. There is no season
+scoping in the schema, so re-running it discards the current season's results.
+
+Scheduling rules encoded in `LEAGUE_SCHEDULE`: 7-minute games on a 10-minute
+slot (3 min buffer), kickoff 17:00 JST, Field 2 available only for the
+18:00–19:00 hour. That hour runs 12 games two at a time — the `abcd`
+round-robin interleaved with the `efgh` round-robin — so those eight teams
+alternate slots and never play back to back. The 17:50 and 19:00 slots are
+intentionally empty changeovers either side of it. Two assertions run before
+any write: `assertSingleRoundRobin` (every pair meets exactly once) and
+`assertRestGuarantee` (no team booked twice in a slot, none in consecutive
+slots). Worst-case rest between a team's games is 13 minutes.
 
 ## 6. Environment variables
 

@@ -10,202 +10,339 @@ dotenv.config({ path: fs.existsSync(".env.local") ? ".env.local" : ".env" });
 const adapter = new PrismaNeon({ connectionString: process.env.DATABASE_URL ?? "" });
 const prisma = new PrismaClient({ adapter });
 
-// BFL Season VIII — real teams, managers, and 6-player squads (5-a-side).
-// First player listed in each squad is the captain. Positions are left
-// unassigned except where known (e.g. a squad's named goalkeeper); admin can
-// fill in the rest via /admin/players. photoUrl/logoUrl point at
-// public/players and public/logos, cropped from the team's official BFL
-// roster posters and FIFA-card-style player cards.
+// ---------------------------------------------------------------------------
+// BFL Season IX — 4 August 2026, 8 teams, 5-a-side.
+//
+// Teams and squads come straight from the "Inter-Batch Football Tournament
+// Registration (Responses)" form. Each team is one APU semester/batch, and the
+// person who filled the form is the batch representative (stored as
+// managerName) — except Molom Bahini, who named a separate manager.
+//
+// Slot letters a–h below drive the fixture grid further down; they are just
+// scheduling labels, not seedings.
+// ---------------------------------------------------------------------------
+
+type Slot = "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h";
+
 const TEAMS: {
+  slot: Slot;
   name: string;
   shortName: string;
+  semester: string;
   managerName: string;
-  logoUrl: string;
-  players: { name: string; position?: "GK" | "DEF" | "MID" | "FWD"; photoSlug: string }[];
+  players: { name: string; position?: "GK" | "DEF" | "MID" | "FWD"; isCaptain?: boolean }[];
 }[] = [
   {
-    name: "FC Protichobi",
-    shortName: "FCP",
-    managerName: "Nafisa Tanha",
-    logoUrl: "/logos/fc-protichobi.jpg",
+    slot: "a",
+    name: "Molom Bahini",
+    shortName: "MLB",
+    semester: "5th",
+    managerName: "Jannat Jannatul Fardous",
     players: [
-      { name: "Hossain Desu", photoSlug: "hossain-desu" },
-      { name: "Abdul Tahsin Rahat", photoSlug: "abdul-tahsin-rahat" },
-      { name: "Khairul Islam Rafi", photoSlug: "khairul-islam-rafi" },
-      { name: "Shimul Al Imran", photoSlug: "shimul-al-imran" },
-      { name: "Ratul", photoSlug: "ratul" },
-      { name: "Rohan", photoSlug: "rohan" },
+      { name: "Habibul Mostafa Bishal", isCaptain: true },
+      { name: "Mirza Samir", position: "FWD" },
+      { name: "Teezad Tabriz", position: "MID" },
+      { name: "Shad MD S.A.B", position: "DEF" },
+      { name: "Nahid Tanvir Hasan", position: "GK" },
+      { name: "Abir Abrar", position: "FWD" },
+      { name: "Ahmed Habib", position: "FWD" },
+      { name: "Shuaib Tahsin", position: "DEF" },
     ],
   },
   {
-    name: "Banglar Bagh",
-    shortName: "BB",
-    managerName: "Madhurzo Rahman",
-    logoUrl: "/logos/banglar-bagh.jpg",
+    slot: "b",
+    name: "Big Banana FC",
+    shortName: "BBF",
+    semester: "4th",
+    managerName: "Mashrafi Sharif Md",
     players: [
-      { name: "Shafiul Alam Ruhin", photoSlug: "shafiul-alam-ruhin" },
-      { name: "Iftekhar Zahan Siam", photoSlug: "iftekhar-zahan-siam" },
-      { name: "Mostafizur Heemel", photoSlug: "mostafizur-heemel" },
-      { name: "Zahidul Sajid", photoSlug: "zahidul-sajid" },
-      { name: "Muhaimin", photoSlug: "muhaimin" },
-      { name: "Ramim", photoSlug: "ramim" },
+      { name: "Sharif Mashrafi", position: "MID", isCaptain: true },
+      { name: "Wasimul Foij Sakib", position: "MID" },
+      { name: "Shahrukh Ali Chowdhury", position: "GK" },
+      { name: "Mahadi Fahim", position: "GK" },
+      { name: "Wasim Ashraf", position: "FWD" },
+      { name: "Mir Nafis Ali", position: "DEF" },
+      { name: "Mottaquin Tahsin", position: "DEF" },
     ],
   },
   {
-    name: "Beppu Passers",
-    shortName: "BP",
-    managerName: "Saadia Zeba",
-    logoUrl: "/logos/beppu-passers.jpg",
+    slot: "c",
+    name: "Koshai-7",
+    shortName: "KS7",
+    semester: "1st",
+    managerName: "Heemel Mostafizur Rahman",
     players: [
-      { name: "Shahrukh Ali", position: "GK", photoSlug: "shahrukh-ali" },
-      { name: "Muktadir Rahat", photoSlug: "muktadir-rahat" },
-      { name: "Shoriful Islam", photoSlug: "shoriful-islam" },
-      { name: "Sayeed Rana", photoSlug: "sayeed-rana" },
-      { name: "Arman Gaffar", photoSlug: "arman-gaffar" },
-      { name: "Abtahee Siam", photoSlug: "abtahee-siam" },
+      { name: "Milhan Nafee", position: "DEF", isCaptain: true },
+      { name: "Sagor", position: "DEF" },
+      { name: "Romeo", position: "MID" },
+      { name: "Huzaifa", position: "MID" },
+      { name: "Heemel", position: "MID" },
+      { name: "Zoha", position: "MID" },
+      { name: "Yusha", position: "GK" },
     ],
   },
   {
-    name: "Chingri Maach",
-    shortName: "CM",
-    managerName: "Prithika Mehek",
-    logoUrl: "/logos/chingri-maach.jpg",
+    slot: "d",
+    name: "GENJAM-101",
+    shortName: "GJ1",
+    semester: "6th",
+    managerName: "Siam Mohammad Iftekhar Zahan",
     players: [
-      { name: "Zuhair Rahman", photoSlug: "zuhair-rahman" },
-      { name: "Nur Anzim", photoSlug: "nur-anzim" },
-      { name: "Akib Aditya", photoSlug: "akib-aditya" },
-      { name: "Auvik", photoSlug: "auvik" },
-      { name: "Tahseen", photoSlug: "tahseen" },
-      { name: "Syed Hozaifa", photoSlug: "syed-hozaifa" },
+      { name: "Siam" },
+      { name: "Sheak" },
+      { name: "Ujjal", isCaptain: true },
+      { name: "Dip" },
+      { name: "Shaman" },
+      { name: "Zuhair" },
+      { name: "Rahat" },
+      { name: "Usman" },
     ],
   },
   {
-    name: "Goal Diggers",
-    shortName: "GD",
-    managerName: "Naisa Tabassum",
-    logoUrl: "/logos/goal-diggers.jpg",
+    slot: "e",
+    name: "কমিটির টীম",
+    shortName: "KMT",
+    semester: "3rd",
+    managerName: "Md Shafiul Alam Ruhin",
     players: [
-      { name: "Sakib", photoSlug: "sakib" },
-      { name: "Wasim Ashraf", photoSlug: "wasim-ashraf" },
-      { name: "Golam Momit Dip", photoSlug: "golam-momit-dip" },
-      { name: "Tanvir Chowdhhury", photoSlug: "tanvir-chowdhhury" },
-      { name: "Yadin Manjur", photoSlug: "yadin-manjur" },
-      { name: "Sagor Khan", photoSlug: "sagor-khan" },
+      { name: "Md Shafiul Alam Ruhin", position: "DEF" },
+      { name: "Shoriful Islam", position: "DEF" },
+      { name: "Kazi Rafid Mostakin", position: "MID" },
+      { name: "Mahfuz Mahi", position: "FWD", isCaptain: true },
+      { name: "Shafi Ahmed", position: "GK" },
+      { name: "Fulmia Sheikh", position: "FWD" },
     ],
   },
   {
-    name: "BAF FC",
-    shortName: "BAF",
-    managerName: "Sidrath Zannah",
-    logoUrl: "/logos/baf-fc.jpg",
+    // Form marked no captain, so the batch representative (Rana Md Sayeed
+    // Bin, listed in the squad as "Sayeed") takes the armband.
+    slot: "f",
+    name: "Fall 25",
+    shortName: "F25",
+    semester: "2nd",
+    managerName: "Rana Md Sayeed Bin",
     players: [
-      { name: "Mahfuj Mahi", photoSlug: "mahfuj-mahi" },
-      { name: "M Mahadi Fahim", photoSlug: "m-mahadi-fahim" },
-      { name: "Mihan Nafee", photoSlug: "mihan-nafee" },
-      { name: "Tanvir Siddik", photoSlug: "tanvir-siddik" },
-      { name: "Nishad Ahmed", photoSlug: "nishad-ahmed" },
-      { name: "Zaidul Islam Joha", photoSlug: "zaidul-islam-joha" },
+      { name: "Manjur Yadin", position: "FWD" },
+      { name: "Sayeed", position: "FWD", isCaptain: true },
+      { name: "Adnan", position: "MID" },
+      { name: "Tanvir Siddik", position: "DEF" },
+      { name: "Arafat", position: "DEF" },
+      { name: "Muhaimin", position: "GK" },
     ],
   },
   {
-    name: "Son of Pitches",
-    shortName: "SOP",
-    managerName: "Labiba Haque",
-    logoUrl: "/logos/son-of-pitches.jpg",
+    slot: "g",
+    name: "৭ এ ৭ FC",
+    shortName: "7A7",
+    semester: "7th",
+    managerName: "Hossain Desu",
     players: [
-      { name: "Abir Abrar", photoSlug: "abir-abrar" },
-      { name: "Habib RK Ornob", photoSlug: "habib-rk-ornob" },
-      { name: "Mostafa Habibul", photoSlug: "mostafa-habibul" },
-      { name: "Sheak Rafid", photoSlug: "sheak-rafid" },
-      { name: "Gular Tazim", photoSlug: "gular-tazim" },
-      { name: "Zahid Islam", photoSlug: "zahid-islam" },
+      { name: "Hossain", isCaptain: true },
+      { name: "Abdul Tahsin" },
+      { name: "Auvik", position: "FWD" },
+      { name: "Tanvir Chowdhury", position: "FWD" },
+      { name: "Habib Khan", position: "DEF" },
+      { name: "Tahsin Rohan", position: "DEF" },
+      { name: "Shimul", position: "DEF" },
     ],
   },
   {
-    name: "Cha Champions",
-    shortName: "CC",
-    managerName: "Rumaisa Chy",
-    logoUrl: "/logos/cha-champions.jpg",
+    // Form named a "Representative", not a captain — the representative
+    // takes the armband.
+    slot: "h",
+    name: "The Bottleneck",
+    shortName: "TBN",
+    semester: "3rd",
+    managerName: "MD Zahidul Islam",
     players: [
-      { name: "Kazi Rafid", photoSlug: "kazi-rafid" },
-      { name: "Mahmud Ujjal", photoSlug: "mahmud-ujjal" },
-      { name: "Sharif Mashrafi", photoSlug: "sharif-mashrafi" },
-      { name: "Shafi Ebne Mozammel", photoSlug: "shafi-ebne-mozammel" },
-      { name: "Sanjeed Ahmed", photoSlug: "sanjeed-ahmed" },
-      { name: "Romeo", photoSlug: "romeo" },
+      { name: "MD Zahidul Islam", position: "MID", isCaptain: true },
+      { name: "Arifur Rahman Adit", position: "FWD" },
+      { name: "Nyeeb Islam", position: "DEF" },
+      { name: "Muhammad Arman", position: "DEF" },
+      { name: "Mahim", position: "GK" },
+      { name: "Zahidul Sajid", position: "DEF" },
     ],
   },
 ];
 
-// The official BFL Season VIII single round-robin (28 matches — every team
-// plays every other team once), by team name, in fixture order.
-const LEAGUE_FIXTURES: [string, string][] = [
-  ["FC Protichobi", "Banglar Bagh"],
-  ["Beppu Passers", "Chingri Maach"],
-  ["Goal Diggers", "BAF FC"],
-  ["Son of Pitches", "Cha Champions"],
-  ["Beppu Passers", "Banglar Bagh"],
-  ["FC Protichobi", "Chingri Maach"],
-  ["Goal Diggers", "Son of Pitches"],
-  ["BAF FC", "Cha Champions"],
-  ["Banglar Bagh", "Chingri Maach"],
-  ["FC Protichobi", "Beppu Passers"],
-  ["Cha Champions", "Goal Diggers"],
-  ["Son of Pitches", "BAF FC"],
-  ["Banglar Bagh", "Goal Diggers"],
-  ["BAF FC", "FC Protichobi"],
-  ["Beppu Passers", "Son of Pitches"],
-  ["Chingri Maach", "Cha Champions"],
-  ["BAF FC", "Banglar Bagh"],
-  ["FC Protichobi", "Goal Diggers"],
-  ["Chingri Maach", "Son of Pitches"],
-  ["Beppu Passers", "Cha Champions"],
-  ["Banglar Bagh", "Son of Pitches"],
-  ["FC Protichobi", "Cha Champions"],
-  ["Beppu Passers", "Goal Diggers"],
-  ["Chingri Maach", "BAF FC"],
-  ["Banglar Bagh", "Cha Champions"],
-  ["FC Protichobi", "Son of Pitches"],
-  ["Beppu Passers", "BAF FC"],
-  ["Chingri Maach", "Goal Diggers"],
+// ---------------------------------------------------------------------------
+// Schedule — 4 August 2026, kickoff 17:00 JST.
+//
+// 7 min per game + 3 min buffer = one 10-minute slot. Single round-robin:
+// every team plays all 7 others (28 league games), then the top 4 of the table
+// go to the semis (BFL's own bracket: 1v3 and 2v4) and on to the final.
+//
+// Field 2 is only available for the 18:00–19:00 hour, so that hour runs the 12
+// "intra-block" games (the abcd round-robin plus the efgh round-robin) two at a
+// time. Every other game is on Field 1.
+//
+// Rest: no team ever plays two slots back to back. Inside the 18:00 hour the
+// two blocks alternate, so abcd play at :00/:20/:40 and efgh at :10/:30/:50.
+// The 17:50 and 19:00 slots are deliberately empty — they are the changeover
+// either side of the two-field hour, and without them a team would roll
+// straight out of one game into the next.
+// ---------------------------------------------------------------------------
+
+const FIELD_1 = "Field 1";
+const FIELD_2 = "Field 2";
+
+/** Kickoff time on 2026-08-04, given as JST (UTC+9). */
+function jst(time: string): Date {
+  return new Date(`2026-08-04T${time}:00+09:00`);
+}
+
+const LEAGUE_SCHEDULE: { time: string; venue: string; home: Slot; away: Slot }[] = [
+  // Block 1 — Field 1 only. One game each for all eight teams.
+  { time: "17:00", venue: FIELD_1, home: "a", away: "e" },
+  { time: "17:10", venue: FIELD_1, home: "b", away: "f" },
+  { time: "17:20", venue: FIELD_1, home: "c", away: "g" },
+  { time: "17:30", venue: FIELD_1, home: "d", away: "h" },
+  { time: "17:40", venue: FIELD_1, home: "a", away: "f" },
+  // 17:50 — changeover, Field 2 goes live.
+
+  // Block 2 — both fields, 18:00–19:00. abcd and efgh alternate slots.
+  { time: "18:00", venue: FIELD_1, home: "a", away: "b" },
+  { time: "18:00", venue: FIELD_2, home: "c", away: "d" },
+  { time: "18:10", venue: FIELD_1, home: "e", away: "f" },
+  { time: "18:10", venue: FIELD_2, home: "g", away: "h" },
+  { time: "18:20", venue: FIELD_1, home: "a", away: "c" },
+  { time: "18:20", venue: FIELD_2, home: "b", away: "d" },
+  { time: "18:30", venue: FIELD_1, home: "e", away: "g" },
+  { time: "18:30", venue: FIELD_2, home: "f", away: "h" },
+  { time: "18:40", venue: FIELD_1, home: "a", away: "d" },
+  { time: "18:40", venue: FIELD_2, home: "b", away: "c" },
+  { time: "18:50", venue: FIELD_1, home: "e", away: "h" },
+  { time: "18:50", venue: FIELD_2, home: "f", away: "g" },
+  // 19:00 — break, Field 2 goes back.
+
+  // Block 3 — Field 1 only, the 11 remaining cross games. Ordered so that
+  // every team gets at least one empty slot, and usually three, between games.
+  { time: "19:10", venue: FIELD_1, home: "b", away: "e" },
+  { time: "19:20", venue: FIELD_1, home: "c", away: "h" },
+  { time: "19:30", venue: FIELD_1, home: "d", away: "f" },
+  { time: "19:40", venue: FIELD_1, home: "a", away: "g" },
+  { time: "19:50", venue: FIELD_1, home: "b", away: "h" },
+  { time: "20:00", venue: FIELD_1, home: "c", away: "f" },
+  { time: "20:10", venue: FIELD_1, home: "d", away: "e" },
+  { time: "20:20", venue: FIELD_1, home: "a", away: "h" },
+  { time: "20:30", venue: FIELD_1, home: "b", away: "g" },
+  { time: "20:40", venue: FIELD_1, home: "c", away: "e" },
+  { time: "20:50", venue: FIELD_1, home: "d", away: "g" },
 ];
+
+const KNOCKOUT_SCHEDULE: {
+  round: "SEMIFINAL" | "FINAL";
+  label: string;
+  time: string;
+  venue: string;
+}[] = [
+  // 21:00 is left empty so whoever played the 20:50 league game gets a rest
+  // before a semi. The final sits two slots after SF2 for the same reason.
+  { round: "SEMIFINAL", label: "Semifinal 1 (1st vs 3rd)", time: "21:10", venue: FIELD_1 },
+  { round: "SEMIFINAL", label: "Semifinal 2 (2nd vs 4th)", time: "21:20", venue: FIELD_1 },
+  { round: "FINAL", label: "Final", time: "21:40", venue: FIELD_1 },
+];
+
+// ---------------------------------------------------------------------------
+
+function toMinutes(time: string): number {
+  const [h, m] = time.split(":").map(Number);
+  return h * 60 + m;
+}
+
+/**
+ * Fails the seed if any team is booked twice in one slot or plays two
+ * consecutive 10-minute slots. Cheap insurance against a hand-edit to
+ * LEAGUE_SCHEDULE quietly breaking the rest guarantee.
+ */
+function assertRestGuarantee() {
+  const bySlot = new Map<string, Slot[]>();
+  for (const g of LEAGUE_SCHEDULE) {
+    const list = bySlot.get(g.time) ?? [];
+    list.push(g.home, g.away);
+    bySlot.set(g.time, list);
+  }
+
+  const times = [...bySlot.keys()].sort();
+  for (const time of times) {
+    const teams = bySlot.get(time)!;
+    const dupe = teams.find((t, i) => teams.indexOf(t) !== i);
+    if (dupe) throw new Error(`Team "${dupe}" is booked twice in the ${time} slot`);
+  }
+
+  for (let i = 1; i < times.length; i++) {
+    if (toMinutes(times[i]) - toMinutes(times[i - 1]) > 10) continue; // gap slot breaks the chain
+    const clash = bySlot.get(times[i])!.filter((t) => bySlot.get(times[i - 1])!.includes(t));
+    if (clash.length > 0) {
+      throw new Error(
+        `Team(s) "${clash.join(", ")}" play back-to-back at ${times[i - 1]} and ${times[i]}`,
+      );
+    }
+  }
+}
+
+/** Fails the seed unless every pair of teams meets exactly once. */
+function assertSingleRoundRobin() {
+  const seen = new Set<string>();
+  for (const g of LEAGUE_SCHEDULE) {
+    const key = [g.home, g.away].sort().join("-");
+    if (seen.has(key)) throw new Error(`Duplicate fixture: ${key}`);
+    seen.add(key);
+  }
+  const expected = (TEAMS.length * (TEAMS.length - 1)) / 2;
+  if (seen.size !== expected) {
+    throw new Error(`Expected ${expected} league fixtures, schedule has ${seen.size}`);
+  }
+}
 
 async function main() {
+  assertSingleRoundRobin();
+  assertRestGuarantee();
+
+  console.log("Clearing previous season...");
+  // Order matters: events and predictions reference matches/teams/players.
+  await prisma.matchEvent.deleteMany();
+  await prisma.prediction.deleteMany();
+  await prisma.championPrediction.deleteMany();
+  await prisma.match.deleteMany();
+  await prisma.player.deleteMany();
+  await prisma.team.deleteMany();
+
   console.log("Seeding teams and players...");
-  const teamByName = new Map<string, { id: string }>();
+  const teamBySlot = new Map<Slot, { id: string }>();
   for (const t of TEAMS) {
     const team = await prisma.team.create({
       data: {
         name: t.name,
         shortName: t.shortName,
         managerName: t.managerName,
-        logoUrl: t.logoUrl,
         players: {
           create: t.players.map((p, i) => ({
             name: p.name,
             jerseyNumber: i + 1,
             position: p.position ?? null,
-            isCaptain: i === 0,
-            photoUrl: `/players/${p.photoSlug}.jpg`,
+            isCaptain: p.isCaptain ?? false,
           })),
         },
       },
     });
-    teamByName.set(t.name, team);
+    teamBySlot.set(t.slot, team);
   }
 
-  console.log("Creating league fixtures (single round-robin, 28 matches)...");
+  console.log(`Creating ${LEAGUE_SCHEDULE.length} league fixtures...`);
   let matchNumber = 1;
-  for (const [home, away] of LEAGUE_FIXTURES) {
-    const homeTeam = teamByName.get(home);
-    const awayTeam = teamByName.get(away);
-    if (!homeTeam || !awayTeam) throw new Error(`Unknown team in fixture: ${home} vs ${away}`);
+  for (const g of LEAGUE_SCHEDULE) {
+    const homeTeam = teamBySlot.get(g.home);
+    const awayTeam = teamBySlot.get(g.away);
+    if (!homeTeam || !awayTeam) throw new Error(`Unknown slot in fixture: ${g.home} vs ${g.away}`);
     await prisma.match.create({
       data: {
         round: "LEAGUE",
         label: `Match ${matchNumber}`,
         homeTeamId: homeTeam.id,
         awayTeamId: awayTeam.id,
+        scheduledAt: jst(g.time),
+        venue: g.venue,
         status: "SCHEDULED",
       },
     });
@@ -213,19 +350,21 @@ async function main() {
   }
 
   console.log("Creating semifinal + final placeholders (teams TBD)...");
-  await prisma.match.create({
-    data: { round: "SEMIFINAL", label: "Semifinal 1 (1st vs 3rd)", status: "SCHEDULED" },
-  });
-  await prisma.match.create({
-    data: { round: "SEMIFINAL", label: "Semifinal 2 (2nd vs 4th)", status: "SCHEDULED" },
-  });
-  await prisma.match.create({
-    data: { round: "FINAL", label: "Final", status: "SCHEDULED" },
-  });
+  for (const k of KNOCKOUT_SCHEDULE) {
+    await prisma.match.create({
+      data: {
+        round: k.round,
+        label: k.label,
+        scheduledAt: jst(k.time),
+        venue: k.venue,
+        status: "SCHEDULED",
+      },
+    });
+  }
 
   const playerCount = TEAMS.reduce((sum, t) => sum + t.players.length, 0);
   console.log(
-    `Seeded ${TEAMS.length} teams, ${playerCount} players, ${matchNumber - 1} league matches, 2 semifinals, 1 final.`,
+    `Seeded ${TEAMS.length} teams, ${playerCount} players, ${LEAGUE_SCHEDULE.length} league matches, ${KNOCKOUT_SCHEDULE.length} knockout matches.`,
   );
 }
 

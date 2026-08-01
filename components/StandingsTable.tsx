@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { StandingRow } from "@/lib/standings";
+import { Crest } from "@/components/Crest";
 
 /** Click a row once to highlight it for easier reading across the wide
  * table; click the same row again to jump to its filtered fixtures. */
@@ -87,7 +88,7 @@ export function StandingsTable({ rows }: { rows: StandingRow[] }) {
                         className="shrink-0 rounded-block border border-line-strong object-cover"
                       />
                     ) : (
-                      <span className="h-9 w-9 shrink-0 rounded-block bg-line" />
+                      <Crest size={32} name={row.teamName} />
                     )}
                     {row.teamName}
                   </span>

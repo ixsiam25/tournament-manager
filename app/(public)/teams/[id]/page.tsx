@@ -42,7 +42,7 @@ export default async function TeamSquadPage({
             className="rounded-block border-2 border-line-strong object-cover"
           />
         ) : (
-          <Crest size={36} />
+          <Crest size={36} name={team.name} />
         )}
         <div>
           <h1 className="heading-display text-2xl">{team.name}</h1>

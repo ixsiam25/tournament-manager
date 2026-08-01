@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { StartMatchButton } from "@/components/StartMatchButton";
+import { Crest } from "@/components/Crest";
 
 export const dynamic = "force-dynamic";
 
@@ -88,7 +89,7 @@ export default async function AdminDashboardPage() {
 }
 
 function DashboardTeamLogo({ logoUrl, name }: { logoUrl?: string | null; name?: string }) {
-  if (!logoUrl) return <span className="h-7 w-7 shrink-0 rounded-full bg-line sm:h-10 sm:w-10" />;
+  if (!logoUrl) return <Crest size={28} name={name} />;
   return (
     <Image
       src={logoUrl}

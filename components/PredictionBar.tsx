@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { getVoterId, getVoterName, getVoterSemester } from "@/lib/voterIdentity";
+import { Crest } from "@/components/Crest";
 
 type Team = { id: string; name: string; logoUrl: string | null };
 
@@ -158,7 +159,7 @@ function PickButton({
           className="h-6 w-6 shrink-0 rounded-block border border-line-strong object-cover"
         />
       ) : (
-        <span className="h-6 w-6 shrink-0 rounded-block bg-line" />
+        <Crest size={24} name={team.name} />
       )}
       <span className="min-w-0 flex-1">
         <span className="block truncate text-xs font-bold sm:text-sm">{team.name}</span>

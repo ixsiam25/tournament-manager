@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { getVoterId, getVoterName, getVoterSemester } from "@/lib/voterIdentity";
+import { Crest } from "@/components/Crest";
 
 type Team = { id: string; name: string; logoUrl: string | null };
 
@@ -98,7 +99,7 @@ export function ChampionPredictionForm({ teams }: { teams: Team[] }) {
                   className="h-10 w-10 rounded-block border border-line-strong object-cover"
                 />
               ) : (
-                <span className="h-10 w-10 rounded-block bg-line" />
+                <Crest size={36} name={team.name} />
               )}
               <span className="text-xs font-bold sm:text-sm">{team.name}</span>
               {isSelected && <span className="text-xs font-bold text-gold">✓ Selected</span>}

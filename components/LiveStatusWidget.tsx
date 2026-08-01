@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { EventList, type EventItem } from "@/components/EventList";
 import { PredictionBar } from "@/components/PredictionBar";
+import { Crest } from "@/components/Crest";
 
 type Team = { id: string; name: string; logoUrl: string | null } | null;
 
@@ -105,7 +106,7 @@ export function LiveStatusWidget({ initial }: { initial: LiveResponse }) {
           <p className="mb-3 text-xs font-bold uppercase tracking-wide text-muted">Next match</p>
           <div className="flex items-center justify-between text-center">
             <span className="flex flex-1 flex-col items-center gap-1 font-semibold">
-              {nextFixture.homeTeam?.logoUrl && (
+              {nextFixture.homeTeam?.logoUrl ? (
                 <Image
                   src={nextFixture.homeTeam.logoUrl}
                   alt={nextFixture.homeTeam.name}
@@ -113,12 +114,14 @@ export function LiveStatusWidget({ initial }: { initial: LiveResponse }) {
                   height={28}
                   className="rounded-block object-cover"
                 />
+              ) : (
+                <Crest size={26} name={nextFixture.homeTeam?.name} />
               )}
               {nextFixture.homeTeam?.name ?? "TBD"}
             </span>
             <span className="text-sm font-bold uppercase text-muted">vs</span>
             <span className="flex flex-1 flex-col items-center gap-1 font-semibold">
-              {nextFixture.awayTeam?.logoUrl && (
+              {nextFixture.awayTeam?.logoUrl ? (
                 <Image
                   src={nextFixture.awayTeam.logoUrl}
                   alt={nextFixture.awayTeam.name}
@@ -126,6 +129,8 @@ export function LiveStatusWidget({ initial }: { initial: LiveResponse }) {
                   height={28}
                   className="rounded-block object-cover"
                 />
+              ) : (
+                <Crest size={26} name={nextFixture.awayTeam?.name} />
               )}
               {nextFixture.awayTeam?.name ?? "TBD"}
             </span>
@@ -176,7 +181,7 @@ function RecentResults({ results }: { results: LiveMatch[] }) {
 }
 
 function ResultLogo({ logoUrl, name }: { logoUrl?: string | null; name?: string }) {
-  if (!logoUrl) return <span className="h-6 w-6 shrink-0 rounded-block bg-line" />;
+  if (!logoUrl) return <Crest size={24} name={name} />;
   return (
     <Image
       src={logoUrl}
@@ -207,7 +212,11 @@ function TeamScore({
           height={32}
           className="mb-1 rounded-block object-cover"
         />
-      ) : null}
+      ) : (
+        <span className="mb-1">
+          <Crest size={32} name={name} />
+        </span>
+      )}
       <p className="font-semibold">{name}</p>
       <p className="heading-display text-3xl tabular-nums">{score}</p>
     </div>

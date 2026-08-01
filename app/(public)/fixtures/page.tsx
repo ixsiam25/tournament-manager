@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { AutoRefresh } from "@/components/AutoRefresh";
+import { Crest } from "@/components/Crest";
 
 export const revalidate = 15;
 
@@ -72,7 +73,7 @@ export default async function FixturesPage({
                 : "border-line text-muted hover:border-line-strong hover:text-foreground")
             }
           >
-            {t.logoUrl && (
+            {t.logoUrl ? (
               <Image
                 src={t.logoUrl}
                 alt={t.name}
@@ -80,6 +81,8 @@ export default async function FixturesPage({
                 height={16}
                 className="rounded-block object-cover"
               />
+            ) : (
+              <Crest size={14} name={t.name} />
             )}
             {t.name}
           </Link>
@@ -144,7 +147,12 @@ function statusRowClass(status: string): string {
 }
 
 function TeamLogo({ logoUrl, name }: { logoUrl?: string | null; name?: string }) {
-  if (!logoUrl) return <span className="h-6 w-6 shrink-0 rounded-block bg-line sm:h-9 sm:w-9" />;
+  if (!logoUrl)
+    return (
+      <span className="flex h-6 w-6 shrink-0 items-center justify-center sm:h-9 sm:w-9">
+        <Crest size={24} name={name} />
+      </span>
+    );
   return (
     <Image
       src={logoUrl}
@@ -156,10 +164,25 @@ function TeamLogo({ logoUrl, name }: { logoUrl?: string | null; name?: string })
   );
 }
 
+// The whole tournament runs in one evening across two pitches, so a kickoff
+// time plus which field is the only useful thing to show — and it has to be
+// pinned to JST or the server and the client disagree about the hour.
+const KICKOFF_TIME = new Intl.DateTimeFormat("en-GB", {
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZone: "Asia/Tokyo",
+});
+
 function ScoreOrTime({
   match,
 }: {
-  match: { status: string; homeScore: number; awayScore: number; scheduledAt: Date | null };
+  match: {
+    status: string;
+    homeScore: number;
+    awayScore: number;
+    scheduledAt: Date | null;
+    venue: string | null;
+  };
 }) {
   if (match.status === "FINISHED" || match.status === "LIVE") {
     return (
@@ -169,8 +192,15 @@ function ScoreOrTime({
     );
   }
   return (
-    <span className="min-w-14 shrink-0 text-center text-xs text-muted sm:min-w-20 sm:text-sm">
-      {match.scheduledAt ? new Date(match.scheduledAt).toLocaleDateString() : "TBD"}
+    <span className="flex min-w-14 shrink-0 flex-col items-center gap-0.5 text-center sm:min-w-20">
+      <span className="text-xs font-bold tabular-nums text-foreground sm:text-sm">
+        {match.scheduledAt ? KICKOFF_TIME.format(match.scheduledAt) : "TBD"}
+      </span>
+      {match.venue && (
+        <span className="text-[10px] uppercase tracking-wide text-muted sm:text-xs">
+          {match.venue}
+        </span>
+      )}
     </span>
   );
 }
