@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/db";
+import { prisma } from "./db";
 
 export type StandingRow = {
   teamId: string;
