@@ -1,0 +1,7 @@
+# Netlify builds the project itself (npm install + next build), so shipping
+# these in the upload zip is pure dead weight -- node_modules + .next
+# together are >1.2GB and it's a reasonable guess that's what tipped the
+# `netlify deploy` upload into a 500 on 2026-08-02.
+node_modules
+.next
+.git
