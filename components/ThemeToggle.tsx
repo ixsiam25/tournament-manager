@@ -4,13 +4,15 @@ import { useSyncExternalStore } from "react";
 
 export const THEME_STORAGE_KEY = "theme";
 
-// Runs before paint (inlined in the root layout's <head>) to avoid a flash
-// of the wrong theme. Light is the default — only dark is ever persisted.
+// The root layout renders <html data-theme="dark"> directly, so dark is
+// correct even before this runs (or with JS disabled entirely). This script
+// only needs to flip it back to light when that was the visitor's stored
+// choice — inlined in <head> so it happens before paint, no flash.
 export const noFlashThemeScript = `
 (function () {
   try {
-    if (localStorage.getItem('${THEME_STORAGE_KEY}') === 'dark') {
-      document.documentElement.setAttribute('data-theme', 'dark');
+    if (localStorage.getItem('${THEME_STORAGE_KEY}') === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
     }
   } catch (e) {}
 })();
@@ -32,16 +34,19 @@ function getSnapshot() {
 }
 
 function getServerSnapshot() {
-  return false;
+  // Matches the new default the no-flash script applies, so the toggle's
+  // icon doesn't flip right after hydration for a visitor with no stored
+  // preference.
+  return true;
 }
 
 function setDarkTheme(next: boolean) {
   document.documentElement.setAttribute("data-theme", next ? "dark" : "light");
   try {
     if (next) {
-      localStorage.setItem(THEME_STORAGE_KEY, "dark");
-    } else {
       localStorage.removeItem(THEME_STORAGE_KEY);
+    } else {
+      localStorage.setItem(THEME_STORAGE_KEY, "light");
     }
   } catch {
     // localStorage unavailable — theme just won't persist across reloads
