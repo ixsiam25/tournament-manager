@@ -50,3 +50,30 @@ export async function POST(request: NextRequest, { params }: Params) {
 
   return NextResponse.json({ match: updated }, { status: 201 });
 }
+
+/**
+ * Full reset — clears every logged event for the match and puts the score
+ * back to 0-0. Distinct from DELETE /events/latest (undo one event): this is
+ * for when a match needs to be scored again from scratch, e.g. the wrong
+ * fixture was started live by accident. Gated client-side by the same
+ * admin-password re-entry as other destructive actions (delete fixture,
+ * undo last event).
+ */
+export async function DELETE(_request: NextRequest, { params }: Params) {
+  const unauthorized = await requireAdmin();
+  if (unauthorized) return unauthorized;
+
+  const { id } = await params;
+  const match = await prisma.match.findUnique({ where: { id } });
+  if (!match) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  const updated = await prisma.$transaction(async (tx) => {
+    await tx.matchEvent.deleteMany({ where: { matchId: id } });
+    return tx.match.update({
+      where: { id },
+      data: { homeScore: 0, awayScore: 0 },
+    });
+  });
+
+  return NextResponse.json({ match: updated });
+}

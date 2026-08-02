@@ -25,12 +25,12 @@ export default async function TeamsPage() {
               <Image
                 src={team.logoUrl}
                 alt={team.name}
-                width={48}
-                height={48}
+                width={60}
+                height={60}
                 className="rounded-block border border-line-strong object-cover"
               />
             ) : (
-              <Crest size={36} name={team.name} />
+              <Crest size={45} name={team.name} />
             )}
             <span className="font-black uppercase tracking-wide">{team.name}</span>
             {team.managerName && (

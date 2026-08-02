@@ -30,7 +30,7 @@ export function AdminNav() {
       <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-5 py-4">
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
           <span className="heading-display flex items-center gap-2 text-lg text-white">
-            <BrandLogo size={24} />
+            <BrandLogo size={30} />
             BFL Admin
           </span>
           <nav className="flex flex-wrap gap-x-4 gap-y-1 text-sm font-medium text-white/60">

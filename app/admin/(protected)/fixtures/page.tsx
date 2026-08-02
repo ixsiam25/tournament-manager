@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { usePasswordConfirm } from "@/components/PasswordConfirm";
 
 type Team = { id: string; name: string };
 type Match = {
@@ -30,6 +31,8 @@ export default function FixturesAdminPage() {
   const [homeTeamId, setHomeTeamId] = useState("");
   const [awayTeamId, setAwayTeamId] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [populating, setPopulating] = useState(false);
+  const { confirmWithPassword, modal } = usePasswordConfirm();
 
   async function load() {
     const [matchesRes, teamsRes] = await Promise.all([
@@ -85,6 +88,23 @@ export default function FixturesAdminPage() {
     load();
   }
 
+  async function populateSemis() {
+    const confirmed = await confirmWithPassword(
+      "Fill in the semifinals from the current standings (1st vs 4th, 2nd vs 3rd)? This overwrites whichever teams are already assigned.",
+    );
+    if (!confirmed) return;
+    setPopulating(true);
+    setError(null);
+    const res = await fetch("/api/admin/fixtures/populate-semis", { method: "POST" });
+    setPopulating(false);
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      setError(body.error ?? "Failed to populate semifinals");
+      return;
+    }
+    load();
+  }
+
   const byRound = new Map<Match["round"], Match[]>();
   for (const m of matches) {
     const list = byRound.get(m.round) ?? [];
@@ -94,6 +114,7 @@ export default function FixturesAdminPage() {
 
   return (
     <div>
+      {modal}
       <h1 className="mb-6 heading-display text-2xl">Fixtures</h1>
 
       <form onSubmit={handleCreate} className="mb-6 flex flex-wrap gap-3 rounded-2xl border border-line bg-surface p-4">
@@ -151,9 +172,21 @@ export default function FixturesAdminPage() {
             if (!list || list.length === 0) return null;
             return (
               <section key={r}>
-                <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted">
-                  {ROUND_LABELS[r]}
-                </h2>
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                  <h2 className="text-sm font-bold uppercase tracking-wide text-muted">
+                    {ROUND_LABELS[r]}
+                  </h2>
+                  {r === "SEMIFINAL" && (
+                    <button
+                      onClick={populateSemis}
+                      disabled={populating}
+                      title="1st vs 4th, 2nd vs 3rd, taken from the current league standings"
+                      className="rounded-full border border-line px-3 py-1 text-xs font-bold uppercase tracking-wide disabled:opacity-40"
+                    >
+                      {populating ? "Populating…" : "Populate from standings"}
+                    </button>
+                  )}
+                </div>
                 <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
                   {list.map((m) => (
                     <li key={m.id} className="flex items-center justify-between px-5 py-3.5">

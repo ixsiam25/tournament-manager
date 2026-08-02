@@ -94,12 +94,12 @@ export function ChampionPredictionForm({ teams }: { teams: Team[] }) {
                 <Image
                   src={team.logoUrl}
                   alt={team.name}
-                  width={40}
-                  height={40}
-                  className="h-10 w-10 rounded-block border border-line-strong object-cover"
+                  width={50}
+                  height={50}
+                  className="h-[50px] w-[50px] rounded-block border border-line-strong object-cover"
                 />
               ) : (
-                <Crest size={36} name={team.name} />
+                <Crest size={45} name={team.name} />
               )}
               <span className="text-xs font-bold sm:text-sm">{team.name}</span>
               {isSelected && <span className="text-xs font-bold text-gold">✓ Selected</span>}

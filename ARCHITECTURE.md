@@ -160,8 +160,9 @@ inter-batch registration form — 8 teams (Molom Bahini, Big Banana FC,
 Koshai-7, GENJAM-101, কমিটির টীম, Fall 25, ৭ এ ৭ FC, The Bottleneck), each
 with its batch representative as `managerName` and a 6–8 player squad, plus
 the full 4 August match schedule: a 28-match single round-robin with real
-kickoff times and pitch assignments, 2 semifinal placeholders (1st v 3rd,
-2nd v 4th per BFL's own bracket — not the more common 1v4/2v3), and 1 final
+kickoff times and pitch assignments, 2 semifinal placeholders (1st v 4th,
+2nd v 3rd — standard bracket, changed from Season VIII's own 1v3/2v4), and
+1 final
 placeholder.
 
 **The seed rewrites the season from scratch** — it deletes every event,
@@ -193,17 +194,32 @@ matches production exactly (it talks to Neon over HTTP, not raw TCP, so a
 generic local Postgres won't work with it without Neon's separate local
 proxy).
 
-## 7. Deployment (Cloudflare + Neon)
+## 7. Deployment (Netlify + Neon)
 
-Target: **Cloudflare Workers** (not Pages) via `@opennextjs/cloudflare` —
+**Superseded 2026-08-02** — the original plan below was Cloudflare Workers via
+`@opennextjs/cloudflare`; that scaffolding (`wrangler.jsonc`,
+`open-next.config.ts`) was dropped and the project actually runs on
+**Netlify** (`@netlify/plugin-nextjs`, see `netlify.toml`). Live at
+`bfl.online.zahan.jp`, project `bfl-season-viii-siam` (name is stale, site
+predates the Season IX rename). Deploys are **manual CLI**
+(`deploy_source: "cli"`, no `commit_ref`) via the Netlify MCP's `deploy-site`
+tool or `netlify deploy --prod` locally — pushing to GitHub does **not**
+trigger a deploy on its own.
+
+Two Neon connection strings still apply as before: pooled (`DATABASE_URL`,
+runtime, via `@prisma/adapter-neon`) and direct (`DIRECT_URL`, migrations).
+
+<details>
+<summary>Original Cloudflare plan (not used)</summary>
+
+Target was **Cloudflare Workers** (not Pages) via `@opennextjs/cloudflare` —
 `next-on-pages` is effectively deprecated and lacks SSR/middleware parity.
 
 1. `wrangler.jsonc` (`nodejs_compat` flag, `.open-next/worker.js`),
    `open-next.config.ts`, `next.config.ts` calling
    `initOpenNextCloudflareForDev()`.
-2. Two Neon connection strings: pooled (`DATABASE_URL`, runtime) and direct
-   (`DIRECT_URL`, migrations) — Workers can't open raw TCP, so
-   `@prisma/adapter-neon` (HTTP/WebSocket) replaces the usual `pg` driver.
+2. Workers can't open raw TCP, so `@prisma/adapter-neon` (HTTP/WebSocket)
+   replaces the usual `pg` driver.
 3. CI/CD: GitHub Actions, not Cloudflare's built-in Git integration, so
    `prisma migrate deploy` is an explicit, failable step before the Worker
    ships: `npm ci` → `npm run build` (generate + migrate + `next build`) →
@@ -211,21 +227,76 @@ Target: **Cloudflare Workers** (not Pages) via `@opennextjs/cloudflare` —
 4. Custom domain: add the domain as a Cloudflare DNS zone, then Workers &
    Pages → project → Triggers → Custom Domains.
 
+</details>
+
 ## 8. Future upgrades (not in scope now)
 
 - Player photos — the BFL Canva player-card deck has real photos per player
   but sits behind a Canva login wall that blocks batch export; no `photoUrl`
   field exists yet either. Revisit if this becomes a priority.
-- Team crest images — currently a generic `Crest` SVG placeholder, not each
-  team's actual logo (visible in the roster poster images, not yet
-  extracted as standalone files).
+- Team crest images — currently a generated `Crest` SVG (name-hashed colour +
+  initials, see §10) rather than each team's actual logo. Swappable per-team
+  any time via the manager portal's logo upload, which overrides the
+  generated crest automatically.
 - Head-to-head tiebreaker for standings (currently: points → GD → GF only).
 - A cards/discipline column on the standings or player-stats pages (card
   events are logged and undoable today, just not surfaced as a stat yet).
 
-## 9. Verification (run before considering this done)
+## 10. Season IX additions (2026-08-02)
 
-- `npm run db:seed` → 8 teams, 48 players, 31 fixtures (28 league + 2 semi
+Added on top of the original build, once Season IX's real teams/schedule
+replaced the Season VIII seed data:
+
+- **`Team.semester` (Int?)** — which APU batch a team represents, added via
+  migration `20260802042820_add_team_semester`. Powers the semester sort on
+  the roster page; nullable for any team created by hand later that has no
+  batch to attach.
+- **Full roster page** (`/roster`, `lib/roster.ts`, `components/RosterList.tsx`)
+  — every player across every team in one sortable list, toggling
+  semester high↔low (default high, ties broken by team name then jersey
+  number). `lib/semester.ts` holds the ordinal-suffix formatter
+  (`5` → `"5th"`) split out into its own file specifically so a client
+  component can import it without pulling `lib/db` (and Prisma) into the
+  browser bundle — that pull broke the Turbopack client build the first time
+  the formatter lived in `lib/roster.ts` alongside the Prisma query.
+- **Generated team crests** (`components/Crest.tsx`) — Season IX teams
+  registered with no artwork, so rather than source logos online (copyright
+  risk) the fallback crest now hashes the team name into an HSL colour and
+  renders its initials (handles Bengali names too, e.g. কমিটির টীম → কট),
+  replacing the old plain grey-square/generic-shield placeholder everywhere
+  a team logo is shown.
+- **Reset match** (`DELETE /api/admin/fixtures/[id]/events`, wired into
+  `LiveConsole`) — clears every event for a match and zeroes the score,
+  distinct from the existing "undo last event." Same admin-password
+  re-confirmation gate as other destructive actions.
+- **Populate semifinals from standings** (`POST
+  /api/admin/fixtures/populate-semis`, button on `/admin/fixtures`) —
+  computes the league table via `lib/standings.ts` and assigns SF1 = 1st vs
+  4th, SF2 = 2nd vs 3rd (Season IX's bracket, changed from Season VIII's 1st
+  v 3rd / 2nd v 4th). Refuses if any team still has games left, or if the
+  fixture list doesn't have exactly two `SEMIFINAL` matches to fill.
+- **Champion-prediction result** (`lib/predictions.ts#getChampionResult`,
+  `components/ChampionResultBanner.tsx`) — once the Final is `FINISHED` with
+  a clear winner, the `/predictions` page shows the actual champion and
+  names everyone whose Champions Prediction pick matched (anonymous correct
+  picks are folded into a "+N anonymous" count rather than dropped).
+- Per-match "who wins this game" widget (`PredictionBar`) relabeled
+  **"Winner Prediction"** — it was sharing the "🏆 Champions Prediction"
+  label with the season-long pick-the-champion game, which read as the same
+  feature when it isn't.
+- Team crests/logos sized up ×1.25 across every render site (header brand
+  mark, fixtures, standings, teams, live widget, prediction bars, admin
+  dashboard) by request.
+- Hyperlinks added wherever a team name/logo appears as plain text on public
+  pages (fixtures rows, standings crest, live widget, player stat lists) —
+  each now links to that team's `/teams/[id]` squad page. Skipped on the
+  vote-casting buttons themselves (`PredictionBar`, `ChampionPredictionForm`)
+  since nesting a link inside a button that already navigates-on-click would
+  be a UX conflict, not an oversight.
+
+## 11. Verification (run before considering this done)
+
+- `npm run db:seed` → 8 teams, 56 players, 31 fixtures (28 league + 2 semi
   + 1 final).
 - Full mock match through the live console (goal with assist, yellow card,
   undo, finish) → confirm cards don't move the score and standings math is

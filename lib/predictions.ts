@@ -79,3 +79,55 @@ export async function getChampionTally(voterId?: string | null): Promise<Champio
 
   return { counts, total, yourTeamId: mine?.teamId ?? null };
 }
+
+export type ChampionResult = {
+  championTeamId: string;
+  championTeamName: string;
+  /** Voters who named themselves and picked the actual champion. */
+  correctVoterNames: string[];
+  /** Predictions for the champion with no name attached — shown as a count. */
+  anonymousCorrectCount: number;
+  totalCorrect: number;
+  totalPredictions: number;
+};
+
+/**
+ * Once the Final has been played, resolves who actually won the season and
+ * who called it. Returns null until there's a finished Final with a clear
+ * winner — a drawn final (no penalty shootout modeled here) has no result to
+ * report against, and admin would need to break the tie by hand before this
+ * has anything to show.
+ */
+export async function getChampionResult(): Promise<ChampionResult | null> {
+  const final = await prisma.match.findFirst({
+    where: { round: "FINAL", status: "FINISHED" },
+    include: { homeTeam: true, awayTeam: true },
+  });
+  if (!final || !final.homeTeam || !final.awayTeam) return null;
+  if (final.homeScore === final.awayScore) return null;
+
+  const champion = final.homeScore > final.awayScore ? final.homeTeam : final.awayTeam;
+
+  const [correctPredictions, totalPredictions] = await Promise.all([
+    prisma.championPrediction.findMany({
+      where: { teamId: champion.id },
+      select: { voterName: true },
+    }),
+    prisma.championPrediction.count(),
+  ]);
+
+  const correctVoterNames = correctPredictions
+    .map((p) => p.voterName?.trim())
+    .filter((name): name is string => Boolean(name))
+    .sort((a, b) => a.localeCompare(b));
+  const anonymousCorrectCount = correctPredictions.length - correctVoterNames.length;
+
+  return {
+    championTeamId: champion.id,
+    championTeamName: champion.name,
+    correctVoterNames,
+    anonymousCorrectCount,
+    totalCorrect: correctPredictions.length,
+    totalPredictions,
+  };
+}

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { EventList, type EventItem } from "@/components/EventList";
 import { PredictionBar } from "@/components/PredictionBar";
@@ -73,12 +74,14 @@ export function LiveStatusWidget({ initial }: { initial: LiveResponse }) {
           </div>
           <div className="flex items-center justify-between text-center">
             <TeamScore
+              teamId={match.homeTeam?.id}
               name={match.homeTeam?.name ?? "TBD"}
               logoUrl={match.homeTeam?.logoUrl}
               score={match.homeScore}
             />
             <span className="text-sm font-bold uppercase text-muted">vs</span>
             <TeamScore
+              teamId={match.awayTeam?.id}
               name={match.awayTeam?.name ?? "TBD"}
               logoUrl={match.awayTeam?.logoUrl}
               score={match.awayScore}
@@ -105,35 +108,9 @@ export function LiveStatusWidget({ initial }: { initial: LiveResponse }) {
           />
           <p className="mb-3 text-xs font-bold uppercase tracking-wide text-muted">Next match</p>
           <div className="flex items-center justify-between text-center">
-            <span className="flex flex-1 flex-col items-center gap-1 font-semibold">
-              {nextFixture.homeTeam?.logoUrl ? (
-                <Image
-                  src={nextFixture.homeTeam.logoUrl}
-                  alt={nextFixture.homeTeam.name}
-                  width={28}
-                  height={28}
-                  className="rounded-block object-cover"
-                />
-              ) : (
-                <Crest size={26} name={nextFixture.homeTeam?.name} />
-              )}
-              {nextFixture.homeTeam?.name ?? "TBD"}
-            </span>
+            <NextFixtureTeam team={nextFixture.homeTeam} />
             <span className="text-sm font-bold uppercase text-muted">vs</span>
-            <span className="flex flex-1 flex-col items-center gap-1 font-semibold">
-              {nextFixture.awayTeam?.logoUrl ? (
-                <Image
-                  src={nextFixture.awayTeam.logoUrl}
-                  alt={nextFixture.awayTeam.name}
-                  width={28}
-                  height={28}
-                  className="rounded-block object-cover"
-                />
-              ) : (
-                <Crest size={26} name={nextFixture.awayTeam?.name} />
-              )}
-              {nextFixture.awayTeam?.name ?? "TBD"}
-            </span>
+            <NextFixtureTeam team={nextFixture.awayTeam} />
           </div>
           {nextFixture.scheduledAt && (
             <p className="mt-3 text-center text-sm text-muted">
@@ -161,7 +138,7 @@ function RecentResults({ results }: { results: LiveMatch[] }) {
           <li key={m.id} className="py-2.5">
             <div className="flex items-center gap-3 text-sm">
               <span className="flex flex-1 items-center justify-end gap-2 text-right font-medium">
-                {m.homeTeam?.name ?? "TBD"}
+                <ResultTeamLink team={m.homeTeam} />
                 <ResultLogo logoUrl={m.homeTeam?.logoUrl} name={m.homeTeam?.name} />
               </span>
               <span className="min-w-14 shrink-0 rounded-block bg-background px-3 py-1 text-center text-xs font-bold tabular-nums">
@@ -169,7 +146,7 @@ function RecentResults({ results }: { results: LiveMatch[] }) {
               </span>
               <span className="flex flex-1 items-center gap-2 font-medium">
                 <ResultLogo logoUrl={m.awayTeam?.logoUrl} name={m.awayTeam?.name} />
-                {m.awayTeam?.name ?? "TBD"}
+                <ResultTeamLink team={m.awayTeam} />
               </span>
             </div>
             <EventList events={m.events} className="mt-2 pl-2" />
@@ -180,44 +157,90 @@ function RecentResults({ results }: { results: LiveMatch[] }) {
   );
 }
 
+function ResultTeamLink({ team }: { team: Team }) {
+  if (!team) return <span className="truncate">TBD</span>;
+  return (
+    <Link href={`/teams/${team.id}`} className="truncate hover:underline">
+      {team.name}
+    </Link>
+  );
+}
+
+function NextFixtureTeam({ team }: { team: Team }) {
+  const content = (
+    <>
+      {team?.logoUrl ? (
+        <Image
+          src={team.logoUrl}
+          alt={team.name}
+          width={35}
+          height={35}
+          className="h-[35px] w-[35px] rounded-block object-cover"
+        />
+      ) : (
+        <Crest size={33} name={team?.name} />
+      )}
+      {team?.name ?? "TBD"}
+    </>
+  );
+  if (!team) {
+    return <span className="flex flex-1 flex-col items-center gap-1 font-semibold">{content}</span>;
+  }
+  return (
+    <Link
+      href={`/teams/${team.id}`}
+      className="flex flex-1 flex-col items-center gap-1 font-semibold hover:underline"
+    >
+      {content}
+    </Link>
+  );
+}
+
 function ResultLogo({ logoUrl, name }: { logoUrl?: string | null; name?: string }) {
-  if (!logoUrl) return <Crest size={24} name={name} />;
+  if (!logoUrl) return <Crest size={30} name={name} />;
   return (
     <Image
       src={logoUrl}
       alt={name ?? ""}
-      width={24}
-      height={24}
+      width={30}
+      height={30}
       className="shrink-0 rounded-block object-cover"
     />
   );
 }
 
 function TeamScore({
+  teamId,
   name,
   logoUrl,
   score,
 }: {
+  teamId?: string;
   name: string;
   logoUrl?: string | null;
   score: number;
 }) {
+  const logo = logoUrl ? (
+    <Image src={logoUrl} alt={name} width={40} height={40} className="mb-1 rounded-block object-cover" />
+  ) : (
+    <span className="mb-1">
+      <Crest size={40} name={name} />
+    </span>
+  );
+
   return (
     <div className="flex flex-1 flex-col items-center">
-      {logoUrl ? (
-        <Image
-          src={logoUrl}
-          alt={name}
-          width={32}
-          height={32}
-          className="mb-1 rounded-block object-cover"
-        />
+      {teamId ? (
+        <Link href={`/teams/${teamId}`} className="flex flex-col items-center hover:underline">
+          {logo}
+          <p className="font-semibold">{name}</p>
+        </Link>
       ) : (
-        <span className="mb-1">
-          <Crest size={32} name={name} />
-        </span>
+        <>
+          {logo}
+          <p className="font-semibold">{name}</p>
+        </>
       )}
-      <p className="font-semibold">{name}</p>
       <p className="heading-display text-3xl tabular-nums">{score}</p>
     </div>
   );

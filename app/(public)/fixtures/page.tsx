@@ -77,12 +77,12 @@ export default async function FixturesPage({
               <Image
                 src={t.logoUrl}
                 alt={t.name}
-                width={16}
-                height={16}
+                width={20}
+                height={20}
                 className="rounded-block object-cover"
               />
             ) : (
-              <Crest size={14} name={t.name} />
+              <Crest size={18} name={t.name} />
             )}
             {t.name}
           </Link>
@@ -111,17 +111,13 @@ export default async function FixturesPage({
                       {number}
                     </span>
                     <div className="flex min-w-0 flex-1 items-center justify-center gap-2 sm:gap-3">
-                      <span className="min-w-0 flex-1 truncate text-right text-sm font-medium sm:text-lg">
-                        {match.homeTeam?.name ?? "TBD"}
-                      </span>
+                      <TeamName team={match.homeTeam} align="right" />
                       <span className="flex shrink-0 items-center gap-1.5 sm:gap-2">
                         <TeamLogo logoUrl={match.homeTeam?.logoUrl} name={match.homeTeam?.name} />
                         <span className="text-sm font-bold text-muted sm:text-base">-</span>
                         <TeamLogo logoUrl={match.awayTeam?.logoUrl} name={match.awayTeam?.name} />
                       </span>
-                      <span className="min-w-0 flex-1 truncate text-sm font-medium sm:text-lg">
-                        {match.awayTeam?.name ?? "TBD"}
-                      </span>
+                      <TeamName team={match.awayTeam} align="left" />
                     </div>
                     <ScoreOrTime match={match} />
                   </li>
@@ -146,20 +142,49 @@ function statusRowClass(status: string): string {
   return "border-l-transparent bg-background/60";
 }
 
+function TeamName({
+  team,
+  align,
+}: {
+  team: { id: string; name: string } | null;
+  align: "left" | "right";
+}) {
+  // Tailwind's build-time scanner needs each class name spelled out in full
+  // (it doesn't execute this code), so the two alignments are two full
+  // strings rather than one interpolated `text-${align}`.
+  const alignClass = align === "right" ? "text-right" : "text-left";
+
+  if (!team) {
+    return (
+      <span className={`min-w-0 flex-1 truncate text-sm font-medium sm:text-lg ${alignClass}`}>
+        TBD
+      </span>
+    );
+  }
+  return (
+    <Link
+      href={`/teams/${team.id}`}
+      className={`min-w-0 flex-1 truncate text-sm font-medium hover:underline sm:text-lg ${alignClass}`}
+    >
+      {team.name}
+    </Link>
+  );
+}
+
 function TeamLogo({ logoUrl, name }: { logoUrl?: string | null; name?: string }) {
   if (!logoUrl)
     return (
-      <span className="flex h-6 w-6 shrink-0 items-center justify-center sm:h-9 sm:w-9">
-        <Crest size={24} name={name} />
+      <span className="flex h-[30px] w-[30px] shrink-0 items-center justify-center sm:h-[45px] sm:w-[45px]">
+        <Crest size={30} name={name} />
       </span>
     );
   return (
     <Image
       src={logoUrl}
       alt={name ?? ""}
-      width={36}
-      height={36}
-      className="h-6 w-6 shrink-0 rounded-block border border-line-strong object-cover sm:h-9 sm:w-9"
+      width={45}
+      height={45}
+      className="h-[30px] w-[30px] shrink-0 rounded-block border border-line-strong object-cover sm:h-[45px] sm:w-[45px]"
     />
   );
 }

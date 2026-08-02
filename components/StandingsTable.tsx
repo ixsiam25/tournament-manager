@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { StandingRow } from "@/lib/standings";
@@ -79,17 +80,24 @@ export function StandingsTable({ rows }: { rows: StandingRow[] }) {
                 <td className="px-5 py-4 text-muted">{i + 1}</td>
                 <td className="px-5 py-4 font-medium">
                   <span className="flex items-center gap-3">
-                    {row.logoUrl ? (
-                      <Image
-                        src={row.logoUrl}
-                        alt={row.teamName}
-                        width={36}
-                        height={36}
-                        className="shrink-0 rounded-block border border-line-strong object-cover"
-                      />
-                    ) : (
-                      <Crest size={32} name={row.teamName} />
-                    )}
+                    <Link
+                      href={`/teams/${row.teamId}`}
+                      onClick={(e) => e.stopPropagation()}
+                      title={`Open ${row.teamName}'s squad`}
+                      className="shrink-0"
+                    >
+                      {row.logoUrl ? (
+                        <Image
+                          src={row.logoUrl}
+                          alt={row.teamName}
+                          width={45}
+                          height={45}
+                          className="rounded-block border border-line-strong object-cover"
+                        />
+                      ) : (
+                        <Crest size={40} name={row.teamName} />
+                      )}
+                    </Link>
                     {row.teamName}
                   </span>
                 </td>

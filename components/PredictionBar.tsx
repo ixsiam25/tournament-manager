@@ -87,7 +87,7 @@ export function PredictionBar({
     <div className={compact ? "mb-4" : "rounded-block-lg border-2 border-line-strong bg-surface p-4 shadow-block"}>
       <div className="mb-2 flex items-center justify-between">
         {showLabel ? (
-          <p className="text-xs font-bold uppercase tracking-wide text-gold">🏆 Champions Prediction</p>
+          <p className="text-xs font-bold uppercase tracking-wide text-gold">🏆 Winner Prediction</p>
         ) : (
           <span />
         )}
@@ -154,12 +154,12 @@ function PickButton({
         <Image
           src={team.logoUrl}
           alt={team.name}
-          width={24}
-          height={24}
-          className="h-6 w-6 shrink-0 rounded-block border border-line-strong object-cover"
+          width={30}
+          height={30}
+          className="h-[30px] w-[30px] shrink-0 rounded-block border border-line-strong object-cover"
         />
       ) : (
-        <Crest size={24} name={team.name} />
+        <Crest size={30} name={team.name} />
       )}
       <span className="min-w-0 flex-1">
         <span className="block truncate text-xs font-bold sm:text-sm">{team.name}</span>

@@ -37,12 +37,12 @@ export default async function TeamSquadPage({
           <Image
             src={team.logoUrl}
             alt={team.name}
-            width={40}
-            height={40}
+            width={50}
+            height={50}
             className="rounded-block border-2 border-line-strong object-cover"
           />
         ) : (
-          <Crest size={36} name={team.name} />
+          <Crest size={45} name={team.name} />
         )}
         <div>
           <h1 className="heading-display text-2xl">{team.name}</h1>

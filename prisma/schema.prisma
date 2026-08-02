@@ -37,6 +37,9 @@ model Team {
   id                  String   @id @default(cuid())
   name                String   @unique
   shortName           String?
+  /// Which APU semester/batch this team represents (1-7+). Nullable because
+  /// a team created by hand in admin has no batch to attach.
+  semester            Int?
   managerName         String?
   logoUrl             String?
   managerPasswordHash String?

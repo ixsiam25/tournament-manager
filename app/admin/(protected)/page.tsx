@@ -89,14 +89,14 @@ export default async function AdminDashboardPage() {
 }
 
 function DashboardTeamLogo({ logoUrl, name }: { logoUrl?: string | null; name?: string }) {
-  if (!logoUrl) return <Crest size={28} name={name} />;
+  if (!logoUrl) return <Crest size={35} name={name} />;
   return (
     <Image
       src={logoUrl}
       alt={name ?? ""}
-      width={40}
-      height={40}
-      className="h-7 w-7 shrink-0 rounded-full object-cover sm:h-10 sm:w-10"
+      width={50}
+      height={50}
+      className="h-[35px] w-[35px] shrink-0 rounded-full object-cover sm:h-[50px] sm:w-[50px]"
     />
   );
 }

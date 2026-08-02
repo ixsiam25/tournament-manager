@@ -78,12 +78,12 @@ export function TeamSettingsForm({
             <Image
               src={initialLogoUrl}
               alt={initialName}
-              width={64}
-              height={64}
-              className="h-16 w-16 rounded-block border-2 border-line-strong object-cover"
+              width={80}
+              height={80}
+              className="h-20 w-20 rounded-block border-2 border-line-strong object-cover"
             />
           ) : (
-            <span className="flex h-16 w-16 items-center justify-center rounded-block border-2 border-line-strong bg-line text-center text-[10px] text-muted">
+            <span className="flex h-20 w-20 items-center justify-center rounded-block border-2 border-line-strong bg-line text-center text-[10px] text-muted">
               No logo
             </span>
           )}

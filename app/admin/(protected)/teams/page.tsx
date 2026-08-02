@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { usePasswordConfirm } from "@/components/PasswordConfirm";
+import { Crest } from "@/components/Crest";
 
 type Team = {
   id: string;
@@ -138,12 +139,14 @@ export default function TeamsAdminPage() {
                   <Image
                     src={team.logoUrl}
                     alt={team.name}
-                    width={28}
-                    height={28}
-                    className="mr-3 rounded-full object-cover"
+                    width={35}
+                    height={35}
+                    className="mr-3 h-[35px] w-[35px] rounded-full object-cover"
                   />
                 ) : (
-                  <span className="mr-3 h-7 w-7 rounded-full bg-line" />
+                  <span className="mr-3 inline-flex">
+                    <Crest size={35} name={team.name} />
+                  </span>
                 )}
                 <span className="font-medium">{team.name}</span>
                 {team.shortName && <span className="ml-2 text-sm text-muted">({team.shortName})</span>}

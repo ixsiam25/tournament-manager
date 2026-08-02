@@ -128,6 +128,8 @@ const TEAMS: {
       { name: "Tanvir Siddik", position: "DEF" },
       { name: "Arafat", position: "DEF" },
       { name: "Muhaimin", position: "GK" },
+      // Added by request, 2026-08-02 — not on the original registration form.
+      { name: "Tanjir Hasan" },
     ],
   },
   {
@@ -238,8 +240,8 @@ const KNOCKOUT_SCHEDULE: {
 }[] = [
   // 21:00 is left empty so whoever played the 20:50 league game gets a rest
   // before a semi. The final sits two slots after SF2 for the same reason.
-  { round: "SEMIFINAL", label: "Semifinal 1 (1st vs 3rd)", time: "21:10", venue: FIELD_1 },
-  { round: "SEMIFINAL", label: "Semifinal 2 (2nd vs 4th)", time: "21:20", venue: FIELD_1 },
+  { round: "SEMIFINAL", label: "Semifinal 1 (1st vs 4th)", time: "21:10", venue: FIELD_1 },
+  { round: "SEMIFINAL", label: "Semifinal 2 (2nd vs 3rd)", time: "21:20", venue: FIELD_1 },
   { round: "FINAL", label: "Final", time: "21:40", venue: FIELD_1 },
 ];
 
@@ -315,6 +317,9 @@ async function main() {
       data: {
         name: t.name,
         shortName: t.shortName,
+        // t.semester is an ordinal like "5th" — parseInt reads the leading
+        // digits straight off it ("3rd" -> 3), no separate lookup needed.
+        semester: parseInt(t.semester, 10),
         managerName: t.managerName,
         players: {
           create: t.players.map((p, i) => ({

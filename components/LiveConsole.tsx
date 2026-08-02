@@ -162,6 +162,23 @@ export function LiveConsole({ matchId }: { matchId: string }) {
     load();
   }
 
+  async function resetMatch() {
+    const confirmed = await confirmWithPassword(
+      "Reset this match? Every logged goal, assist and card will be deleted and the score will go back to 0-0.",
+    );
+    if (!confirmed) return;
+    setBusy(true);
+    setError(null);
+    const res = await fetch(`/api/admin/fixtures/${matchId}/events`, { method: "DELETE" });
+    setBusy(false);
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      setError(body.error ?? "Failed to reset match");
+      return;
+    }
+    load();
+  }
+
   async function finish() {
     if (!confirm("Finish this match? Scores will be final.")) return;
     setBusy(true);
@@ -246,6 +263,14 @@ export function LiveConsole({ matchId }: { matchId: string }) {
           className="rounded-full border border-line px-5 py-2 text-sm font-medium disabled:opacity-40"
         >
           Undo last event
+        </button>
+        <button
+          onClick={resetMatch}
+          disabled={busy || (match.events.length === 0 && match.homeScore === 0 && match.awayScore === 0)}
+          title="Clears every event and resets the score to 0-0 — requires the admin password"
+          className="rounded-full border border-live px-5 py-2 text-sm font-medium text-live disabled:opacity-40 disabled:border-line disabled:text-foreground"
+        >
+          Reset match
         </button>
         {isLive && (
           <button

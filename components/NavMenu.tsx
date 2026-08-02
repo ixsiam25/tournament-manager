@@ -9,6 +9,7 @@ const NAV_ITEMS = [
   { href: "/fixtures", label: "Fixtures" },
   { href: "/standings", label: "Standings" },
   { href: "/players", label: "Player Standings" },
+  { href: "/roster", label: "Players" },
   { href: "/teams", label: "Teams" },
   { href: "/predictions", label: "Champions Prediction" },
 ];

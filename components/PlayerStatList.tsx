@@ -4,6 +4,7 @@ import Link from "next/link";
 export type PlayerStatRow = {
   playerId: string;
   playerName: string;
+  teamId: string | null;
   teamName: string;
   photoUrl: string | null;
   count: number;
@@ -53,7 +54,16 @@ export function PlayerStatList({
               )}
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-base font-bold">{row.playerName}</span>
-                <span className="block truncate text-xs text-muted">{row.teamName}</span>
+                {row.teamId ? (
+                  <Link
+                    href={`/teams/${row.teamId}`}
+                    className="block truncate text-xs text-muted hover:text-foreground hover:underline"
+                  >
+                    {row.teamName}
+                  </Link>
+                ) : (
+                  <span className="block truncate text-xs text-muted">{row.teamName}</span>
+                )}
               </span>
               <span className="shrink-0 text-xl font-black tabular-nums">{row.count}</span>
             </li>
