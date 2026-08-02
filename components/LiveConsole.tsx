@@ -164,7 +164,7 @@ export function LiveConsole({ matchId }: { matchId: string }) {
 
   async function resetMatch() {
     const confirmed = await confirmWithPassword(
-      "Reset this match? Every logged goal, assist and card will be deleted and the score will go back to 0-0.",
+      "Reset this match? Every logged goal, assist and card will be deleted, the score will go back to 0-0, and the match will go back to Scheduled (unstarted).",
     );
     if (!confirmed) return;
     setBusy(true);
@@ -176,7 +176,10 @@ export function LiveConsole({ matchId }: { matchId: string }) {
       setError(body.error ?? "Failed to reset match");
       return;
     }
-    load();
+    // The match is back to SCHEDULED, so this live console isn't the right
+    // view anymore — send admin to the fixture editor, where "Start match"
+    // is.
+    router.push(`/admin/fixtures/${matchId}`);
   }
 
   async function finish() {
@@ -193,6 +196,11 @@ export function LiveConsole({ matchId }: { matchId: string }) {
   }
 
   const isLive = match.status === "LIVE";
+  // There's something to reset whenever the match isn't sitting untouched at
+  // SCHEDULED/0-0 — a finished 0-0 match (no goals, no cards) still needs
+  // resetting to undo its LIVE/FINISHED status, so status has to be checked
+  // on its own rather than inferred from score/events being non-zero.
+  const canReset = match.status !== "SCHEDULED" || match.events.length > 0 || match.homeScore !== 0 || match.awayScore !== 0;
 
   return (
     <div>
@@ -266,8 +274,8 @@ export function LiveConsole({ matchId }: { matchId: string }) {
         </button>
         <button
           onClick={resetMatch}
-          disabled={busy || (match.events.length === 0 && match.homeScore === 0 && match.awayScore === 0)}
-          title="Clears every event and resets the score to 0-0 — requires the admin password"
+          disabled={busy || !canReset}
+          title="Clears every event, resets the score to 0-0, and un-starts the match — requires the admin password"
           className="rounded-full border border-live px-5 py-2 text-sm font-medium text-live disabled:opacity-40 disabled:border-line disabled:text-foreground"
         >
           Reset match

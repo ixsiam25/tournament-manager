@@ -52,12 +52,13 @@ export async function POST(request: NextRequest, { params }: Params) {
 }
 
 /**
- * Full reset — clears every logged event for the match and puts the score
- * back to 0-0. Distinct from DELETE /events/latest (undo one event): this is
- * for when a match needs to be scored again from scratch, e.g. the wrong
- * fixture was started live by accident. Gated client-side by the same
- * admin-password re-entry as other destructive actions (delete fixture,
- * undo last event).
+ * Full reset — clears every logged event, zeroes the score, and puts the
+ * match back to SCHEDULED (clearing startedAt/finishedAt too) as if it had
+ * never been started. Distinct from DELETE /events/latest (undo one event):
+ * this is for redoing a match from scratch, e.g. the wrong fixture was
+ * started live by accident, or it was finished before it should have been.
+ * Gated client-side by the same admin-password re-entry as other
+ * destructive actions (delete fixture, undo last event).
  */
 export async function DELETE(_request: NextRequest, { params }: Params) {
   const unauthorized = await requireAdmin();
@@ -71,7 +72,13 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
     await tx.matchEvent.deleteMany({ where: { matchId: id } });
     return tx.match.update({
       where: { id },
-      data: { homeScore: 0, awayScore: 0 },
+      data: {
+        homeScore: 0,
+        awayScore: 0,
+        status: "SCHEDULED",
+        startedAt: null,
+        finishedAt: null,
+      },
     });
   });
 
