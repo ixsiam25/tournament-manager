@@ -197,18 +197,14 @@ const LEAGUE_SCHEDULE: { time: string; venue: string; home: Slot; away: Slot }[]
   // Block 1 — Field 1 only. One game each for all eight teams.
   { time: "17:00", venue: FIELD_1, home: "a", away: "e" },
   { time: "17:10", venue: FIELD_1, home: "b", away: "f" },
-  // Match 3 and 4 swapped by request, 2026-08-02 — teams unchanged, only
-  // their kickoff times traded places.
-  { time: "17:20", venue: FIELD_1, home: "d", away: "h" },
-  { time: "17:30", venue: FIELD_1, home: "c", away: "g" },
+  { time: "17:20", venue: FIELD_1, home: "c", away: "g" },
+  { time: "17:30", venue: FIELD_1, home: "d", away: "h" },
   { time: "17:40", venue: FIELD_1, home: "a", away: "f" },
   // 17:50 — changeover, Field 2 goes live.
 
   // Block 2 — both fields, 18:00–19:00. abcd and efgh alternate slots.
-  // Match 6 and 7 swapped by request, 2026-08-02 — teams/time unchanged,
-  // only their fields traded places.
-  { time: "18:00", venue: FIELD_2, home: "a", away: "b" },
-  { time: "18:00", venue: FIELD_1, home: "c", away: "d" },
+  { time: "18:00", venue: FIELD_1, home: "a", away: "b" },
+  { time: "18:00", venue: FIELD_2, home: "c", away: "d" },
   { time: "18:10", venue: FIELD_1, home: "e", away: "f" },
   { time: "18:10", venue: FIELD_2, home: "g", away: "h" },
   { time: "18:20", venue: FIELD_1, home: "a", away: "c" },
