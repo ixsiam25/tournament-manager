@@ -3,7 +3,8 @@
 ## 1. What this is
 
 A tournament management system for **BFL Season IX** (4 August 2026) — 8 teams,
-5-a-side, 6–8-player squads, one team per APU semester/batch:
+6-a-side (corrected from Season VIII's 5-a-side, 2026-08-02), 6–8-player
+squads, one team per APU semester/batch:
 
 - **Public site** — read-only, for spectators: live match status, fixtures,
   league standings, top scorers/assists, and a per-team squad/pitch view.

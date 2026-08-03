@@ -21,11 +21,11 @@ export default async function TeamSquadPage({
 
   if (!team) notFound();
 
-  // Main squad = first 5 players (by jersey number, the team's established
-  // squad order) regardless of whether an admin has tagged their position;
-  // everyone else is a bench extra.
-  const mainSquad = team.players.slice(0, 5);
-  const extras = team.players.slice(5);
+  // Main squad = first 6 players (by jersey number, the team's established
+  // squad order) — this is a 6-a-side tournament — regardless of whether an
+  // admin has tagged their position; everyone else is a bench extra.
+  const mainSquad = team.players.slice(0, 6);
+  const extras = team.players.slice(6);
 
   return (
     <div>

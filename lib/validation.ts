@@ -16,6 +16,12 @@ export const playerSchema = z.object({
   photoUrl: z.string().trim().max(500).optional().nullable(),
 });
 
+/** Scoped down from playerSchema — a manager may only move their own
+ * players between positions, not rename/renumber/recaptain them. */
+export const managerPlayerPositionSchema = z.object({
+  position: z.enum(["GK", "DEF", "MID", "FWD"]).nullable(),
+});
+
 export const fixtureSchema = z.object({
   round: z.enum(["LEAGUE", "SEMIFINAL", "FINAL"]),
   label: z.string().trim().max(80).optional().nullable(),

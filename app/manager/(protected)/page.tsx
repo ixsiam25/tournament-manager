@@ -5,6 +5,7 @@ import { MANAGER_COOKIE_NAME, verifyManagerSessionToken } from "@/lib/managerAut
 import { PlayerCard } from "@/components/PlayerCard";
 import { PhotoUploader } from "@/components/PhotoUploader";
 import { TeamSettingsForm } from "@/components/TeamSettingsForm";
+import { ManagerSquadEditor } from "@/components/ManagerSquadEditor";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,8 @@ export default async function ManagerPortalPage() {
   return (
     <div>
       <TeamSettingsForm initialName={team.name} initialLogoUrl={team.logoUrl} />
+
+      <ManagerSquadEditor players={players} />
 
       <h1 className="mb-2 heading-display text-2xl">Player Photos</h1>
       <p className="mb-6 text-sm text-muted">
