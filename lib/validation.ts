@@ -33,6 +33,24 @@ export const fixtureSchema = z.object({
   assistantReferee: z.string().trim().max(80).optional().nullable(),
 });
 
+/** How admin resolves a drawn SEMIFINAL/FINAL when finishing it — regulation
+ * score alone can't say who advances. */
+export const drawResolutionSchema = z.union([
+  z.object({
+    method: z.literal("PENALTIES"),
+    penaltyHomeScore: z.coerce.number().int().min(0).max(99),
+    penaltyAwayScore: z.coerce.number().int().min(0).max(99),
+  }),
+  z.object({
+    method: z.literal("MANUAL"),
+    winnerTeamId: z.string().trim().min(1, "Winner is required"),
+  }),
+]);
+
+export const finishMatchSchema = z.object({
+  resolution: drawResolutionSchema.optional(),
+});
+
 export const eventSchema = z.object({
   type: z.enum(["GOAL", "YELLOW_CARD", "RED_CARD"]),
   teamId: z.string().trim().min(1, "Team is required"),

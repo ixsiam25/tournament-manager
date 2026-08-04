@@ -78,6 +78,9 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
         status: "SCHEDULED",
         startedAt: null,
         finishedAt: null,
+        winnerTeamId: null,
+        penaltyHomeScore: null,
+        penaltyAwayScore: null,
       },
     });
   });

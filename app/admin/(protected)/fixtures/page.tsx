@@ -16,6 +16,9 @@ type Match = {
   awayTeam: Team | null;
   mainReferee: string | null;
   assistantReferee: string | null;
+  winnerTeamId: string | null;
+  penaltyHomeScore: number | null;
+  penaltyAwayScore: number | null;
 };
 
 const ROUND_LABELS: Record<Match["round"], string> = {
@@ -213,6 +216,14 @@ export default function FixturesAdminPage() {
                         >
                           {m.status}
                         </span>
+                        {m.homeScore === m.awayScore && m.winnerTeamId && (
+                          <span className="ml-3 text-xs font-medium text-muted">
+                            {m.winnerTeamId === m.homeTeam?.id ? m.homeTeam?.name : m.awayTeam?.name} advances
+                            {m.penaltyHomeScore !== null && m.penaltyAwayScore !== null && (
+                              <> ({m.penaltyHomeScore}–{m.penaltyAwayScore} pens)</>
+                            )}
+                          </span>
+                        )}
                         {(m.mainReferee || m.assistantReferee) && (
                           <div className="mt-1 text-xs text-muted">
                             {m.mainReferee && (

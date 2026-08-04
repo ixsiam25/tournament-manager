@@ -50,6 +50,7 @@ model Team {
   players             Player[]
   homeMatches         Match[]              @relation("HomeTeam")
   awayMatches         Match[]              @relation("AwayTeam")
+  wonMatches          Match[]              @relation("MatchWinner")
   events              MatchEvent[]
   predictions         Prediction[]
   championPredictions ChampionPrediction[]
@@ -96,6 +97,14 @@ model Match {
   status           MatchStatus @default(SCHEDULED)
   homeScore        Int         @default(0)
   awayScore        Int         @default(0)
+  /// Set for SEMIFINAL/FINAL matches only — regulation score alone can't
+  /// decide a knockout tie, so this is the authoritative "who actually
+  /// advances" once admin resolves a draw (or is filled in automatically
+  /// when regulation score already gives a clear winner).
+  winnerTeamId     String?
+  winnerTeam       Team?       @relation("MatchWinner", fields: [winnerTeamId], references: [id])
+  penaltyHomeScore Int?
+  penaltyAwayScore Int?
   startedAt        DateTime?
   finishedAt       DateTime?
   createdAt        DateTime    @default(now())

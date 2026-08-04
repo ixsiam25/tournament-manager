@@ -94,9 +94,10 @@ export type ChampionResult = {
 /**
  * Once the Final has been played, resolves who actually won the season and
  * who called it. Returns null until there's a finished Final with a clear
- * winner — a drawn final (no penalty shootout modeled here) has no result to
- * report against, and admin would need to break the tie by hand before this
- * has anything to show.
+ * winner. A drawn final is resolved via `winnerTeamId` — set either
+ * automatically (clear regulation score) or by admin picking penalties/a
+ * manual winner when finishing a drawn knockout match; a still-null
+ * `winnerTeamId` on a level score means admin hasn't resolved it yet.
  */
 export async function getChampionResult(): Promise<ChampionResult | null> {
   const final = await prisma.match.findFirst({
@@ -104,9 +105,15 @@ export async function getChampionResult(): Promise<ChampionResult | null> {
     include: { homeTeam: true, awayTeam: true },
   });
   if (!final || !final.homeTeam || !final.awayTeam) return null;
-  if (final.homeScore === final.awayScore) return null;
 
-  const champion = final.homeScore > final.awayScore ? final.homeTeam : final.awayTeam;
+  let champion: typeof final.homeTeam;
+  if (final.winnerTeamId) {
+    champion = final.winnerTeamId === final.homeTeam.id ? final.homeTeam : final.awayTeam;
+  } else if (final.homeScore !== final.awayScore) {
+    champion = final.homeScore > final.awayScore ? final.homeTeam : final.awayTeam;
+  } else {
+    return null;
+  }
 
   const [correctPredictions, totalPredictions] = await Promise.all([
     prisma.championPrediction.findMany({

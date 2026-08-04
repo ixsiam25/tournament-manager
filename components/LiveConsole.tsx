@@ -47,6 +47,9 @@ export function LiveConsole({ matchId }: { matchId: string }) {
   const [cardType, setCardType] = useState<"YELLOW_CARD" | "RED_CARD">("YELLOW_CARD");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [drawPrompt, setDrawPrompt] = useState<"choose" | "penalties" | "manual" | null>(null);
+  const [penHomeScore, setPenHomeScore] = useState("");
+  const [penAwayScore, setPenAwayScore] = useState("");
   const { confirmWithPassword, modal } = usePasswordConfirm();
 
   async function load() {
@@ -182,17 +185,48 @@ export function LiveConsole({ matchId }: { matchId: string }) {
     router.push(`/admin/fixtures/${matchId}`);
   }
 
-  async function finish() {
-    if (!confirm("Finish this match? Scores will be final.")) return;
+  async function finish(
+    resolution?:
+      | { method: "PENALTIES"; penaltyHomeScore: number; penaltyAwayScore: number }
+      | { method: "MANUAL"; winnerTeamId: string },
+  ) {
+    if (!resolution && !confirm("Finish this match? Scores will be final.")) return;
     setBusy(true);
-    const res = await fetch(`/api/admin/fixtures/${matchId}/finish`, { method: "POST" });
+    setError(null);
+    const res = await fetch(`/api/admin/fixtures/${matchId}/finish`, {
+      method: "POST",
+      headers: resolution ? { "Content-Type": "application/json" } : undefined,
+      body: resolution ? JSON.stringify({ resolution }) : undefined,
+    });
     setBusy(false);
     if (res.ok) {
       router.push("/admin/fixtures");
-    } else {
-      const body = await res.json().catch(() => ({}));
-      setError(body.error ?? "Failed to finish match");
+      return;
     }
+    const body = await res.json().catch(() => ({}));
+    if (body.code === "draw_needs_resolution") {
+      setDrawPrompt("choose");
+      return;
+    }
+    setError(body.error ?? "Failed to finish match");
+  }
+
+  function confirmPenalties() {
+    const home = Number(penHomeScore);
+    const away = Number(penAwayScore);
+    if (!penHomeScore || !penAwayScore || Number.isNaN(home) || Number.isNaN(away)) {
+      setError("Enter both penalty scores");
+      return;
+    }
+    if (home === away) {
+      setError("Penalty shootout can't end level");
+      return;
+    }
+    finish({ method: "PENALTIES", penaltyHomeScore: home, penaltyAwayScore: away });
+  }
+
+  function confirmManualWinner(winnerTeamId: string) {
+    finish({ method: "MANUAL", winnerTeamId });
   }
 
   const isLive = match.status === "LIVE";
@@ -280,9 +314,9 @@ export function LiveConsole({ matchId }: { matchId: string }) {
         >
           Reset match
         </button>
-        {isLive && (
+        {isLive && !drawPrompt && (
           <button
-            onClick={finish}
+            onClick={() => finish()}
             disabled={busy}
             className="rounded-full bg-pitch px-5 py-2 text-sm font-bold text-white disabled:opacity-60"
           >
@@ -290,6 +324,107 @@ export function LiveConsole({ matchId }: { matchId: string }) {
           </button>
         )}
       </div>
+
+      {drawPrompt && (
+        <div className="mb-6 rounded-2xl border border-line bg-surface p-5">
+          <p className="mb-3 font-bold">
+            {match.homeScore}–{match.awayScore} is level — how was this decided?
+          </p>
+          {drawPrompt === "choose" && (
+            <div className="flex flex-wrap gap-3">
+              <button
+                onClick={() => setDrawPrompt("penalties")}
+                className="rounded-full bg-pitch px-5 py-2 text-sm font-bold text-white"
+              >
+                Penalty shootout
+              </button>
+              <button
+                onClick={() => setDrawPrompt("manual")}
+                className="rounded-full border border-line px-5 py-2 text-sm font-bold"
+              >
+                Pick winner directly
+              </button>
+              <button
+                onClick={() => setDrawPrompt(null)}
+                className="rounded-full border border-line px-5 py-2 text-sm font-medium text-muted"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+          {drawPrompt === "penalties" && (
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-end gap-3">
+                <label className="block">
+                  <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-muted">
+                    {match.homeTeam?.name ?? "Home"} (pens)
+                  </span>
+                  <input
+                    type="number"
+                    min={0}
+                    value={penHomeScore}
+                    onChange={(e) => setPenHomeScore(e.target.value)}
+                    className="w-20 rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-pitch"
+                  />
+                </label>
+                <label className="block">
+                  <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-muted">
+                    {match.awayTeam?.name ?? "Away"} (pens)
+                  </span>
+                  <input
+                    type="number"
+                    min={0}
+                    value={penAwayScore}
+                    onChange={(e) => setPenAwayScore(e.target.value)}
+                    className="w-20 rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-pitch"
+                  />
+                </label>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={confirmPenalties}
+                  disabled={busy}
+                  className="rounded-full bg-pitch px-5 py-2 text-sm font-bold text-white disabled:opacity-60"
+                >
+                  Confirm & finish
+                </button>
+                <button
+                  onClick={() => setDrawPrompt("choose")}
+                  className="rounded-full border border-line px-5 py-2 text-sm font-medium text-muted"
+                >
+                  Back
+                </button>
+              </div>
+            </div>
+          )}
+          {drawPrompt === "manual" && (
+            <div className="space-y-3">
+              <div className="flex flex-wrap gap-3">
+                <button
+                  onClick={() => match.homeTeamId && confirmManualWinner(match.homeTeamId)}
+                  disabled={busy || !match.homeTeamId}
+                  className="rounded-full bg-pitch px-5 py-2 text-sm font-bold text-white disabled:opacity-60"
+                >
+                  {match.homeTeam?.name ?? "Home"} wins
+                </button>
+                <button
+                  onClick={() => match.awayTeamId && confirmManualWinner(match.awayTeamId)}
+                  disabled={busy || !match.awayTeamId}
+                  className="rounded-full bg-pitch px-5 py-2 text-sm font-bold text-white disabled:opacity-60"
+                >
+                  {match.awayTeam?.name ?? "Away"} wins
+                </button>
+              </div>
+              <button
+                onClick={() => setDrawPrompt("choose")}
+                className="rounded-full border border-line px-5 py-2 text-sm font-medium text-muted"
+              >
+                Back
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted">Events</h2>
       <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">

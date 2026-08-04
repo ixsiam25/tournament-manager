@@ -212,12 +212,36 @@ function ScoreOrTime({
     awayScore: number;
     scheduledAt: Date | null;
     venue: string | null;
+    winnerTeamId: string | null;
+    homeTeamId: string | null;
+    penaltyHomeScore: number | null;
+    penaltyAwayScore: number | null;
+    homeTeam: { name: string } | null;
+    awayTeam: { name: string } | null;
   };
 }) {
   if (match.status === "FINISHED" || match.status === "LIVE") {
+    const wasDraw = match.homeScore === match.awayScore;
+    const decidedOnPenalties = wasDraw && match.penaltyHomeScore !== null && match.penaltyAwayScore !== null;
+    const winnerName =
+      match.winnerTeamId === match.homeTeamId ? match.homeTeam?.name : match.awayTeam?.name;
+
     return (
-      <span className="min-w-14 shrink-0 rounded-block bg-background px-2.5 py-1 text-center text-sm font-bold tabular-nums sm:min-w-20 sm:px-4 sm:py-1.5 sm:text-base">
-        {match.homeScore} – {match.awayScore}
+      <span className="flex min-w-14 shrink-0 flex-col items-center gap-0.5 sm:min-w-20">
+        <span className="rounded-block bg-background px-2.5 py-1 text-center text-sm font-bold tabular-nums sm:px-4 sm:py-1.5 sm:text-base">
+          {match.homeScore} – {match.awayScore}
+        </span>
+        {wasDraw && match.winnerTeamId && (
+          <span className="text-center text-[10px] uppercase tracking-wide text-muted sm:text-xs">
+            {decidedOnPenalties
+              ? `${winnerName} won ${
+                  match.winnerTeamId === match.homeTeamId
+                    ? `${match.penaltyHomeScore}–${match.penaltyAwayScore}`
+                    : `${match.penaltyAwayScore}–${match.penaltyHomeScore}`
+                } on pens`
+              : `${winnerName} advances`}
+          </span>
+        )}
       </span>
     );
   }
