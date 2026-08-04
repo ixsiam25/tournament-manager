@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { href: "/admin/teams", label: "Teams" },
   { href: "/admin/players", label: "Players" },
   { href: "/admin/fixtures", label: "Fixtures" },
+  { href: "/admin/champions", label: "Champions" },
   { href: "/admin/security", label: "Security" },
 ];
 

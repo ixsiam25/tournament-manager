@@ -2,16 +2,22 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getChampionTally } from "@/lib/predictions";
 import { championPredictionSchema } from "@/lib/validation";
+import { isChampionPredictionOpen } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   const voterId = request.nextUrl.searchParams.get("voterId");
-  const tally = await getChampionTally(voterId);
-  return NextResponse.json(tally);
+  const [tally, open] = await Promise.all([getChampionTally(voterId), isChampionPredictionOpen()]);
+  return NextResponse.json({ ...tally, open });
 }
 
 export async function POST(request: NextRequest) {
+  const open = await isChampionPredictionOpen();
+  if (!open) {
+    return NextResponse.json({ error: "Champion predictions are closed." }, { status: 403 });
+  }
+
   const body = await request.json().catch(() => null);
   const parsed = championPredictionSchema.safeParse(body);
   if (!parsed.success) {
@@ -40,5 +46,5 @@ export async function POST(request: NextRequest) {
   });
 
   const tally = await getChampionTally(voterId);
-  return NextResponse.json(tally);
+  return NextResponse.json({ ...tally, open: true });
 }

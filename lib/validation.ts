@@ -48,6 +48,11 @@ export const predictionSchema = z.object({
   voterSemester: z.string().trim().max(30).optional().nullable(),
 });
 
+export const championPredictionSettingsSchema = z.object({
+  enabled: z.boolean().optional(),
+  closeAt: z.string().trim().min(1).optional().nullable(),
+});
+
 export const championPredictionSchema = z.object({
   teamId: z.string().trim().min(1, "Team is required"),
   voterId: z.string().trim().min(1, "Voter id is required").max(100),

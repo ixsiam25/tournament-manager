@@ -50,6 +50,11 @@ export default async function FixturesPage({
       <AutoRefresh />
       <h1 className="mb-4 heading-display text-2xl">Fixtures</h1>
 
+      <p className="mb-6 rounded-block border-2 border-line-strong bg-surface px-4 py-3 text-xs text-muted sm:text-sm">
+        Times below are per the published plan. The BFL committee reserves the right to adjust or
+        overwrite any kickoff time on the day as needed.
+      </p>
+
       <div className="mb-6 flex flex-wrap gap-2">
         <Link
           href="/fixtures"
