@@ -193,45 +193,55 @@ function jst(time: string): Date {
   return new Date(`2026-08-04T${time}:00+09:00`);
 }
 
-const LEAGUE_SCHEDULE: { time: string; venue: string; home: Slot; away: Slot }[] = [
+// Referee allocation is per kickoff slot (this array's order), matching
+// "Match N" in ~/Downloads/BFL-IX-Referee.xlsx — not the `label` field below,
+// which is stale after the 2026-08-03 reorder (see comment there).
+const LEAGUE_SCHEDULE: {
+  time: string;
+  venue: string;
+  home: Slot;
+  away: Slot;
+  mainRef: string;
+  assistantRef: string;
+}[] = [
   // Block 1 — Field 1 only. One game each for all eight teams.
-  { time: "17:00", venue: FIELD_1, home: "a", away: "e" },
-  { time: "17:10", venue: FIELD_1, home: "b", away: "f" },
+  { time: "17:00", venue: FIELD_1, home: "a", away: "e", mainRef: "Rahat", assistantRef: "Siam-Muhaimin" },
+  { time: "17:10", venue: FIELD_1, home: "b", away: "f", mainRef: "Tanvir Chowdhury", assistantRef: "Nahid-Rafid" },
   // Reordered by request, 2026-08-03 (new order: 1,2,4,5,3) — teams
   // unchanged, only which time slot each pairing sits in.
-  { time: "17:20", venue: FIELD_1, home: "d", away: "h" },
-  { time: "17:30", venue: FIELD_1, home: "a", away: "f" },
-  { time: "17:40", venue: FIELD_1, home: "c", away: "g" },
+  { time: "17:20", venue: FIELD_1, home: "d", away: "h", mainRef: "Rafid", assistantRef: "Fahim-Mashrafi" },
+  { time: "17:30", venue: FIELD_1, home: "a", away: "f", mainRef: "Abir", assistantRef: "Siam-Rafid" },
+  { time: "17:40", venue: FIELD_1, home: "c", away: "g", mainRef: "Foij", assistantRef: "Abir-Tanvir Chowdhury" },
   // 17:50 — changeover, Field 2 goes live.
 
   // Block 2 — both fields, 18:00–19:00. abcd and efgh alternate slots.
-  { time: "18:00", venue: FIELD_1, home: "a", away: "b" },
-  { time: "18:00", venue: FIELD_2, home: "c", away: "d" },
-  { time: "18:10", venue: FIELD_1, home: "e", away: "f" },
-  { time: "18:10", venue: FIELD_2, home: "g", away: "h" },
-  { time: "18:20", venue: FIELD_1, home: "a", away: "c" },
-  { time: "18:20", venue: FIELD_2, home: "b", away: "d" },
-  { time: "18:30", venue: FIELD_1, home: "e", away: "g" },
-  { time: "18:30", venue: FIELD_2, home: "f", away: "h" },
-  { time: "18:40", venue: FIELD_1, home: "a", away: "d" },
-  { time: "18:40", venue: FIELD_2, home: "b", away: "c" },
-  { time: "18:50", venue: FIELD_1, home: "e", away: "h" },
-  { time: "18:50", venue: FIELD_2, home: "f", away: "g" },
+  { time: "18:00", venue: FIELD_1, home: "a", away: "b", mainRef: "Fahim", assistantRef: "Rafid" },
+  { time: "18:00", venue: FIELD_2, home: "c", away: "d", mainRef: "Tanvir Chowdhury", assistantRef: "Muhaimin" },
+  { time: "18:10", venue: FIELD_1, home: "e", away: "f", mainRef: "Siam", assistantRef: "Abir" },
+  { time: "18:10", venue: FIELD_2, home: "g", away: "h", mainRef: "Zuhair", assistantRef: "Rahat" },
+  { time: "18:20", venue: FIELD_1, home: "a", away: "c", mainRef: "Rafid", assistantRef: "Muhaimin" },
+  { time: "18:20", venue: FIELD_2, home: "b", away: "d", mainRef: "Tanvir Chowdhury", assistantRef: "Rafid" },
+  { time: "18:30", venue: FIELD_1, home: "e", away: "g", mainRef: "Abir", assistantRef: "Rahat" },
+  { time: "18:30", venue: FIELD_2, home: "f", away: "h", mainRef: "Nahid", assistantRef: "Siam" },
+  { time: "18:40", venue: FIELD_1, home: "a", away: "d", mainRef: "Fahim", assistantRef: "Rafid" },
+  { time: "18:40", venue: FIELD_2, home: "b", away: "c", mainRef: "Rafid", assistantRef: "Muhaimin" },
+  { time: "18:50", venue: FIELD_1, home: "e", away: "h", mainRef: "Abir", assistantRef: "Zuhair" },
+  { time: "18:50", venue: FIELD_2, home: "f", away: "g", mainRef: "Siam", assistantRef: "Rahat" },
   // 19:00 — break, Field 2 goes back.
 
   // Block 3 — Field 1 only, the 11 remaining cross games. Ordered so that
   // every team gets at least one empty slot, and usually three, between games.
-  { time: "19:10", venue: FIELD_1, home: "b", away: "e" },
-  { time: "19:20", venue: FIELD_1, home: "c", away: "h" },
-  { time: "19:30", venue: FIELD_1, home: "d", away: "f" },
-  { time: "19:40", venue: FIELD_1, home: "a", away: "g" },
-  { time: "19:50", venue: FIELD_1, home: "b", away: "h" },
-  { time: "20:00", venue: FIELD_1, home: "c", away: "f" },
-  { time: "20:10", venue: FIELD_1, home: "d", away: "e" },
-  { time: "20:20", venue: FIELD_1, home: "a", away: "h" },
-  { time: "20:30", venue: FIELD_1, home: "b", away: "g" },
-  { time: "20:40", venue: FIELD_1, home: "c", away: "e" },
-  { time: "20:50", venue: FIELD_1, home: "d", away: "g" },
+  { time: "19:10", venue: FIELD_1, home: "b", away: "e", mainRef: "Rahat", assistantRef: "Siam-Zuhair" },
+  { time: "19:20", venue: FIELD_1, home: "c", away: "h", mainRef: "Tanvir Chowdhury", assistantRef: "Muhaimin-Abir" },
+  { time: "19:30", venue: FIELD_1, home: "d", away: "f", mainRef: "Foij", assistantRef: "Mashrafi-Fahim" },
+  { time: "19:40", venue: FIELD_1, home: "a", away: "g", mainRef: "Zuhair", assistantRef: "Rafid-Siam" },
+  { time: "19:50", venue: FIELD_1, home: "b", away: "h", mainRef: "Rahat", assistantRef: "Abir-Zuhair" },
+  { time: "20:00", venue: FIELD_1, home: "c", away: "f", mainRef: "Nahid", assistantRef: "Fahim-Tanvir Chowdhury" },
+  { time: "20:10", venue: FIELD_1, home: "d", away: "e", mainRef: "Abir", assistantRef: "Muhaimin-Fahim" },
+  { time: "20:20", venue: FIELD_1, home: "a", away: "h", mainRef: "Zuhair", assistantRef: "Mashrafi-Tanvir Chowdhury" },
+  { time: "20:30", venue: FIELD_1, home: "b", away: "g", mainRef: "Nahid", assistantRef: "Muhaimin-Foij" },
+  { time: "20:40", venue: FIELD_1, home: "c", away: "e", mainRef: "Foij", assistantRef: "Siam-Rahat" },
+  { time: "20:50", venue: FIELD_1, home: "d", away: "g", mainRef: "Rafid", assistantRef: "Abir-Mashrafi" },
 ];
 
 const KNOCKOUT_SCHEDULE: {
@@ -350,6 +360,8 @@ async function main() {
         awayTeamId: awayTeam.id,
         scheduledAt: jst(g.time),
         venue: g.venue,
+        mainReferee: g.mainRef,
+        assistantReferee: g.assistantRef,
         status: "SCHEDULED",
       },
     });

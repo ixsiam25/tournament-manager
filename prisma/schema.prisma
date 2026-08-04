@@ -47,9 +47,9 @@ model Team {
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
-  players     Player[]
-  homeMatches Match[]      @relation("HomeTeam")
-  awayMatches Match[]      @relation("AwayTeam")
+  players             Player[]
+  homeMatches         Match[]              @relation("HomeTeam")
+  awayMatches         Match[]              @relation("AwayTeam")
   events              MatchEvent[]
   predictions         Prediction[]
   championPredictions ChampionPrediction[]
@@ -82,22 +82,24 @@ model Player {
 }
 
 model Match {
-  id          String      @id @default(cuid())
-  round       RoundType
-  label       String?
-  homeTeamId  String?
-  awayTeamId  String?
-  homeTeam    Team?       @relation("HomeTeam", fields: [homeTeamId], references: [id])
-  awayTeam    Team?       @relation("AwayTeam", fields: [awayTeamId], references: [id])
-  scheduledAt DateTime?
-  venue       String?
-  status      MatchStatus @default(SCHEDULED)
-  homeScore   Int         @default(0)
-  awayScore   Int         @default(0)
-  startedAt   DateTime?
-  finishedAt  DateTime?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id               String      @id @default(cuid())
+  round            RoundType
+  label            String?
+  homeTeamId       String?
+  awayTeamId       String?
+  homeTeam         Team?       @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeam         Team?       @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  scheduledAt      DateTime?
+  venue            String?
+  mainReferee      String?
+  assistantReferee String?
+  status           MatchStatus @default(SCHEDULED)
+  homeScore        Int         @default(0)
+  awayScore        Int         @default(0)
+  startedAt        DateTime?
+  finishedAt       DateTime?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
 
   events      MatchEvent[]
   predictions Prediction[]

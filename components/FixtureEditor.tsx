@@ -14,6 +14,8 @@ type Match = {
   awayTeamId: string | null;
   scheduledAt: string | null;
   venue: string | null;
+  mainReferee: string | null;
+  assistantReferee: string | null;
 };
 
 export function FixtureEditor({ matchId }: { matchId: string }) {
@@ -163,6 +165,24 @@ export function FixtureEditor({ matchId }: { matchId: string }) {
             type="text"
             defaultValue={match.label ?? ""}
             onBlur={(e) => save({ label: e.target.value || null })}
+            className="w-full rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-pitch"
+          />
+        </Field>
+
+        <Field label="Main referee">
+          <input
+            type="text"
+            defaultValue={match.mainReferee ?? ""}
+            onBlur={(e) => save({ mainReferee: e.target.value || null })}
+            className="w-full rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-pitch"
+          />
+        </Field>
+
+        <Field label="Assistant referee(s)">
+          <input
+            type="text"
+            defaultValue={match.assistantReferee ?? ""}
+            onBlur={(e) => save({ assistantReferee: e.target.value || null })}
             className="w-full rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-pitch"
           />
         </Field>

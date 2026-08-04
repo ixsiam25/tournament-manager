@@ -14,6 +14,8 @@ type Match = {
   awayScore: number;
   homeTeam: Team | null;
   awayTeam: Team | null;
+  mainReferee: string | null;
+  assistantReferee: string | null;
 };
 
 const ROUND_LABELS: Record<Match["round"], string> = {
@@ -211,6 +213,21 @@ export default function FixturesAdminPage() {
                         >
                           {m.status}
                         </span>
+                        {(m.mainReferee || m.assistantReferee) && (
+                          <div className="mt-1 text-xs text-muted">
+                            {m.mainReferee && (
+                              <span>
+                                Ref: <span className="font-medium text-foreground">{m.mainReferee}</span>
+                              </span>
+                            )}
+                            {m.mainReferee && m.assistantReferee && <span className="mx-1.5">·</span>}
+                            {m.assistantReferee && (
+                              <span>
+                                Assistant: <span className="font-medium text-foreground">{m.assistantReferee}</span>
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </div>
                       <div className="flex gap-3 text-sm font-medium">
                         {m.status === "LIVE" ? (

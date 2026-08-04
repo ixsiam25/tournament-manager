@@ -29,6 +29,8 @@ export const fixtureSchema = z.object({
   awayTeamId: z.string().trim().min(1).optional().nullable(),
   scheduledAt: z.string().trim().optional().nullable(),
   venue: z.string().trim().max(120).optional().nullable(),
+  mainReferee: z.string().trim().max(80).optional().nullable(),
+  assistantReferee: z.string().trim().max(80).optional().nullable(),
 });
 
 export const eventSchema = z.object({
