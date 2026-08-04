@@ -32,9 +32,18 @@ export default async function AdminDashboardPage() {
           href={`/admin/live/${liveMatch.id}`}
           className="mb-6 flex items-center justify-between rounded-2xl border border-live/30 bg-live/10 px-5 py-4 text-live"
         >
-          <span className="font-bold">
-            🔴 LIVE: {liveMatch.homeTeam?.name} {liveMatch.homeScore} – {liveMatch.awayScore}{" "}
-            {liveMatch.awayTeam?.name}
+          <span>
+            <span className="font-bold">
+              🔴 LIVE: {liveMatch.homeTeam?.name} {liveMatch.homeScore} – {liveMatch.awayScore}{" "}
+              {liveMatch.awayTeam?.name}
+            </span>
+            {(liveMatch.mainReferee || liveMatch.assistantReferee) && (
+              <span className="ml-3 text-xs font-medium">
+                {liveMatch.mainReferee && <>Ref: {liveMatch.mainReferee}</>}
+                {liveMatch.mainReferee && liveMatch.assistantReferee && " · "}
+                {liveMatch.assistantReferee && <>Assistant: {liveMatch.assistantReferee}</>}
+              </span>
+            )}
           </span>
           <span className="text-sm font-medium underline">Open console →</span>
         </Link>
@@ -62,11 +71,28 @@ export default async function AdminDashboardPage() {
                 <span className="text-sm font-bold sm:text-base">{m.awayTeam?.name ?? "TBD"}</span>
                 <DashboardTeamLogo logoUrl={m.awayTeam?.logoUrl} name={m.awayTeam?.name} />
               </div>
-              <div className="flex shrink-0 items-center justify-between gap-3 sm:justify-end">
-                {m.scheduledAt && (
-                  <p className="text-xs text-muted">{new Date(m.scheduledAt).toLocaleString()}</p>
+              <div className="flex shrink-0 flex-col items-end gap-1 sm:items-end">
+                <div className="flex items-center justify-between gap-3">
+                  {m.scheduledAt && (
+                    <p className="text-xs text-muted">{new Date(m.scheduledAt).toLocaleString()}</p>
+                  )}
+                  <StartMatchButton matchId={m.id} disabled={!m.homeTeamId || !m.awayTeamId} />
+                </div>
+                {(m.mainReferee || m.assistantReferee) && (
+                  <p className="text-xs text-muted">
+                    {m.mainReferee && (
+                      <span>
+                        Ref: <span className="font-medium text-foreground">{m.mainReferee}</span>
+                      </span>
+                    )}
+                    {m.mainReferee && m.assistantReferee && <span className="mx-1.5">·</span>}
+                    {m.assistantReferee && (
+                      <span>
+                        Assistant: <span className="font-medium text-foreground">{m.assistantReferee}</span>
+                      </span>
+                    )}
+                  </p>
                 )}
-                <StartMatchButton matchId={m.id} disabled={!m.homeTeamId || !m.awayTeamId} />
               </div>
             </li>
           ))}
