@@ -1,0 +1,2874 @@
+{
+  "exportedAt": "2026-08-05T03:23:04.622Z",
+  "season": "BFL Season IX — 4 August 2026",
+  "summary": {
+    "teams": 8,
+    "players": 56,
+    "matches": 31,
+    "finishedMatches": 31,
+    "events": 76
+  },
+  "championResult": {
+    "championTeamId": "cmsbax4wr000p3z01h8sf5wmp",
+    "championTeamName": "GENJAM-101",
+    "correctVoterNames": [
+      "Choto Rahat",
+      "Dip",
+      "Essa",
+      "Nandinee",
+      "Sarder Akib Latif",
+      "Siam",
+      "sohel"
+    ],
+    "anonymousCorrectCount": 4,
+    "totalCorrect": 11,
+    "totalPredictions": 35
+  },
+  "finalStandings": [
+    {
+      "teamId": "cmsbax4wr000p3z01h8sf5wmp",
+      "teamName": "GENJAM-101",
+      "logoUrl": "/api/photos/team-cmsbax4wr000p3z01h8sf5wmp-61389c57-56c8-49eb-928b-bcbc62003ad7",
+      "played": 7,
+      "won": 4,
+      "drawn": 2,
+      "lost": 1,
+      "goalsFor": 10,
+      "goalsAgainst": 3,
+      "goalDifference": 7,
+      "points": 14
+    },
+    {
+      "teamId": "cmsbax5sr000y3z01cpadkdu4",
+      "teamName": "কমিটির টিম",
+      "logoUrl": "/api/photos/team-cmsbax5sr000y3z01cpadkdu4-8c10ffaa-2f54-49b0-bab9-d32ab37e52f2",
+      "played": 7,
+      "won": 3,
+      "drawn": 3,
+      "lost": 1,
+      "goalsFor": 5,
+      "goalsAgainst": 2,
+      "goalDifference": 3,
+      "points": 12
+    },
+    {
+      "teamId": "cmsbax6o400153z01c68c7ct3",
+      "teamName": "Fall 25",
+      "logoUrl": "/api/photos/team-cmsbax6o400153z01c68c7ct3-e5867542-4100-466c-8d9d-1f1cd566303c",
+      "played": 7,
+      "won": 2,
+      "drawn": 3,
+      "lost": 2,
+      "goalsFor": 4,
+      "goalsAgainst": 4,
+      "goalDifference": 0,
+      "points": 9
+    },
+    {
+      "teamId": "cmsbax7lf001d3z015spkww3t",
+      "teamName": "৭ এ ৭ FC",
+      "logoUrl": null,
+      "played": 7,
+      "won": 1,
+      "drawn": 5,
+      "lost": 1,
+      "goalsFor": 2,
+      "goalsAgainst": 3,
+      "goalDifference": -1,
+      "points": 8
+    },
+    {
+      "teamId": "cmsbax34l00093z018quslcio",
+      "teamName": "Dilly Dally FC",
+      "logoUrl": null,
+      "played": 7,
+      "won": 1,
+      "drawn": 4,
+      "lost": 2,
+      "goalsFor": 4,
+      "goalsAgainst": 6,
+      "goalDifference": -2,
+      "points": 7
+    },
+    {
+      "teamId": "cmsbax435000h3z01bjbz7ysl",
+      "teamName": "Koshai FC",
+      "logoUrl": "/api/photos/team-cmsbax435000h3z01bjbz7ysl-44a8e6cd-6a8c-46c8-bb50-9ac8935fcbe8",
+      "played": 7,
+      "won": 1,
+      "drawn": 4,
+      "lost": 2,
+      "goalsFor": 3,
+      "goalsAgainst": 6,
+      "goalDifference": -3,
+      "points": 7
+    },
+    {
+      "teamId": "cmsbax27h00003z01q07qcoqx",
+      "teamName": "Molom Bahini",
+      "logoUrl": "/api/photos/team-cmsbax27h00003z01q07qcoqx-b9aa7d3c-9a15-4d0b-9439-d935ab1f39cb",
+      "played": 7,
+      "won": 2,
+      "drawn": 1,
+      "lost": 4,
+      "goalsFor": 3,
+      "goalsAgainst": 6,
+      "goalDifference": -3,
+      "points": 7
+    },
+    {
+      "teamId": "cmsbax8jk001l3z01g461hndj",
+      "teamName": "The Bottleneck",
+      "logoUrl": "/api/photos/team-cmsbax8jk001l3z01g461hndj-1830f439-a396-429a-a849-5868db18bd74",
+      "played": 7,
+      "won": 0,
+      "drawn": 6,
+      "lost": 1,
+      "goalsFor": 0,
+      "goalsAgainst": 1,
+      "goalDifference": -1,
+      "points": 6
+    }
+  ],
+  "topScorers": [
+    {
+      "playerId": "cmsbax52d000q3z01skwwo3yh",
+      "playerName": "Siam",
+      "teamId": "cmsbax4wr000p3z01h8sf5wmp",
+      "teamName": "GENJAM-101",
+      "photoUrl": "/api/photos/cmsbax52d000q3z01skwwo3yh-fed684d1-0cc8-4231-b411-2d9288915c20",
+      "count": 10
+    },
+    {
+      "playerId": "cmsbax52d000v3z010zpdcdvx",
+      "playerName": "Zuhair",
+      "teamId": "cmsbax4wr000p3z01h8sf5wmp",
+      "teamName": "GENJAM-101",
+      "photoUrl": "/api/photos/cmsbax52d000v3z010zpdcdvx-adbada93-57e2-4038-827e-52dfda02edff",
+      "count": 4
+    },
+    {
+      "playerId": "cmsbax6vu00163z01ybyyoa9a",
+      "playerName": "Manjur Yadin",
+      "teamId": "cmsbax6o400153z01c68c7ct3",
+      "teamName": "Fall 25",
+      "photoUrl": "/api/photos/cmsbax6vu00163z01ybyyoa9a-8412dc20-07d5-4065-be8f-5d0905549963",
+      "count": 3
+    },
+    {
+      "playerId": "cmsbax2dr00053z01ezlcpqvk",
+      "playerName": "Nahid Tanvir Hasan",
+      "teamId": "cmsbax27h00003z01q07qcoqx",
+      "teamName": "Molom Bahini",
+      "photoUrl": "/api/photos/cmsbax2dr00053z01ezlcpqvk-c87616fe-502c-4e9f-8029-54093ba42e9a",
+      "count": 3
+    },
+    {
+      "playerId": "cmsbax52d000w3z017pbbi6q2",
+      "playerName": "Rahat",
+      "teamId": "cmsbax4wr000p3z01h8sf5wmp",
+      "teamName": "GENJAM-101",
+      "photoUrl": "/api/photos/cmsbax52d000w3z017pbbi6q2-83077ff5-030b-42f5-838b-2b7da05c4666",
+      "count": 3
+    },
+    {
+      "playerId": "cmsbax48q000l3z01f9mnc1b3",
+      "playerName": "Huzaifa",
+      "teamId": "cmsbax435000h3z01bjbz7ysl",
+      "teamName": "Koshai FC",
+      "photoUrl": "/api/photos/cmsbax48q000l3z01f9mnc1b3-518009a0-d8bd-4ff5-ba22-2c0d90d69896",
+      "count": 2
+    },
+    {
+      "playerId": "cmsbax60m00123z018etmunt4",
+      "playerName": "Mahfuz Mahi",
+      "teamId": "cmsbax5sr000y3z01cpadkdu4",
+      "teamName": "কমিটির টিম",
+      "photoUrl": "/api/photos/cmsbax60m00123z018etmunt4-eadf9a79-c6f8-487f-9527-4f3b3daa1a16",
+      "count": 2
+    },
+    {
+      "playerId": "cmsbax60m000z3z010xsqlpb5",
+      "playerName": "Md Shafiul Alam Ruhin",
+      "teamId": "cmsbax5sr000y3z01cpadkdu4",
+      "teamName": "কমিটির টিম",
+      "photoUrl": "/api/photos/cmsbax60m000z3z010xsqlpb5-88499ab6-3170-44b4-996a-7e8b7a303887",
+      "count": 2
+    },
+    {
+      "playerId": "cmsbax60m00103z017xkkg52o",
+      "playerName": "Shoriful Islam",
+      "teamId": "cmsbax5sr000y3z01cpadkdu4",
+      "teamName": "কমিটির টিম",
+      "photoUrl": "/api/photos/cmsbax60m00103z017xkkg52o-f2c75f05-032e-4cd6-9718-a082f88d9e31",
+      "count": 2
+    },
+    {
+      "playerId": "cmsbax3ad000b3z01giwet2wg",
+      "playerName": "Wasimul Foij Sakib",
+      "teamId": "cmsbax34l00093z018quslcio",
+      "teamName": "Dilly Dally FC",
+      "photoUrl": "/api/photos/cmsbax3ad000b3z01giwet2wg-7b5caccf-c820-4928-80a9-e271ab449d72",
+      "count": 2
+    },
+    {
+      "playerId": "cmsbax7tl001f3z01xls2w61p",
+      "playerName": "Abdul Tahsin",
+      "teamId": "cmsbax7lf001d3z015spkww3t",
+      "teamName": "৭ এ ৭ FC",
+      "photoUrl": "/api/photos/cmsbax7tl001f3z01xls2w61p-5b8f36c7-3b6e-4c92-89bf-d1b357cf550c",
+      "count": 1
+    },
+    {
+      "playerId": "cmsbax60m00143z01pqqt3cje",
+      "playerName": "Fulmia Sheikh",
+      "teamId": "cmsbax5sr000y3z01cpadkdu4",
+      "teamName": "কমিটির টিম",
+      "photoUrl": "/api/photos/cmsbax60m00143z01pqqt3cje-2c626212-0905-4b3d-b582-cff9ae147409",
+      "count": 1
+    },
+    {
+      "playerId": "cmsbax60m00113z015gqosk51",
+      "playerName": "Kazi Rafid Mostakin",
+      "teamId": "cmsbax5sr000y3z01cpadkdu4",
+      "teamName": "কমিটির টিম",
+      "photoUrl": "/api/photos/cmsbax60m00113z015gqosk51-e45bfebc-6db3-4caa-ad5f-b9bc4bc90e64",
+      "count": 1
+    },
+    {
+      "playerId": "cmsbax6vu00173z01b260gwdm",
+      "playerName": "Sayeed",
+      "teamId": "cmsbax6o400153z01c68c7ct3",
+      "teamName": "Fall 25",
+      "photoUrl": "/api/photos/cmsbax6vu00173z01b260gwdm-47836ce9-1020-467c-a60b-71be33bfea29",
+      "count": 1
+    },
+    {
+      "playerId": "cmsbax52d000u3z01cfe4p9mf",
+      "playerName": "Shaman",
+      "teamId": "cmsbax4wr000p3z01h8sf5wmp",
+      "teamName": "GENJAM-101",
+      "photoUrl": "/api/photos/cmsbax52d000u3z01cfe4p9mf-9cb4e052-2e4a-4adb-8105-b8bf7b2cf18b",
+      "count": 1
+    },
+    {
+      "playerId": "cmsbax3ad000a3z010cdvsq7x",
+      "playerName": "Sharif Mashrafi",
+      "teamId": "cmsbax34l00093z018quslcio",
+      "teamName": "Dilly Dally FC",
+      "photoUrl": "/api/photos/cmsbax3ad000a3z010cdvsq7x-2b03e5da-8761-4251-858a-3d55f21d025f",
+      "count": 1
+    },
+    {
+      "playerId": "cmsbax7tl001h3z011hs2fyp6",
+      "playerName": "Tanvir Chowdhury",
+      "teamId": "cmsbax7lf001d3z015spkww3t",
+      "teamName": "৭ এ ৭ FC",
+      "photoUrl": "/api/photos/cmsbax7tl001h3z011hs2fyp6-40c9b064-510d-4339-89fe-1b92c9488cea",
+      "count": 1
+    },
+    {
+      "playerId": "cmsbax6vu00193z01qeoh28db",
+      "playerName": "Tanvir Siddik",
+      "teamId": "cmsbax6o400153z01c68c7ct3",
+      "teamName": "Fall 25",
+      "photoUrl": "/api/photos/cmsbax6vu00193z01qeoh28db-30430435-299c-429d-b2d4-4ecaf7421b74",
+      "count": 1
+    },
+    {
+      "playerId": "cmsbax3ad000e3z014f8uow1b",
+      "playerName": "Wasim Ashraf",
+      "teamId": "cmsbax34l00093z018quslcio",
+      "teamName": "Dilly Dally FC",
+      "photoUrl": "/api/photos/cmsbax3ad000e3z014f8uow1b-6e644388-b5a0-4363-91ba-10f31bbd6976",
+      "count": 1
+    },
+    {
+      "playerId": "cmsbax48q000n3z0133bw8hat",
+      "playerName": "Zoha",
+      "teamId": "cmsbax435000h3z01bjbz7ysl",
+      "teamName": "Koshai FC",
+      "photoUrl": "/api/photos/cmsbax48q000n3z0133bw8hat-bfb5571e-7217-4aaf-b629-8b60472543f9",
+      "count": 1
+    }
+  ],
+  "topAssists": [
+    {
+      "playerId": "cmsbax52d000v3z010zpdcdvx",
+      "playerName": "Zuhair",
+      "teamId": "cmsbax4wr000p3z01h8sf5wmp",
+      "teamName": "GENJAM-101",
+      "photoUrl": "/api/photos/cmsbax52d000v3z010zpdcdvx-adbada93-57e2-4038-827e-52dfda02edff",
+      "count": 5
+    },
+    {
+      "playerId": "cmsbax52d000w3z017pbbi6q2",
+      "playerName": "Rahat",
+      "teamId": "cmsbax4wr000p3z01h8sf5wmp",
+      "teamName": "GENJAM-101",
+      "photoUrl": "/api/photos/cmsbax52d000w3z017pbbi6q2-83077ff5-030b-42f5-838b-2b7da05c4666",
+      "count": 4
+    },
+    {
+      "playerId": "cmsbax60m00113z015gqosk51",
+      "playerName": "Kazi Rafid Mostakin",
+      "teamId": "cmsbax5sr000y3z01cpadkdu4",
+      "teamName": "কমিটির টিম",
+      "photoUrl": "/api/photos/cmsbax60m00113z015gqosk51-e45bfebc-6db3-4caa-ad5f-b9bc4bc90e64",
+      "count": 3
+    },
+    {
+      "playerId": "cmsbax52d000q3z01skwwo3yh",
+      "playerName": "Siam",
+      "teamId": "cmsbax4wr000p3z01h8sf5wmp",
+      "teamName": "GENJAM-101",
+      "photoUrl": "/api/photos/cmsbax52d000q3z01skwwo3yh-fed684d1-0cc8-4231-b411-2d9288915c20",
+      "count": 2
+    },
+    {
+      "playerId": "cmsbax7tl001f3z01xls2w61p",
+      "playerName": "Abdul Tahsin",
+      "teamId": "cmsbax7lf001d3z015spkww3t",
+      "teamName": "৭ এ ৭ FC",
+      "photoUrl": "/api/photos/cmsbax7tl001f3z01xls2w61p-5b8f36c7-3b6e-4c92-89bf-d1b357cf550c",
+      "count": 1
+    },
+    {
+      "playerId": "cmsbax2dr00073z018uyus648",
+      "playerName": "Ahmed Habib",
+      "teamId": "cmsbax27h00003z01q07qcoqx",
+      "teamName": "Molom Bahini",
+      "photoUrl": "/api/photos/cmsbax2dr00073z018uyus648-9c9abc8d-c1db-40a8-bd76-35c257984570",
+      "count": 1
+    },
+    {
+      "playerId": "cmsbax7tl001e3z018b1on9yk",
+      "playerName": "Hossain",
+      "teamId": "cmsbax7lf001d3z015spkww3t",
+      "teamName": "৭ এ ৭ FC",
+      "photoUrl": "/api/photos/cmsbax7tl001e3z018b1on9yk-3100c742-e63d-4701-9536-766cf4ff5468",
+      "count": 1
+    },
+    {
+      "playerId": "cmsbax48q000l3z01f9mnc1b3",
+      "playerName": "Huzaifa",
+      "teamId": "cmsbax435000h3z01bjbz7ysl",
+      "teamName": "Koshai FC",
+      "photoUrl": "/api/photos/cmsbax48q000l3z01f9mnc1b3-518009a0-d8bd-4ff5-ba22-2c0d90d69896",
+      "count": 1
+    },
+    {
+      "playerId": "cmsbax60m00123z018etmunt4",
+      "playerName": "Mahfuz Mahi",
+      "teamId": "cmsbax5sr000y3z01cpadkdu4",
+      "teamName": "কমিটির টিম",
+      "photoUrl": "/api/photos/cmsbax60m00123z018etmunt4-eadf9a79-c6f8-487f-9527-4f3b3daa1a16",
+      "count": 1
+    },
+    {
+      "playerId": "cmsbax6vu00163z01ybyyoa9a",
+      "playerName": "Manjur Yadin",
+      "teamId": "cmsbax6o400153z01c68c7ct3",
+      "teamName": "Fall 25",
+      "photoUrl": "/api/photos/cmsbax6vu00163z01ybyyoa9a-8412dc20-07d5-4065-be8f-5d0905549963",
+      "count": 1
+    },
+    {
+      "playerId": "cmsbax2dq00023z01g3bapr5e",
+      "playerName": "Mirza Samir",
+      "teamId": "cmsbax27h00003z01q07qcoqx",
+      "teamName": "Molom Bahini",
+      "photoUrl": "/api/photos/cmsbax2dq00023z01g3bapr5e-b0f2c170-0801-40d6-a30e-30031eff149a",
+      "count": 1
+    },
+    {
+      "playerId": "cmsbax3ad000a3z010cdvsq7x",
+      "playerName": "Sharif Mashrafi",
+      "teamId": "cmsbax34l00093z018quslcio",
+      "teamName": "Dilly Dally FC",
+      "photoUrl": "/api/photos/cmsbax3ad000a3z010cdvsq7x-2b03e5da-8761-4251-858a-3d55f21d025f",
+      "count": 1
+    },
+    {
+      "playerId": "cmsbax6vu00193z01qeoh28db",
+      "playerName": "Tanvir Siddik",
+      "teamId": "cmsbax6o400153z01c68c7ct3",
+      "teamName": "Fall 25",
+      "photoUrl": "/api/photos/cmsbax6vu00193z01qeoh28db-30430435-299c-429d-b2d4-4ecaf7421b74",
+      "count": 1
+    },
+    {
+      "playerId": "cmsbax3ad000e3z014f8uow1b",
+      "playerName": "Wasim Ashraf",
+      "teamId": "cmsbax34l00093z018quslcio",
+      "teamName": "Dilly Dally FC",
+      "photoUrl": "/api/photos/cmsbax3ad000e3z014f8uow1b-6e644388-b5a0-4363-91ba-10f31bbd6976",
+      "count": 1
+    },
+    {
+      "playerId": "cmsbax3ad000b3z01giwet2wg",
+      "playerName": "Wasimul Foij Sakib",
+      "teamId": "cmsbax34l00093z018quslcio",
+      "teamName": "Dilly Dally FC",
+      "photoUrl": "/api/photos/cmsbax3ad000b3z01giwet2wg-7b5caccf-c820-4928-80a9-e271ab449d72",
+      "count": 1
+    }
+  ],
+  "teams": [
+    {
+      "id": "cmsbax34l00093z018quslcio",
+      "name": "Dilly Dally FC",
+      "shortName": "BBF",
+      "semester": 4,
+      "managerName": "Mashrafi Sharif Md",
+      "logoUrl": null,
+      "managerPasswordHash": "c032fa5cee19872ba9d1702eea8addd0:acc930507e8221d2996cb2b7e45aa6255eefaf2db711eace6e15e90ca2a3b992",
+      "managerLoginBlocked": true,
+      "createdAt": "2026-08-02T04:29:43.317Z",
+      "updatedAt": "2026-08-04T01:22:10.670Z"
+    },
+    {
+      "id": "cmsbax6o400153z01c68c7ct3",
+      "name": "Fall 25",
+      "shortName": "F25",
+      "semester": 2,
+      "managerName": "Rana Md Sayeed Bin",
+      "logoUrl": "/api/photos/team-cmsbax6o400153z01c68c7ct3-e5867542-4100-466c-8d9d-1f1cd566303c",
+      "managerPasswordHash": "5318347e7013329332866dce3f8f2645:c66ce578bccfc11f44984b3b09dfce063145fdfd04e25e77510de68a8dcb9542",
+      "managerLoginBlocked": true,
+      "createdAt": "2026-08-02T04:29:47.908Z",
+      "updatedAt": "2026-08-04T01:22:10.670Z"
+    },
+    {
+      "id": "cmsbax4wr000p3z01h8sf5wmp",
+      "name": "GENJAM-101",
+      "shortName": "GJ1",
+      "semester": 6,
+      "managerName": "Siam Mohammad Iftekhar Zahan",
+      "logoUrl": "/api/photos/team-cmsbax4wr000p3z01h8sf5wmp-61389c57-56c8-49eb-928b-bcbc62003ad7",
+      "managerPasswordHash": "ed65ef7d3da36dd5f3be615c3b0b4117:cea7b59bbf6e89dc95b10d43f130121cfc7bc9303a27c80ed1d65ba57f13e22f",
+      "managerLoginBlocked": true,
+      "createdAt": "2026-08-02T04:29:45.627Z",
+      "updatedAt": "2026-08-04T01:22:10.670Z"
+    },
+    {
+      "id": "cmsbax435000h3z01bjbz7ysl",
+      "name": "Koshai FC",
+      "shortName": "KS7",
+      "semester": 1,
+      "managerName": "Heemel Mostafizur Rahman",
+      "logoUrl": "/api/photos/team-cmsbax435000h3z01bjbz7ysl-44a8e6cd-6a8c-46c8-bb50-9ac8935fcbe8",
+      "managerPasswordHash": "5a268c017635ab7ee74472f3a7145240:612d85f9ddae36403abc3a33dd0e219f7b406f5568f2d06bc09cac07533827e4",
+      "managerLoginBlocked": true,
+      "createdAt": "2026-08-02T04:29:44.561Z",
+      "updatedAt": "2026-08-04T01:22:10.670Z"
+    },
+    {
+      "id": "cmsbax27h00003z01q07qcoqx",
+      "name": "Molom Bahini",
+      "shortName": "MLB",
+      "semester": 5,
+      "managerName": "Jannat Jannatul Fardous",
+      "logoUrl": "/api/photos/team-cmsbax27h00003z01q07qcoqx-b9aa7d3c-9a15-4d0b-9439-d935ab1f39cb",
+      "managerPasswordHash": "4536c2ec8e9b6e8fa3baef087f70df4e:22aae2e2afbc19529d275ebae78bac841cc14a22eb1d7fdaca7e1305c4a0d781",
+      "managerLoginBlocked": true,
+      "createdAt": "2026-08-02T04:29:42.125Z",
+      "updatedAt": "2026-08-04T01:22:10.670Z"
+    },
+    {
+      "id": "cmsbax8jk001l3z01g461hndj",
+      "name": "The Bottleneck",
+      "shortName": "TBN",
+      "semester": 3,
+      "managerName": "MD Zahidul Islam",
+      "logoUrl": "/api/photos/team-cmsbax8jk001l3z01g461hndj-1830f439-a396-429a-a849-5868db18bd74",
+      "managerPasswordHash": "d5fdfc6fe782ed91bd6aa76198f56433:753e8c537fce7df006c0a2e0a44740a300dbc1653349d261014e29a269dd9a1a",
+      "managerLoginBlocked": true,
+      "createdAt": "2026-08-02T04:29:50.336Z",
+      "updatedAt": "2026-08-04T01:22:10.670Z"
+    },
+    {
+      "id": "cmsbax5sr000y3z01cpadkdu4",
+      "name": "কমিটির টিম",
+      "shortName": "KMT",
+      "semester": 3,
+      "managerName": "Md Shafiul Alam Ruhin",
+      "logoUrl": "/api/photos/team-cmsbax5sr000y3z01cpadkdu4-8c10ffaa-2f54-49b0-bab9-d32ab37e52f2",
+      "managerPasswordHash": "2fd7ab6be6dbed14b88f9e8cc2e6033d:53eb6247552db824dd9d732adb76db14e1ee73a8eca68c82e81aefbd2c59604c",
+      "managerLoginBlocked": true,
+      "createdAt": "2026-08-02T04:29:46.779Z",
+      "updatedAt": "2026-08-04T06:37:07.447Z"
+    },
+    {
+      "id": "cmsbax7lf001d3z015spkww3t",
+      "name": "৭ এ ৭ FC",
+      "shortName": "7A7",
+      "semester": 7,
+      "managerName": "Hossain Desu",
+      "logoUrl": null,
+      "managerPasswordHash": "1da1bd0516bf3536bbd6661983e41318:a04ef03e82c50f0668d7d7133bc2c67b1a715939b74c611144ed66a3e367e8b6",
+      "managerLoginBlocked": false,
+      "createdAt": "2026-08-02T04:29:49.107Z",
+      "updatedAt": "2026-08-04T01:23:02.984Z"
+    }
+  ],
+  "players": [
+    {
+      "id": "cmsbax2dq00013z01m2miuyy5",
+      "name": "Habibul Mostafa Bishal",
+      "jerseyNumber": 1,
+      "position": null,
+      "isCaptain": true,
+      "photoUrl": "/api/photos/cmsbax2dq00013z01m2miuyy5-81fd782c-23d2-4187-982b-5b46b7273ba3",
+      "teamId": "cmsbax27h00003z01q07qcoqx",
+      "createdAt": "2026-08-02T04:29:42.125Z",
+      "updatedAt": "2026-08-03T16:56:13.499Z"
+    },
+    {
+      "id": "cmsbax2dq00023z01g3bapr5e",
+      "name": "Mirza Samir",
+      "jerseyNumber": 2,
+      "position": "FWD",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax2dq00023z01g3bapr5e-b0f2c170-0801-40d6-a30e-30031eff149a",
+      "teamId": "cmsbax27h00003z01q07qcoqx",
+      "createdAt": "2026-08-02T04:29:42.125Z",
+      "updatedAt": "2026-08-03T16:56:29.056Z"
+    },
+    {
+      "id": "cmsbax2dq00033z018jg53m3c",
+      "name": "Teezad Tabriz",
+      "jerseyNumber": 3,
+      "position": "MID",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax2dq00033z018jg53m3c-0ac24e3c-2498-40e9-b76c-37f69ad9f64f",
+      "teamId": "cmsbax27h00003z01q07qcoqx",
+      "createdAt": "2026-08-02T04:29:42.125Z",
+      "updatedAt": "2026-08-03T16:56:46.442Z"
+    },
+    {
+      "id": "cmsbax2dr00043z01unsyek1f",
+      "name": "Shad MD S.A.B",
+      "jerseyNumber": 4,
+      "position": "DEF",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax2dr00043z01unsyek1f-438bffb0-55b2-4944-88a7-5c37f03042a5",
+      "teamId": "cmsbax27h00003z01q07qcoqx",
+      "createdAt": "2026-08-02T04:29:42.125Z",
+      "updatedAt": "2026-08-03T16:57:05.949Z"
+    },
+    {
+      "id": "cmsbax2dr00053z01ezlcpqvk",
+      "name": "Nahid Tanvir Hasan",
+      "jerseyNumber": 5,
+      "position": "GK",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax2dr00053z01ezlcpqvk-c87616fe-502c-4e9f-8029-54093ba42e9a",
+      "teamId": "cmsbax27h00003z01q07qcoqx",
+      "createdAt": "2026-08-02T04:29:42.125Z",
+      "updatedAt": "2026-08-03T16:57:18.918Z"
+    },
+    {
+      "id": "cmsbax2dr00063z0119ziujp1",
+      "name": "Abir Abrar",
+      "jerseyNumber": 6,
+      "position": "FWD",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax2dr00063z0119ziujp1-0e0e5c22-01fd-4986-98d1-bd4f8b6622a0",
+      "teamId": "cmsbax27h00003z01q07qcoqx",
+      "createdAt": "2026-08-02T04:29:42.125Z",
+      "updatedAt": "2026-08-03T16:57:29.333Z"
+    },
+    {
+      "id": "cmsbax2dr00073z018uyus648",
+      "name": "Ahmed Habib",
+      "jerseyNumber": 7,
+      "position": "FWD",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax2dr00073z018uyus648-9c9abc8d-c1db-40a8-bd76-35c257984570",
+      "teamId": "cmsbax27h00003z01q07qcoqx",
+      "createdAt": "2026-08-02T04:29:42.125Z",
+      "updatedAt": "2026-08-03T16:57:59.367Z"
+    },
+    {
+      "id": "cmsbax2dr00083z01ffhlegnn",
+      "name": "Shuaib Tahsin",
+      "jerseyNumber": 8,
+      "position": "DEF",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax2dr00083z01ffhlegnn-b4c93479-2d8f-4a27-8c6f-8c9bb1c4b87b",
+      "teamId": "cmsbax27h00003z01q07qcoqx",
+      "createdAt": "2026-08-02T04:29:42.125Z",
+      "updatedAt": "2026-08-03T16:58:13.437Z"
+    },
+    {
+      "id": "cmsbax3ad000a3z010cdvsq7x",
+      "name": "Sharif Mashrafi",
+      "jerseyNumber": 1,
+      "position": "MID",
+      "isCaptain": true,
+      "photoUrl": "/api/photos/cmsbax3ad000a3z010cdvsq7x-2b03e5da-8761-4251-858a-3d55f21d025f",
+      "teamId": "cmsbax34l00093z018quslcio",
+      "createdAt": "2026-08-02T04:29:43.317Z",
+      "updatedAt": "2026-08-03T07:46:33.738Z"
+    },
+    {
+      "id": "cmsbax3ad000b3z01giwet2wg",
+      "name": "Wasimul Foij Sakib",
+      "jerseyNumber": 2,
+      "position": "MID",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax3ad000b3z01giwet2wg-7b5caccf-c820-4928-80a9-e271ab449d72",
+      "teamId": "cmsbax34l00093z018quslcio",
+      "createdAt": "2026-08-02T04:29:43.317Z",
+      "updatedAt": "2026-08-03T07:14:05.415Z"
+    },
+    {
+      "id": "cmsbax3ad000c3z01jtlfr2ut",
+      "name": "Shahrukh Ali Chowdhury",
+      "jerseyNumber": 3,
+      "position": "DEF",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax3ad000c3z01jtlfr2ut-3a8c48ff-e814-4fc0-a55c-501e37445286",
+      "teamId": "cmsbax34l00093z018quslcio",
+      "createdAt": "2026-08-02T04:29:43.317Z",
+      "updatedAt": "2026-08-03T07:04:48.992Z"
+    },
+    {
+      "id": "cmsbax3ad000d3z01fsw1473n",
+      "name": "Mahadi Fahim",
+      "jerseyNumber": 4,
+      "position": "GK",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax3ad000d3z01fsw1473n-e5846151-ca0f-44e0-ba1b-1f41195afbdf",
+      "teamId": "cmsbax34l00093z018quslcio",
+      "createdAt": "2026-08-02T04:29:43.317Z",
+      "updatedAt": "2026-08-03T07:13:12.199Z"
+    },
+    {
+      "id": "cmsbax3ad000e3z014f8uow1b",
+      "name": "Wasim Ashraf",
+      "jerseyNumber": 5,
+      "position": "FWD",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax3ad000e3z014f8uow1b-6e644388-b5a0-4363-91ba-10f31bbd6976",
+      "teamId": "cmsbax34l00093z018quslcio",
+      "createdAt": "2026-08-02T04:29:43.317Z",
+      "updatedAt": "2026-08-03T07:15:19.053Z"
+    },
+    {
+      "id": "cmsbax3ad000f3z01eaz9o8wo",
+      "name": "Mir Nafis Ali",
+      "jerseyNumber": 6,
+      "position": "DEF",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax3ad000f3z01eaz9o8wo-6533079c-0f6d-44f1-86f5-5596f5523ec1",
+      "teamId": "cmsbax34l00093z018quslcio",
+      "createdAt": "2026-08-02T04:29:43.317Z",
+      "updatedAt": "2026-08-03T07:09:32.079Z"
+    },
+    {
+      "id": "cmsbax3ad000g3z01u3lnbz60",
+      "name": "Mottaquin Tahsin",
+      "jerseyNumber": 7,
+      "position": "DEF",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax3ad000g3z01u3lnbz60-fc0ea0a3-a785-4b59-a9ba-3c679a85c91b",
+      "teamId": "cmsbax34l00093z018quslcio",
+      "createdAt": "2026-08-02T04:29:43.317Z",
+      "updatedAt": "2026-08-03T07:16:45.808Z"
+    },
+    {
+      "id": "cmsbax48q000i3z01rfzj8dn9",
+      "name": "Milhan Nafee",
+      "jerseyNumber": 1,
+      "position": "DEF",
+      "isCaptain": true,
+      "photoUrl": "/api/photos/cmsbax48q000i3z01rfzj8dn9-4ad81429-d784-48ef-93c7-46364b57635a",
+      "teamId": "cmsbax435000h3z01bjbz7ysl",
+      "createdAt": "2026-08-02T04:29:44.561Z",
+      "updatedAt": "2026-08-02T17:09:48.597Z"
+    },
+    {
+      "id": "cmsbax48q000j3z01ean9hu3k",
+      "name": "Sagor",
+      "jerseyNumber": 2,
+      "position": "DEF",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax48q000j3z01ean9hu3k-864ff661-faa0-4947-9827-82ec51f86ae1",
+      "teamId": "cmsbax435000h3z01bjbz7ysl",
+      "createdAt": "2026-08-02T04:29:44.561Z",
+      "updatedAt": "2026-08-02T17:14:22.650Z"
+    },
+    {
+      "id": "cmsbax48q000k3z01nrukem62",
+      "name": "Romeo",
+      "jerseyNumber": 3,
+      "position": "MID",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax48q000k3z01nrukem62-54bfefab-a9d3-4924-8ad5-2014d5694d40",
+      "teamId": "cmsbax435000h3z01bjbz7ysl",
+      "createdAt": "2026-08-02T04:29:44.561Z",
+      "updatedAt": "2026-08-02T17:20:04.477Z"
+    },
+    {
+      "id": "cmsbax48q000l3z01f9mnc1b3",
+      "name": "Huzaifa",
+      "jerseyNumber": 4,
+      "position": "MID",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax48q000l3z01f9mnc1b3-518009a0-d8bd-4ff5-ba22-2c0d90d69896",
+      "teamId": "cmsbax435000h3z01bjbz7ysl",
+      "createdAt": "2026-08-02T04:29:44.561Z",
+      "updatedAt": "2026-08-02T17:09:58.914Z"
+    },
+    {
+      "id": "cmsbax48q000m3z01ahgedl8e",
+      "name": "Heemel",
+      "jerseyNumber": 5,
+      "position": "FWD",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax48q000m3z01ahgedl8e-2157c662-79c4-4201-a739-91bcbc496d3e",
+      "teamId": "cmsbax435000h3z01bjbz7ysl",
+      "createdAt": "2026-08-02T04:29:44.561Z",
+      "updatedAt": "2026-08-03T07:51:05.615Z"
+    },
+    {
+      "id": "cmsbax48q000n3z0133bw8hat",
+      "name": "Zoha",
+      "jerseyNumber": 6,
+      "position": "MID",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax48q000n3z0133bw8hat-bfb5571e-7217-4aaf-b629-8b60472543f9",
+      "teamId": "cmsbax435000h3z01bjbz7ysl",
+      "createdAt": "2026-08-02T04:29:44.561Z",
+      "updatedAt": "2026-08-03T07:53:31.439Z"
+    },
+    {
+      "id": "cmsbax48q000o3z013zmj480f",
+      "name": "Yusha",
+      "jerseyNumber": 7,
+      "position": "GK",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax48q000o3z013zmj480f-c4c1c8a6-e0a3-443b-b51b-c62aae88422b",
+      "teamId": "cmsbax435000h3z01bjbz7ysl",
+      "createdAt": "2026-08-02T04:29:44.561Z",
+      "updatedAt": "2026-08-02T17:10:08.596Z"
+    },
+    {
+      "id": "cmsbax52d000q3z01skwwo3yh",
+      "name": "Siam",
+      "jerseyNumber": 1,
+      "position": "FWD",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax52d000q3z01skwwo3yh-fed684d1-0cc8-4231-b411-2d9288915c20",
+      "teamId": "cmsbax4wr000p3z01h8sf5wmp",
+      "createdAt": "2026-08-02T04:29:45.627Z",
+      "updatedAt": "2026-08-03T07:07:26.806Z"
+    },
+    {
+      "id": "cmsbax52d000r3z017ll76ez3",
+      "name": "Sheak",
+      "jerseyNumber": 2,
+      "position": "GK",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax52d000r3z017ll76ez3-2113d26e-47bc-4cdc-86d6-9d5a13b5c46a",
+      "teamId": "cmsbax4wr000p3z01h8sf5wmp",
+      "createdAt": "2026-08-02T04:29:45.627Z",
+      "updatedAt": "2026-08-03T03:28:48.865Z"
+    },
+    {
+      "id": "cmsbax52d000s3z015sjkkcqg",
+      "name": "Ujjal",
+      "jerseyNumber": 3,
+      "position": "MID",
+      "isCaptain": true,
+      "photoUrl": "/api/photos/cmsbax52d000s3z015sjkkcqg-fc39e183-ab90-4ca4-84fa-610912005cd3",
+      "teamId": "cmsbax4wr000p3z01h8sf5wmp",
+      "createdAt": "2026-08-02T04:29:45.627Z",
+      "updatedAt": "2026-08-03T03:28:57.391Z"
+    },
+    {
+      "id": "cmsbax52d000t3z015sac7n16",
+      "name": "Dip",
+      "jerseyNumber": 4,
+      "position": "DEF",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax52d000t3z015sac7n16-dcaa7b1f-f5e4-4426-9f27-40eb60161c7f",
+      "teamId": "cmsbax4wr000p3z01h8sf5wmp",
+      "createdAt": "2026-08-02T04:29:45.627Z",
+      "updatedAt": "2026-08-03T03:29:36.411Z"
+    },
+    {
+      "id": "cmsbax52d000u3z01cfe4p9mf",
+      "name": "Shaman",
+      "jerseyNumber": 5,
+      "position": "DEF",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax52d000u3z01cfe4p9mf-9cb4e052-2e4a-4adb-8105-b8bf7b2cf18b",
+      "teamId": "cmsbax4wr000p3z01h8sf5wmp",
+      "createdAt": "2026-08-02T04:29:45.627Z",
+      "updatedAt": "2026-08-03T03:29:27.443Z"
+    },
+    {
+      "id": "cmsbax52d000v3z010zpdcdvx",
+      "name": "Zuhair",
+      "jerseyNumber": 6,
+      "position": "FWD",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax52d000v3z010zpdcdvx-adbada93-57e2-4038-827e-52dfda02edff",
+      "teamId": "cmsbax4wr000p3z01h8sf5wmp",
+      "createdAt": "2026-08-02T04:29:45.627Z",
+      "updatedAt": "2026-08-03T03:29:20.300Z"
+    },
+    {
+      "id": "cmsbax52d000w3z017pbbi6q2",
+      "name": "Rahat",
+      "jerseyNumber": 7,
+      "position": "MID",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax52d000w3z017pbbi6q2-83077ff5-030b-42f5-838b-2b7da05c4666",
+      "teamId": "cmsbax4wr000p3z01h8sf5wmp",
+      "createdAt": "2026-08-02T04:29:45.627Z",
+      "updatedAt": "2026-08-03T03:28:17.192Z"
+    },
+    {
+      "id": "cmsbax52d000x3z01jz4xwr06",
+      "name": "Usman",
+      "jerseyNumber": 8,
+      "position": "DEF",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax52d000x3z01jz4xwr06-b0dc6cda-bef2-4382-b4b6-2a81ac383936",
+      "teamId": "cmsbax4wr000p3z01h8sf5wmp",
+      "createdAt": "2026-08-02T04:29:45.627Z",
+      "updatedAt": "2026-08-03T03:35:38.257Z"
+    },
+    {
+      "id": "cmsbax60m000z3z010xsqlpb5",
+      "name": "Md Shafiul Alam Ruhin",
+      "jerseyNumber": 1,
+      "position": "DEF",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax60m000z3z010xsqlpb5-88499ab6-3170-44b4-996a-7e8b7a303887",
+      "teamId": "cmsbax5sr000y3z01cpadkdu4",
+      "createdAt": "2026-08-02T04:29:46.779Z",
+      "updatedAt": "2026-08-03T00:05:22.158Z"
+    },
+    {
+      "id": "cmsbax60m00103z017xkkg52o",
+      "name": "Shoriful Islam",
+      "jerseyNumber": 2,
+      "position": "DEF",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax60m00103z017xkkg52o-f2c75f05-032e-4cd6-9718-a082f88d9e31",
+      "teamId": "cmsbax5sr000y3z01cpadkdu4",
+      "createdAt": "2026-08-02T04:29:46.779Z",
+      "updatedAt": "2026-08-03T14:26:43.579Z"
+    },
+    {
+      "id": "cmsbax60m00113z015gqosk51",
+      "name": "Kazi Rafid Mostakin",
+      "jerseyNumber": 3,
+      "position": "MID",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax60m00113z015gqosk51-e45bfebc-6db3-4caa-ad5f-b9bc4bc90e64",
+      "teamId": "cmsbax5sr000y3z01cpadkdu4",
+      "createdAt": "2026-08-02T04:29:46.779Z",
+      "updatedAt": "2026-08-04T03:16:20.769Z"
+    },
+    {
+      "id": "cmsbax60m00123z018etmunt4",
+      "name": "Mahfuz Mahi",
+      "jerseyNumber": 4,
+      "position": "FWD",
+      "isCaptain": true,
+      "photoUrl": "/api/photos/cmsbax60m00123z018etmunt4-eadf9a79-c6f8-487f-9527-4f3b3daa1a16",
+      "teamId": "cmsbax5sr000y3z01cpadkdu4",
+      "createdAt": "2026-08-02T04:29:46.779Z",
+      "updatedAt": "2026-08-04T03:16:12.813Z"
+    },
+    {
+      "id": "cmsbax60m00133z0115j27gl2",
+      "name": "Shafi Ahmed",
+      "jerseyNumber": 5,
+      "position": "GK",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax60m00133z0115j27gl2-01c38b8f-819d-4a0e-9e91-79c6b8b37bdd",
+      "teamId": "cmsbax5sr000y3z01cpadkdu4",
+      "createdAt": "2026-08-02T04:29:46.779Z",
+      "updatedAt": "2026-08-04T03:16:01.737Z"
+    },
+    {
+      "id": "cmsbax60m00143z01pqqt3cje",
+      "name": "Fulmia Sheikh",
+      "jerseyNumber": 6,
+      "position": "FWD",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax60m00143z01pqqt3cje-2c626212-0905-4b3d-b582-cff9ae147409",
+      "teamId": "cmsbax5sr000y3z01cpadkdu4",
+      "createdAt": "2026-08-02T04:29:46.779Z",
+      "updatedAt": "2026-08-04T03:15:51.685Z"
+    },
+    {
+      "id": "cmsbax6vu00163z01ybyyoa9a",
+      "name": "Manjur Yadin",
+      "jerseyNumber": 1,
+      "position": "FWD",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax6vu00163z01ybyyoa9a-8412dc20-07d5-4065-be8f-5d0905549963",
+      "teamId": "cmsbax6o400153z01c68c7ct3",
+      "createdAt": "2026-08-02T04:29:47.908Z",
+      "updatedAt": "2026-08-02T14:12:23.525Z"
+    },
+    {
+      "id": "cmsbax6vu00173z01b260gwdm",
+      "name": "Sayeed",
+      "jerseyNumber": 2,
+      "position": "FWD",
+      "isCaptain": true,
+      "photoUrl": "/api/photos/cmsbax6vu00173z01b260gwdm-47836ce9-1020-467c-a60b-71be33bfea29",
+      "teamId": "cmsbax6o400153z01c68c7ct3",
+      "createdAt": "2026-08-02T04:29:47.908Z",
+      "updatedAt": "2026-08-02T15:00:29.199Z"
+    },
+    {
+      "id": "cmsbax6vu00183z01psdrs018",
+      "name": "Adnan",
+      "jerseyNumber": 3,
+      "position": "MID",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax6vu00183z01psdrs018-164bd66d-f52c-47c9-b1f9-9bdd62757cd2",
+      "teamId": "cmsbax6o400153z01c68c7ct3",
+      "createdAt": "2026-08-02T04:29:47.908Z",
+      "updatedAt": "2026-08-02T14:12:11.023Z"
+    },
+    {
+      "id": "cmsbax6vu00193z01qeoh28db",
+      "name": "Tanvir Siddik",
+      "jerseyNumber": 4,
+      "position": "DEF",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax6vu00193z01qeoh28db-30430435-299c-429d-b2d4-4ecaf7421b74",
+      "teamId": "cmsbax6o400153z01c68c7ct3",
+      "createdAt": "2026-08-02T04:29:47.908Z",
+      "updatedAt": "2026-08-02T14:11:54.157Z"
+    },
+    {
+      "id": "cmsbax6vu001a3z013ggl2j2e",
+      "name": "Arafat",
+      "jerseyNumber": 5,
+      "position": "DEF",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax6vu001a3z013ggl2j2e-61ddf82e-e954-4e02-b0d2-f90e8090fcea",
+      "teamId": "cmsbax6o400153z01c68c7ct3",
+      "createdAt": "2026-08-02T04:29:47.908Z",
+      "updatedAt": "2026-08-02T14:11:31.088Z"
+    },
+    {
+      "id": "cmsbax6vu001b3z01wfwqknac",
+      "name": "Muhaimin",
+      "jerseyNumber": 6,
+      "position": "GK",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax6vu001b3z01wfwqknac-9f22dd7f-d3cb-47dc-9cdc-d5b915f43e5d",
+      "teamId": "cmsbax6o400153z01c68c7ct3",
+      "createdAt": "2026-08-02T04:29:47.908Z",
+      "updatedAt": "2026-08-02T14:11:36.795Z"
+    },
+    {
+      "id": "cmsbax6vu001c3z01rpd77685",
+      "name": "Tanjir Hasan",
+      "jerseyNumber": 7,
+      "position": "DEF",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax6vu001c3z01rpd77685-3bd522f6-cd52-4a31-b554-028b67a2e9ab",
+      "teamId": "cmsbax6o400153z01c68c7ct3",
+      "createdAt": "2026-08-02T04:29:47.908Z",
+      "updatedAt": "2026-08-03T02:56:28.538Z"
+    },
+    {
+      "id": "cmsbax7tl001e3z018b1on9yk",
+      "name": "Hossain",
+      "jerseyNumber": 1,
+      "position": null,
+      "isCaptain": true,
+      "photoUrl": "/api/photos/cmsbax7tl001e3z018b1on9yk-3100c742-e63d-4701-9536-766cf4ff5468",
+      "teamId": "cmsbax7lf001d3z015spkww3t",
+      "createdAt": "2026-08-02T04:29:49.107Z",
+      "updatedAt": "2026-08-04T06:39:10.930Z"
+    },
+    {
+      "id": "cmsbax7tl001f3z01xls2w61p",
+      "name": "Abdul Tahsin",
+      "jerseyNumber": 2,
+      "position": null,
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax7tl001f3z01xls2w61p-5b8f36c7-3b6e-4c92-89bf-d1b357cf550c",
+      "teamId": "cmsbax7lf001d3z015spkww3t",
+      "createdAt": "2026-08-02T04:29:49.107Z",
+      "updatedAt": "2026-08-04T06:38:51.432Z"
+    },
+    {
+      "id": "cmsbax7tl001g3z0111pjeupt",
+      "name": "Auvik",
+      "jerseyNumber": 3,
+      "position": "FWD",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax7tl001g3z0111pjeupt-33c7d68b-3ea0-4059-b7aa-6bc58c86a175",
+      "teamId": "cmsbax7lf001d3z015spkww3t",
+      "createdAt": "2026-08-02T04:29:49.107Z",
+      "updatedAt": "2026-08-04T06:40:10.883Z"
+    },
+    {
+      "id": "cmsbax7tl001h3z011hs2fyp6",
+      "name": "Tanvir Chowdhury",
+      "jerseyNumber": 4,
+      "position": "FWD",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax7tl001h3z011hs2fyp6-40c9b064-510d-4339-89fe-1b92c9488cea",
+      "teamId": "cmsbax7lf001d3z015spkww3t",
+      "createdAt": "2026-08-02T04:29:49.107Z",
+      "updatedAt": "2026-08-04T06:39:39.882Z"
+    },
+    {
+      "id": "cmsbax7tl001i3z01k9bvdra8",
+      "name": "Habib Khan",
+      "jerseyNumber": 5,
+      "position": "DEF",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax7tl001i3z01k9bvdra8-3ba72149-8eef-40c8-9042-fd7b81d94956",
+      "teamId": "cmsbax7lf001d3z015spkww3t",
+      "createdAt": "2026-08-02T04:29:49.107Z",
+      "updatedAt": "2026-08-04T06:40:35.751Z"
+    },
+    {
+      "id": "cmsbax7tl001j3z01wzcw47k4",
+      "name": "Tahsin Rohan",
+      "jerseyNumber": 6,
+      "position": "DEF",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax7tl001j3z01wzcw47k4-48f96e38-b7b1-4b06-9406-5acdc9daf584",
+      "teamId": "cmsbax7lf001d3z015spkww3t",
+      "createdAt": "2026-08-02T04:29:49.107Z",
+      "updatedAt": "2026-08-04T06:41:16.427Z"
+    },
+    {
+      "id": "cmsbax7tl001k3z011tencd12",
+      "name": "Shimul",
+      "jerseyNumber": 7,
+      "position": "DEF",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax7tl001k3z011tencd12-f3c94cae-380e-4cd3-b3d3-78ceb6a9f7a5",
+      "teamId": "cmsbax7lf001d3z015spkww3t",
+      "createdAt": "2026-08-02T04:29:49.107Z",
+      "updatedAt": "2026-08-04T06:41:51.809Z"
+    },
+    {
+      "id": "cmsbax8s4001m3z01yh3r4p57",
+      "name": "MD Zahidul Islam",
+      "jerseyNumber": 1,
+      "position": "MID",
+      "isCaptain": true,
+      "photoUrl": "/api/photos/cmsbax8s4001m3z01yh3r4p57-8ccaa1eb-2cc8-41a4-975f-3e3ff0da949a",
+      "teamId": "cmsbax8jk001l3z01g461hndj",
+      "createdAt": "2026-08-02T04:29:50.336Z",
+      "updatedAt": "2026-08-03T00:31:15.001Z"
+    },
+    {
+      "id": "cmsbax8s4001n3z01qqwdkocf",
+      "name": "Arifur Rahman Adit",
+      "jerseyNumber": 2,
+      "position": "FWD",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax8s4001n3z01qqwdkocf-c6db41fa-d89a-487a-987c-ed355813063e",
+      "teamId": "cmsbax8jk001l3z01g461hndj",
+      "createdAt": "2026-08-02T04:29:50.336Z",
+      "updatedAt": "2026-08-03T00:20:16.608Z"
+    },
+    {
+      "id": "cmsbax8s4001o3z01143gxb3o",
+      "name": "Nyeeb Islam",
+      "jerseyNumber": 3,
+      "position": "DEF",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax8s4001o3z01143gxb3o-557a6bc6-e2be-4e32-b2fd-a948983a5f75",
+      "teamId": "cmsbax8jk001l3z01g461hndj",
+      "createdAt": "2026-08-02T04:29:50.336Z",
+      "updatedAt": "2026-08-03T00:20:39.649Z"
+    },
+    {
+      "id": "cmsbax8s4001p3z01kk7s1iiz",
+      "name": "Muhammad Arman",
+      "jerseyNumber": 4,
+      "position": "DEF",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax8s4001p3z01kk7s1iiz-bdf433d0-1ed5-4d49-ba5c-1b93adddf5c0",
+      "teamId": "cmsbax8jk001l3z01g461hndj",
+      "createdAt": "2026-08-02T04:29:50.336Z",
+      "updatedAt": "2026-08-03T00:20:49.064Z"
+    },
+    {
+      "id": "cmsbax8s4001q3z01vfua3u5l",
+      "name": "Mahim",
+      "jerseyNumber": 5,
+      "position": "GK",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax8s4001q3z01vfua3u5l-db04c705-e854-4ef5-bc70-430be6df27cf",
+      "teamId": "cmsbax8jk001l3z01g461hndj",
+      "createdAt": "2026-08-02T04:29:50.336Z",
+      "updatedAt": "2026-08-03T00:21:01.720Z"
+    },
+    {
+      "id": "cmsbax8s4001r3z015mmmobl9",
+      "name": "Zahidul Sajid",
+      "jerseyNumber": 6,
+      "position": "DEF",
+      "isCaptain": false,
+      "photoUrl": "/api/photos/cmsbax8s4001r3z015mmmobl9-d0386cd3-cbcf-4d7c-b597-a9aea9e2c82d",
+      "teamId": "cmsbax8jk001l3z01g461hndj",
+      "createdAt": "2026-08-02T04:29:50.336Z",
+      "updatedAt": "2026-08-03T00:21:21.370Z"
+    }
+  ],
+  "matches": [
+    {
+      "id": "cmsbax9c4001s3z01s3kthor2",
+      "round": "LEAGUE",
+      "label": "Match 1",
+      "homeTeam": "Molom Bahini",
+      "awayTeam": "কমিটির টিম",
+      "homeScore": 0,
+      "awayScore": 0,
+      "status": "FINISHED",
+      "scheduledAt": "2026-08-04T08:00:00.000Z",
+      "venue": "Field 1",
+      "startedAt": "2026-08-04T08:02:02.391Z",
+      "finishedAt": "2026-08-04T08:09:57.764Z"
+    },
+    {
+      "id": "cmsbax9hv001t3z01zck0wbp8",
+      "round": "LEAGUE",
+      "label": "Match 2",
+      "homeTeam": "Dilly Dally FC",
+      "awayTeam": "Fall 25",
+      "homeScore": 1,
+      "awayScore": 2,
+      "status": "FINISHED",
+      "scheduledAt": "2026-08-04T08:10:00.000Z",
+      "venue": "Field 1",
+      "startedAt": "2026-08-04T08:13:31.331Z",
+      "finishedAt": "2026-08-04T08:20:58.914Z"
+    },
+    {
+      "id": "cmsbax9uf001v3z01xsj05f4v",
+      "round": "LEAGUE",
+      "label": "Match 4",
+      "homeTeam": "GENJAM-101",
+      "awayTeam": "The Bottleneck",
+      "homeScore": 0,
+      "awayScore": 0,
+      "status": "FINISHED",
+      "scheduledAt": "2026-08-04T08:20:00.000Z",
+      "venue": "Field 1",
+      "startedAt": "2026-08-04T08:23:26.514Z",
+      "finishedAt": "2026-08-04T08:31:03.691Z"
+    },
+    {
+      "id": "cmsbaxa1n001w3z0168hjtv0d",
+      "round": "LEAGUE",
+      "label": "Match 5",
+      "homeTeam": "Molom Bahini",
+      "awayTeam": "Fall 25",
+      "homeScore": 0,
+      "awayScore": 2,
+      "status": "FINISHED",
+      "scheduledAt": "2026-08-04T08:30:00.000Z",
+      "venue": "Field 1",
+      "startedAt": "2026-08-04T08:34:22.862Z",
+      "finishedAt": "2026-08-04T08:41:39.209Z"
+    },
+    {
+      "id": "cmsbax9ok001u3z01x5b763eh",
+      "round": "LEAGUE",
+      "label": "Match 3",
+      "homeTeam": "Koshai FC",
+      "awayTeam": "৭ এ ৭ FC",
+      "homeScore": 1,
+      "awayScore": 1,
+      "status": "FINISHED",
+      "scheduledAt": "2026-08-04T08:40:00.000Z",
+      "venue": "Field 1",
+      "startedAt": "2026-08-04T08:43:15.029Z",
+      "finishedAt": "2026-08-04T08:52:09.439Z"
+    },
+    {
+      "id": "cmsbaxa90001x3z01z5p5laa9",
+      "round": "LEAGUE",
+      "label": "Match 6",
+      "homeTeam": "Molom Bahini",
+      "awayTeam": "Dilly Dally FC",
+      "homeScore": 2,
+      "awayScore": 0,
+      "status": "FINISHED",
+      "scheduledAt": "2026-08-04T09:00:00.000Z",
+      "venue": "Field 1",
+      "startedAt": "2026-08-04T08:56:48.388Z",
+      "finishedAt": "2026-08-04T09:04:22.170Z"
+    },
+    {
+      "id": "cmsbaxaen001y3z0107ia74ag",
+      "round": "LEAGUE",
+      "label": "Match 7",
+      "homeTeam": "Koshai FC",
+      "awayTeam": "GENJAM-101",
+      "homeScore": 0,
+      "awayScore": 2,
+      "status": "FINISHED",
+      "scheduledAt": "2026-08-04T09:00:00.000Z",
+      "venue": "Field 2",
+      "startedAt": "2026-08-04T08:59:48.396Z",
+      "finishedAt": "2026-08-04T09:07:47.693Z"
+    },
+    {
+      "id": "cmsbaxakb001z3z01740kahmo",
+      "round": "LEAGUE",
+      "label": "Match 8",
+      "homeTeam": "কমিটির টিম",
+      "awayTeam": "Fall 25",
+      "homeScore": 1,
+      "awayScore": 0,
+      "status": "FINISHED",
+      "scheduledAt": "2026-08-04T09:10:00.000Z",
+      "venue": "Field 1",
+      "startedAt": "2026-08-04T09:07:59.070Z",
+      "finishedAt": "2026-08-04T09:15:37.041Z"
+    },
+    {
+      "id": "cmsbaxapy00203z01mf6q9cve",
+      "round": "LEAGUE",
+      "label": "Match 9",
+      "homeTeam": "৭ এ ৭ FC",
+      "awayTeam": "The Bottleneck",
+      "homeScore": 0,
+      "awayScore": 0,
+      "status": "FINISHED",
+      "scheduledAt": "2026-08-04T09:10:00.000Z",
+      "venue": "Field 2",
+      "startedAt": "2026-08-04T09:14:11.788Z",
+      "finishedAt": "2026-08-04T09:22:52.989Z"
+    },
+    {
+      "id": "cmsbaxbck00223z01929guhiv",
+      "round": "LEAGUE",
+      "label": "Match 11",
+      "homeTeam": "Dilly Dally FC",
+      "awayTeam": "GENJAM-101",
+      "homeScore": 1,
+      "awayScore": 1,
+      "status": "FINISHED",
+      "scheduledAt": "2026-08-04T09:20:00.000Z",
+      "venue": "Field 2",
+      "startedAt": "2026-08-04T09:24:12.153Z",
+      "finishedAt": "2026-08-04T09:32:12.167Z"
+    },
+    {
+      "id": "cmsbaxb6y00213z01hhv5di6m",
+      "round": "LEAGUE",
+      "label": "Match 10",
+      "homeTeam": "Molom Bahini",
+      "awayTeam": "Koshai FC",
+      "homeScore": 0,
+      "awayScore": 1,
+      "status": "FINISHED",
+      "scheduledAt": "2026-08-04T09:20:00.000Z",
+      "venue": "Field 1",
+      "startedAt": "2026-08-04T09:24:53.069Z",
+      "finishedAt": "2026-08-04T09:34:35.258Z"
+    },
+    {
+      "id": "cmsbaxbi600233z01l5z8g8bc",
+      "round": "LEAGUE",
+      "label": "Match 12",
+      "homeTeam": "কমিটির টিম",
+      "awayTeam": "৭ এ ৭ FC",
+      "homeScore": 0,
+      "awayScore": 0,
+      "status": "FINISHED",
+      "scheduledAt": "2026-08-04T09:30:00.000Z",
+      "venue": "Field 1",
+      "startedAt": "2026-08-04T09:35:40.511Z",
+      "finishedAt": "2026-08-04T09:44:46.202Z"
+    },
+    {
+      "id": "cmsbaxbnt00243z01eqj38opf",
+      "round": "LEAGUE",
+      "label": "Match 13",
+      "homeTeam": "Fall 25",
+      "awayTeam": "The Bottleneck",
+      "homeScore": 0,
+      "awayScore": 0,
+      "status": "FINISHED",
+      "scheduledAt": "2026-08-04T09:30:00.000Z",
+      "venue": "Field 2",
+      "startedAt": "2026-08-04T09:38:25.802Z",
+      "finishedAt": "2026-08-04T09:45:50.338Z"
+    },
+    {
+      "id": "cmsbaxc0w00263z01k9fw74jv",
+      "round": "LEAGUE",
+      "label": "Match 15",
+      "homeTeam": "Dilly Dally FC",
+      "awayTeam": "Koshai FC",
+      "homeScore": 1,
+      "awayScore": 1,
+      "status": "FINISHED",
+      "scheduledAt": "2026-08-04T09:40:00.000Z",
+      "venue": "Field 2",
+      "startedAt": "2026-08-04T09:49:37.854Z",
+      "finishedAt": "2026-08-04T09:57:23.423Z"
+    },
+    {
+      "id": "cmsbaxbv900253z011920n1g2",
+      "round": "LEAGUE",
+      "label": "Match 14",
+      "homeTeam": "Molom Bahini",
+      "awayTeam": "GENJAM-101",
+      "homeScore": 0,
+      "awayScore": 2,
+      "status": "FINISHED",
+      "scheduledAt": "2026-08-04T09:40:00.000Z",
+      "venue": "Field 1",
+      "startedAt": "2026-08-04T09:49:04.759Z",
+      "finishedAt": "2026-08-04T09:56:40.215Z"
+    },
+    {
+      "id": "cmsbaxc6o00273z01ne63brl9",
+      "round": "LEAGUE",
+      "label": "Match 16",
+      "homeTeam": "কমিটির টিম",
+      "awayTeam": "The Bottleneck",
+      "homeScore": 0,
+      "awayScore": 0,
+      "status": "FINISHED",
+      "scheduledAt": "2026-08-04T09:50:00.000Z",
+      "venue": "Field 1",
+      "startedAt": "2026-08-04T10:02:12.346Z",
+      "finishedAt": "2026-08-04T10:07:37.674Z"
+    },
+    {
+      "id": "cmsbaxccc00283z01uzhlwxev",
+      "round": "LEAGUE",
+      "label": "Match 17",
+      "homeTeam": "Fall 25",
+      "awayTeam": "৭ এ ৭ FC",
+      "homeScore": 0,
+      "awayScore": 0,
+      "status": "FINISHED",
+      "scheduledAt": "2026-08-04T09:50:00.000Z",
+      "venue": "Field 2",
+      "startedAt": "2026-08-04T10:01:36.037Z",
+      "finishedAt": "2026-08-04T10:09:59.244Z"
+    },
+    {
+      "id": "cmsbaxchz00293z011dl2bqhe",
+      "round": "LEAGUE",
+      "label": "Match 18",
+      "homeTeam": "Dilly Dally FC",
+      "awayTeam": "কমিটির টিম",
+      "homeScore": 1,
+      "awayScore": 0,
+      "status": "FINISHED",
+      "scheduledAt": "2026-08-04T10:10:00.000Z",
+      "venue": "Field 1",
+      "startedAt": "2026-08-04T10:20:32.719Z",
+      "finishedAt": "2026-08-04T10:29:25.290Z"
+    },
+    {
+      "id": "cmsbaxcod002a3z01dszjfbqa",
+      "round": "LEAGUE",
+      "label": "Match 19",
+      "homeTeam": "Koshai FC",
+      "awayTeam": "The Bottleneck",
+      "homeScore": 0,
+      "awayScore": 0,
+      "status": "FINISHED",
+      "scheduledAt": "2026-08-04T10:20:00.000Z",
+      "venue": "Field 1",
+      "startedAt": "2026-08-04T10:31:48.139Z",
+      "finishedAt": "2026-08-04T10:39:52.640Z"
+    },
+    {
+      "id": "cmsbaxctz002b3z015z24c70g",
+      "round": "LEAGUE",
+      "label": "Match 20",
+      "homeTeam": "GENJAM-101",
+      "awayTeam": "Fall 25",
+      "homeScore": 2,
+      "awayScore": 0,
+      "status": "FINISHED",
+      "scheduledAt": "2026-08-04T10:30:00.000Z",
+      "venue": "Field 1",
+      "startedAt": "2026-08-04T10:40:31.189Z",
+      "finishedAt": "2026-08-04T10:49:16.762Z"
+    },
+    {
+      "id": "cmsbaxczl002c3z013dk3fu8i",
+      "round": "LEAGUE",
+      "label": "Match 21",
+      "homeTeam": "Molom Bahini",
+      "awayTeam": "৭ এ ৭ FC",
+      "homeScore": 0,
+      "awayScore": 1,
+      "status": "FINISHED",
+      "scheduledAt": "2026-08-04T10:40:00.000Z",
+      "venue": "Field 1",
+      "startedAt": "2026-08-04T10:52:28.922Z",
+      "finishedAt": "2026-08-04T11:00:45.106Z"
+    },
+    {
+      "id": "cmsbaxd59002d3z01cqpfgn0p",
+      "round": "LEAGUE",
+      "label": "Match 22",
+      "homeTeam": "Dilly Dally FC",
+      "awayTeam": "The Bottleneck",
+      "homeScore": 0,
+      "awayScore": 0,
+      "status": "FINISHED",
+      "scheduledAt": "2026-08-04T10:50:00.000Z",
+      "venue": "Field 1",
+      "startedAt": "2026-08-04T11:03:15.398Z",
+      "finishedAt": "2026-08-04T11:12:00.297Z"
+    },
+    {
+      "id": "cmsbaxdd6002e3z015f44zs81",
+      "round": "LEAGUE",
+      "label": "Match 23",
+      "homeTeam": "Koshai FC",
+      "awayTeam": "Fall 25",
+      "homeScore": 0,
+      "awayScore": 0,
+      "status": "FINISHED",
+      "scheduledAt": "2026-08-04T11:00:00.000Z",
+      "venue": "Field 1",
+      "startedAt": "2026-08-04T11:13:17.600Z",
+      "finishedAt": "2026-08-04T11:23:46.503Z"
+    },
+    {
+      "id": "cmsbaxdit002f3z01th3fet2p",
+      "round": "LEAGUE",
+      "label": "Match 24",
+      "homeTeam": "GENJAM-101",
+      "awayTeam": "কমিটির টিম",
+      "homeScore": 1,
+      "awayScore": 2,
+      "status": "FINISHED",
+      "scheduledAt": "2026-08-04T11:10:00.000Z",
+      "venue": "Field 1",
+      "startedAt": "2026-08-04T11:25:13.766Z",
+      "finishedAt": "2026-08-04T11:36:08.458Z"
+    },
+    {
+      "id": "cmsbaxdoi002g3z01edsy35ay",
+      "round": "LEAGUE",
+      "label": "Match 25",
+      "homeTeam": "Molom Bahini",
+      "awayTeam": "The Bottleneck",
+      "homeScore": 1,
+      "awayScore": 0,
+      "status": "FINISHED",
+      "scheduledAt": "2026-08-04T11:20:00.000Z",
+      "venue": "Field 1",
+      "startedAt": "2026-08-04T11:40:11.623Z",
+      "finishedAt": "2026-08-04T11:52:42.411Z"
+    },
+    {
+      "id": "cmsbaxdw2002h3z01o19p5h6s",
+      "round": "LEAGUE",
+      "label": "Match 26",
+      "homeTeam": "Dilly Dally FC",
+      "awayTeam": "৭ এ ৭ FC",
+      "homeScore": 0,
+      "awayScore": 0,
+      "status": "FINISHED",
+      "scheduledAt": "2026-08-04T11:30:00.000Z",
+      "venue": "Field 1",
+      "startedAt": "2026-08-04T11:55:30.401Z",
+      "finishedAt": "2026-08-04T12:03:33.018Z"
+    },
+    {
+      "id": "cmsbaxe1p002i3z01mxai3dpl",
+      "round": "LEAGUE",
+      "label": "Match 27",
+      "homeTeam": "Koshai FC",
+      "awayTeam": "কমিটির টিম",
+      "homeScore": 0,
+      "awayScore": 2,
+      "status": "FINISHED",
+      "scheduledAt": "2026-08-04T11:40:00.000Z",
+      "venue": "Field 1",
+      "startedAt": "2026-08-04T12:04:34.990Z",
+      "finishedAt": "2026-08-04T12:14:31.353Z"
+    },
+    {
+      "id": "cmsbaxe8i002j3z01304ssky2",
+      "round": "LEAGUE",
+      "label": "Match 28",
+      "homeTeam": "GENJAM-101",
+      "awayTeam": "৭ এ ৭ FC",
+      "homeScore": 2,
+      "awayScore": 0,
+      "status": "FINISHED",
+      "scheduledAt": "2026-08-04T11:50:00.000Z",
+      "venue": "Field 1",
+      "startedAt": "2026-08-04T12:16:59.536Z",
+      "finishedAt": "2026-08-04T12:25:28.976Z"
+    },
+    {
+      "id": "cmsbaxemn002l3z01bm0qpssq",
+      "round": "SEMIFINAL",
+      "label": "Semifinal 2 (2nd vs 3rd)",
+      "homeTeam": "GENJAM-101",
+      "awayTeam": "৭ এ ৭ FC",
+      "homeScore": 2,
+      "awayScore": 0,
+      "status": "FINISHED",
+      "scheduledAt": "2026-08-04T20:20:00.000Z",
+      "venue": "Field 1",
+      "startedAt": "2026-08-04T12:31:11.658Z",
+      "finishedAt": "2026-08-04T13:16:35.312Z"
+    },
+    {
+      "id": "cmsbaxee6002k3z01cuesqnwl",
+      "round": "SEMIFINAL",
+      "label": "Semifinal 1 (1st vs 4th)",
+      "homeTeam": "কমিটির টিম",
+      "awayTeam": "Fall 25",
+      "homeScore": 1,
+      "awayScore": 1,
+      "status": "FINISHED",
+      "scheduledAt": "2026-08-04T20:35:00.000Z",
+      "venue": "Field 1",
+      "startedAt": "2026-08-04T12:29:41.788Z",
+      "finishedAt": "2026-08-04T13:00:01.561Z"
+    },
+    {
+      "id": "cmsbaxesb002m3z013ijlvhdh",
+      "round": "FINAL",
+      "label": "Final",
+      "homeTeam": "GENJAM-101",
+      "awayTeam": "কমিটির টিম",
+      "homeScore": 6,
+      "awayScore": 2,
+      "status": "FINISHED",
+      "scheduledAt": "2026-08-04T12:40:00.000Z",
+      "venue": "Field 1",
+      "startedAt": "2026-08-04T13:28:34.396Z",
+      "finishedAt": "2026-08-04T13:41:39.302Z"
+    }
+  ],
+  "matchEvents": [
+    {
+      "matchId": "cmsbax9hv001t3z01zck0wbp8",
+      "matchLabel": "Match 2",
+      "round": "LEAGUE",
+      "type": "GOAL",
+      "team": "Fall 25",
+      "player": "Manjur Yadin",
+      "groupId": "aa901409-dc5f-4ef2-8ad5-a6a00ae11801",
+      "sequence": 28
+    },
+    {
+      "matchId": "cmsbax9hv001t3z01zck0wbp8",
+      "matchLabel": "Match 2",
+      "round": "LEAGUE",
+      "type": "GOAL",
+      "team": "Fall 25",
+      "player": "Manjur Yadin",
+      "groupId": "6bf140e0-818d-40fa-83fb-806332a90740",
+      "sequence": 29
+    },
+    {
+      "matchId": "cmsbax9hv001t3z01zck0wbp8",
+      "matchLabel": "Match 2",
+      "round": "LEAGUE",
+      "type": "ASSIST",
+      "team": "Fall 25",
+      "player": "Tanvir Siddik",
+      "groupId": "6bf140e0-818d-40fa-83fb-806332a90740",
+      "sequence": 30
+    },
+    {
+      "matchId": "cmsbax9hv001t3z01zck0wbp8",
+      "matchLabel": "Match 2",
+      "round": "LEAGUE",
+      "type": "GOAL",
+      "team": "Dilly Dally FC",
+      "player": "Wasimul Foij Sakib",
+      "groupId": "73da878b-544e-4b7d-b309-66b14a6d3478",
+      "sequence": 31
+    },
+    {
+      "matchId": "cmsbax9hv001t3z01zck0wbp8",
+      "matchLabel": "Match 2",
+      "round": "LEAGUE",
+      "type": "ASSIST",
+      "team": "Dilly Dally FC",
+      "player": "Sharif Mashrafi",
+      "groupId": "73da878b-544e-4b7d-b309-66b14a6d3478",
+      "sequence": 32
+    },
+    {
+      "matchId": "cmsbax9ok001u3z01x5b763eh",
+      "matchLabel": "Match 3",
+      "round": "LEAGUE",
+      "type": "GOAL",
+      "team": "৭ এ ৭ FC",
+      "player": "Tanvir Chowdhury",
+      "groupId": "5d51395b-65aa-4eab-8872-1d289372be97",
+      "sequence": 36
+    },
+    {
+      "matchId": "cmsbax9ok001u3z01x5b763eh",
+      "matchLabel": "Match 3",
+      "round": "LEAGUE",
+      "type": "ASSIST",
+      "team": "৭ এ ৭ FC",
+      "player": "Abdul Tahsin",
+      "groupId": "5d51395b-65aa-4eab-8872-1d289372be97",
+      "sequence": 37
+    },
+    {
+      "matchId": "cmsbax9ok001u3z01x5b763eh",
+      "matchLabel": "Match 3",
+      "round": "LEAGUE",
+      "type": "GOAL",
+      "team": "Koshai FC",
+      "player": "Huzaifa",
+      "groupId": "413f5d02-6671-4d30-a8bd-7b2abc228be2",
+      "sequence": 38
+    },
+    {
+      "matchId": "cmsbax9ok001u3z01x5b763eh",
+      "matchLabel": "Match 3",
+      "round": "LEAGUE",
+      "type": "YELLOW_CARD",
+      "team": "Koshai FC",
+      "player": "Heemel",
+      "groupId": "3cd3f0b4-4b2b-48a3-83b7-567b5460504e",
+      "sequence": 39
+    },
+    {
+      "matchId": "cmsbaxa1n001w3z0168hjtv0d",
+      "matchLabel": "Match 5",
+      "round": "LEAGUE",
+      "type": "GOAL",
+      "team": "Fall 25",
+      "player": "Manjur Yadin",
+      "groupId": "6f86ec28-8974-4185-815c-94a3a741924e",
+      "sequence": 33
+    },
+    {
+      "matchId": "cmsbaxa1n001w3z0168hjtv0d",
+      "matchLabel": "Match 5",
+      "round": "LEAGUE",
+      "type": "GOAL",
+      "team": "Fall 25",
+      "player": "Sayeed",
+      "groupId": "2b5fd616-4c8d-471f-bbba-a88aa37922a2",
+      "sequence": 34
+    },
+    {
+      "matchId": "cmsbaxa1n001w3z0168hjtv0d",
+      "matchLabel": "Match 5",
+      "round": "LEAGUE",
+      "type": "ASSIST",
+      "team": "Fall 25",
+      "player": "Manjur Yadin",
+      "groupId": "2b5fd616-4c8d-471f-bbba-a88aa37922a2",
+      "sequence": 35
+    },
+    {
+      "matchId": "cmsbaxa90001x3z01z5p5laa9",
+      "matchLabel": "Match 6",
+      "round": "LEAGUE",
+      "type": "GOAL",
+      "team": "Molom Bahini",
+      "player": "Nahid Tanvir Hasan",
+      "groupId": "3a5baf04-a9b6-4554-a407-817725cbd634",
+      "sequence": 40
+    },
+    {
+      "matchId": "cmsbaxa90001x3z01z5p5laa9",
+      "matchLabel": "Match 6",
+      "round": "LEAGUE",
+      "type": "ASSIST",
+      "team": "Molom Bahini",
+      "player": "Mirza Samir",
+      "groupId": "3a5baf04-a9b6-4554-a407-817725cbd634",
+      "sequence": 41
+    },
+    {
+      "matchId": "cmsbaxa90001x3z01z5p5laa9",
+      "matchLabel": "Match 6",
+      "round": "LEAGUE",
+      "type": "GOAL",
+      "team": "Molom Bahini",
+      "player": "Nahid Tanvir Hasan",
+      "groupId": "f482f8dc-c6e0-4c09-ad87-13f7434f6fc2",
+      "sequence": 43
+    },
+    {
+      "matchId": "cmsbaxa90001x3z01z5p5laa9",
+      "matchLabel": "Match 6",
+      "round": "LEAGUE",
+      "type": "ASSIST",
+      "team": "Molom Bahini",
+      "player": "Ahmed Habib",
+      "groupId": "f482f8dc-c6e0-4c09-ad87-13f7434f6fc2",
+      "sequence": 44
+    },
+    {
+      "matchId": "cmsbaxaen001y3z0107ia74ag",
+      "matchLabel": "Match 7",
+      "round": "LEAGUE",
+      "type": "GOAL",
+      "team": "GENJAM-101",
+      "player": "Siam",
+      "groupId": "655c27ea-f4ec-4e60-b243-819b1e5bddc1",
+      "sequence": 42
+    },
+    {
+      "matchId": "cmsbaxaen001y3z0107ia74ag",
+      "matchLabel": "Match 7",
+      "round": "LEAGUE",
+      "type": "GOAL",
+      "team": "GENJAM-101",
+      "player": "Siam",
+      "groupId": "29cc73e1-de36-4959-b02e-6f90f7b68911",
+      "sequence": 46
+    },
+    {
+      "matchId": "cmsbaxaen001y3z0107ia74ag",
+      "matchLabel": "Match 7",
+      "round": "LEAGUE",
+      "type": "ASSIST",
+      "team": "GENJAM-101",
+      "player": "Zuhair",
+      "groupId": "29cc73e1-de36-4959-b02e-6f90f7b68911",
+      "sequence": 47
+    },
+    {
+      "matchId": "cmsbaxakb001z3z01740kahmo",
+      "matchLabel": "Match 8",
+      "round": "LEAGUE",
+      "type": "GOAL",
+      "team": "কমিটির টিম",
+      "player": "Mahfuz Mahi",
+      "groupId": "1ee4168f-3fcc-4adc-981e-752dd7fe9618",
+      "sequence": 48
+    },
+    {
+      "matchId": "cmsbaxakb001z3z01740kahmo",
+      "matchLabel": "Match 8",
+      "round": "LEAGUE",
+      "type": "ASSIST",
+      "team": "কমিটির টিম",
+      "player": "Kazi Rafid Mostakin",
+      "groupId": "1ee4168f-3fcc-4adc-981e-752dd7fe9618",
+      "sequence": 49
+    },
+    {
+      "matchId": "cmsbaxb6y00213z01hhv5di6m",
+      "matchLabel": "Match 10",
+      "round": "LEAGUE",
+      "type": "GOAL",
+      "team": "Koshai FC",
+      "player": "Huzaifa",
+      "groupId": "ce627882-8d4a-40ca-8ba4-55b31cff0de1",
+      "sequence": 52
+    },
+    {
+      "matchId": "cmsbaxbck00223z01929guhiv",
+      "matchLabel": "Match 11",
+      "round": "LEAGUE",
+      "type": "GOAL",
+      "team": "Dilly Dally FC",
+      "player": "Wasimul Foij Sakib",
+      "groupId": "95bda322-7139-47f1-80d5-0af49fe1255d",
+      "sequence": 50
+    },
+    {
+      "matchId": "cmsbaxbck00223z01929guhiv",
+      "matchLabel": "Match 11",
+      "round": "LEAGUE",
+      "type": "ASSIST",
+      "team": "Dilly Dally FC",
+      "player": "Wasim Ashraf",
+      "groupId": "95bda322-7139-47f1-80d5-0af49fe1255d",
+      "sequence": 51
+    },
+    {
+      "matchId": "cmsbaxbck00223z01929guhiv",
+      "matchLabel": "Match 11",
+      "round": "LEAGUE",
+      "type": "GOAL",
+      "team": "GENJAM-101",
+      "player": "Zuhair",
+      "groupId": "790046db-cb17-47d4-886b-d9f15ec13a50",
+      "sequence": 53
+    },
+    {
+      "matchId": "cmsbaxbv900253z011920n1g2",
+      "matchLabel": "Match 14",
+      "round": "LEAGUE",
+      "type": "GOAL",
+      "team": "GENJAM-101",
+      "player": "Zuhair",
+      "groupId": "66687115-7dd7-4bbf-9011-2c54367c9213",
+      "sequence": 56
+    },
+    {
+      "matchId": "cmsbaxbv900253z011920n1g2",
+      "matchLabel": "Match 14",
+      "round": "LEAGUE",
+      "type": "GOAL",
+      "team": "GENJAM-101",
+      "player": "Rahat",
+      "groupId": "9e1bf38b-1633-4821-87d3-f896ac2dad54",
+      "sequence": 59
+    },
+    {
+      "matchId": "cmsbaxbv900253z011920n1g2",
+      "matchLabel": "Match 14",
+      "round": "LEAGUE",
+      "type": "ASSIST",
+      "team": "GENJAM-101",
+      "player": "Zuhair",
+      "groupId": "9e1bf38b-1633-4821-87d3-f896ac2dad54",
+      "sequence": 60
+    },
+    {
+      "matchId": "cmsbaxc0w00263z01k9fw74jv",
+      "matchLabel": "Match 15",
+      "round": "LEAGUE",
+      "type": "GOAL",
+      "team": "Koshai FC",
+      "player": "Zoha",
+      "groupId": "4fd78336-0001-42fe-a2b6-de8fd4649729",
+      "sequence": 54
+    },
+    {
+      "matchId": "cmsbaxc0w00263z01k9fw74jv",
+      "matchLabel": "Match 15",
+      "round": "LEAGUE",
+      "type": "ASSIST",
+      "team": "Koshai FC",
+      "player": "Huzaifa",
+      "groupId": "4fd78336-0001-42fe-a2b6-de8fd4649729",
+      "sequence": 55
+    },
+    {
+      "matchId": "cmsbaxc0w00263z01k9fw74jv",
+      "matchLabel": "Match 15",
+      "round": "LEAGUE",
+      "type": "YELLOW_CARD",
+      "team": "Koshai FC",
+      "player": "Sagor",
+      "groupId": "80c82130-5c09-4e43-b928-84be65e156b0",
+      "sequence": 57
+    },
+    {
+      "matchId": "cmsbaxc0w00263z01k9fw74jv",
+      "matchLabel": "Match 15",
+      "round": "LEAGUE",
+      "type": "GOAL",
+      "team": "Dilly Dally FC",
+      "player": "Wasim Ashraf",
+      "groupId": "fbf2bc11-d229-4924-a4e1-33282ba5e638",
+      "sequence": 58
+    },
+    {
+      "matchId": "cmsbaxchz00293z011dl2bqhe",
+      "matchLabel": "Match 18",
+      "round": "LEAGUE",
+      "type": "GOAL",
+      "team": "Dilly Dally FC",
+      "player": "Sharif Mashrafi",
+      "groupId": "3c05b05f-adb7-40f0-92d0-3867f1175624",
+      "sequence": 61
+    },
+    {
+      "matchId": "cmsbaxchz00293z011dl2bqhe",
+      "matchLabel": "Match 18",
+      "round": "LEAGUE",
+      "type": "ASSIST",
+      "team": "Dilly Dally FC",
+      "player": "Wasimul Foij Sakib",
+      "groupId": "3c05b05f-adb7-40f0-92d0-3867f1175624",
+      "sequence": 62
+    },
+    {
+      "matchId": "cmsbaxchz00293z011dl2bqhe",
+      "matchLabel": "Match 18",
+      "round": "LEAGUE",
+      "type": "YELLOW_CARD",
+      "team": "Dilly Dally FC",
+      "player": "Wasimul Foij Sakib",
+      "groupId": "ac78f7f8-d98d-4d5e-a2a0-dd117f0dbb43",
+      "sequence": 63
+    },
+    {
+      "matchId": "cmsbaxctz002b3z015z24c70g",
+      "matchLabel": "Match 20",
+      "round": "LEAGUE",
+      "type": "GOAL",
+      "team": "GENJAM-101",
+      "player": "Siam",
+      "groupId": "feef4804-31a9-4187-96be-85ff1633f89f",
+      "sequence": 64
+    },
+    {
+      "matchId": "cmsbaxctz002b3z015z24c70g",
+      "matchLabel": "Match 20",
+      "round": "LEAGUE",
+      "type": "ASSIST",
+      "team": "GENJAM-101",
+      "player": "Rahat",
+      "groupId": "feef4804-31a9-4187-96be-85ff1633f89f",
+      "sequence": 65
+    },
+    {
+      "matchId": "cmsbaxctz002b3z015z24c70g",
+      "matchLabel": "Match 20",
+      "round": "LEAGUE",
+      "type": "GOAL",
+      "team": "GENJAM-101",
+      "player": "Siam",
+      "groupId": "fc54b007-c80a-4335-bb56-650dabeb7571",
+      "sequence": 66
+    },
+    {
+      "matchId": "cmsbaxctz002b3z015z24c70g",
+      "matchLabel": "Match 20",
+      "round": "LEAGUE",
+      "type": "ASSIST",
+      "team": "GENJAM-101",
+      "player": "Rahat",
+      "groupId": "fc54b007-c80a-4335-bb56-650dabeb7571",
+      "sequence": 67
+    },
+    {
+      "matchId": "cmsbaxczl002c3z013dk3fu8i",
+      "matchLabel": "Match 21",
+      "round": "LEAGUE",
+      "type": "GOAL",
+      "team": "৭ এ ৭ FC",
+      "player": "Abdul Tahsin",
+      "groupId": "1f59f744-6d81-457e-a218-dd01be3dd7d8",
+      "sequence": 68
+    },
+    {
+      "matchId": "cmsbaxczl002c3z013dk3fu8i",
+      "matchLabel": "Match 21",
+      "round": "LEAGUE",
+      "type": "ASSIST",
+      "team": "৭ এ ৭ FC",
+      "player": "Hossain",
+      "groupId": "1f59f744-6d81-457e-a218-dd01be3dd7d8",
+      "sequence": 69
+    },
+    {
+      "matchId": "cmsbaxczl002c3z013dk3fu8i",
+      "matchLabel": "Match 21",
+      "round": "LEAGUE",
+      "type": "YELLOW_CARD",
+      "team": "Molom Bahini",
+      "player": "Mirza Samir",
+      "groupId": "c727d606-15d1-4f69-8f5a-197e6a517403",
+      "sequence": 70
+    },
+    {
+      "matchId": "cmsbaxdd6002e3z015f44zs81",
+      "matchLabel": "Match 23",
+      "round": "LEAGUE",
+      "type": "YELLOW_CARD",
+      "team": "Koshai FC",
+      "player": "Romeo",
+      "groupId": "9a49bc1b-3311-49c5-82dd-f24d95c75984",
+      "sequence": 71
+    },
+    {
+      "matchId": "cmsbaxdit002f3z01th3fet2p",
+      "matchLabel": "Match 24",
+      "round": "LEAGUE",
+      "type": "GOAL",
+      "team": "কমিটির টিম",
+      "player": "Md Shafiul Alam Ruhin",
+      "groupId": "da1d50c4-cb0c-44f0-8249-bf16375fd7f1",
+      "sequence": 72
+    },
+    {
+      "matchId": "cmsbaxdit002f3z01th3fet2p",
+      "matchLabel": "Match 24",
+      "round": "LEAGUE",
+      "type": "ASSIST",
+      "team": "কমিটির টিম",
+      "player": "Kazi Rafid Mostakin",
+      "groupId": "da1d50c4-cb0c-44f0-8249-bf16375fd7f1",
+      "sequence": 73
+    },
+    {
+      "matchId": "cmsbaxdit002f3z01th3fet2p",
+      "matchLabel": "Match 24",
+      "round": "LEAGUE",
+      "type": "GOAL",
+      "team": "কমিটির টিম",
+      "player": "Fulmia Sheikh",
+      "groupId": "f1451253-76fb-4f06-995d-8758ff4df6f3",
+      "sequence": 74
+    },
+    {
+      "matchId": "cmsbaxdit002f3z01th3fet2p",
+      "matchLabel": "Match 24",
+      "round": "LEAGUE",
+      "type": "GOAL",
+      "team": "GENJAM-101",
+      "player": "Siam",
+      "groupId": "b9f45112-da22-42a3-84bb-6ec2522c33c4",
+      "sequence": 75
+    },
+    {
+      "matchId": "cmsbaxdoi002g3z01edsy35ay",
+      "matchLabel": "Match 25",
+      "round": "LEAGUE",
+      "type": "GOAL",
+      "team": "Molom Bahini",
+      "player": "Nahid Tanvir Hasan",
+      "groupId": "3bced0dc-b19f-487d-b303-60f35a0573ae",
+      "sequence": 76
+    },
+    {
+      "matchId": "cmsbaxe1p002i3z01mxai3dpl",
+      "matchLabel": "Match 27",
+      "round": "LEAGUE",
+      "type": "GOAL",
+      "team": "কমিটির টিম",
+      "player": "Md Shafiul Alam Ruhin",
+      "groupId": "0d7c85cf-5f71-4c2b-bdbd-8e5e4dfd39f2",
+      "sequence": 77
+    },
+    {
+      "matchId": "cmsbaxe1p002i3z01mxai3dpl",
+      "matchLabel": "Match 27",
+      "round": "LEAGUE",
+      "type": "ASSIST",
+      "team": "কমিটির টিম",
+      "player": "Kazi Rafid Mostakin",
+      "groupId": "0d7c85cf-5f71-4c2b-bdbd-8e5e4dfd39f2",
+      "sequence": 78
+    },
+    {
+      "matchId": "cmsbaxe1p002i3z01mxai3dpl",
+      "matchLabel": "Match 27",
+      "round": "LEAGUE",
+      "type": "GOAL",
+      "team": "কমিটির টিম",
+      "player": "Kazi Rafid Mostakin",
+      "groupId": "7f285baf-35e6-4cff-a133-55ad21a85a0d",
+      "sequence": 79
+    },
+    {
+      "matchId": "cmsbaxe1p002i3z01mxai3dpl",
+      "matchLabel": "Match 27",
+      "round": "LEAGUE",
+      "type": "YELLOW_CARD",
+      "team": "কমিটির টিম",
+      "player": "Shoriful Islam",
+      "groupId": "8ff856e0-8cc0-4268-892b-1a84f51efab1",
+      "sequence": 80
+    },
+    {
+      "matchId": "cmsbaxe8i002j3z01304ssky2",
+      "matchLabel": "Match 28",
+      "round": "LEAGUE",
+      "type": "GOAL",
+      "team": "GENJAM-101",
+      "player": "Zuhair",
+      "groupId": "2b24d8bc-01de-4246-833c-9e18d049d57f",
+      "sequence": 81
+    },
+    {
+      "matchId": "cmsbaxe8i002j3z01304ssky2",
+      "matchLabel": "Match 28",
+      "round": "LEAGUE",
+      "type": "ASSIST",
+      "team": "GENJAM-101",
+      "player": "Rahat",
+      "groupId": "2b24d8bc-01de-4246-833c-9e18d049d57f",
+      "sequence": 82
+    },
+    {
+      "matchId": "cmsbaxe8i002j3z01304ssky2",
+      "matchLabel": "Match 28",
+      "round": "LEAGUE",
+      "type": "GOAL",
+      "team": "GENJAM-101",
+      "player": "Rahat",
+      "groupId": "67b5e35e-6a7f-48a1-a132-313992b5bb8d",
+      "sequence": 83
+    },
+    {
+      "matchId": "cmsbaxe8i002j3z01304ssky2",
+      "matchLabel": "Match 28",
+      "round": "LEAGUE",
+      "type": "ASSIST",
+      "team": "GENJAM-101",
+      "player": "Siam",
+      "groupId": "67b5e35e-6a7f-48a1-a132-313992b5bb8d",
+      "sequence": 84
+    },
+    {
+      "matchId": "cmsbaxee6002k3z01cuesqnwl",
+      "matchLabel": "Semifinal 1 (1st vs 4th)",
+      "round": "SEMIFINAL",
+      "type": "GOAL",
+      "team": "কমিটির টিম",
+      "player": "Shoriful Islam",
+      "groupId": "510bb428-f89a-4da3-a86d-852950948bd3",
+      "sequence": 85
+    },
+    {
+      "matchId": "cmsbaxee6002k3z01cuesqnwl",
+      "matchLabel": "Semifinal 1 (1st vs 4th)",
+      "round": "SEMIFINAL",
+      "type": "GOAL",
+      "team": "Fall 25",
+      "player": "Tanvir Siddik",
+      "groupId": "45260f08-661d-4458-9914-3528ec8d6f9d",
+      "sequence": 86
+    },
+    {
+      "matchId": "cmsbaxemn002l3z01bm0qpssq",
+      "matchLabel": "Semifinal 2 (2nd vs 3rd)",
+      "round": "SEMIFINAL",
+      "type": "GOAL",
+      "team": "GENJAM-101",
+      "player": "Siam",
+      "groupId": "16a51eb0-e5a3-4201-bcc3-2036f20879e8",
+      "sequence": 87
+    },
+    {
+      "matchId": "cmsbaxemn002l3z01bm0qpssq",
+      "matchLabel": "Semifinal 2 (2nd vs 3rd)",
+      "round": "SEMIFINAL",
+      "type": "GOAL",
+      "team": "GENJAM-101",
+      "player": "Siam",
+      "groupId": "ec04be34-d24c-453d-b352-c256ba55a7c6",
+      "sequence": 88
+    },
+    {
+      "matchId": "cmsbaxemn002l3z01bm0qpssq",
+      "matchLabel": "Semifinal 2 (2nd vs 3rd)",
+      "round": "SEMIFINAL",
+      "type": "ASSIST",
+      "team": "GENJAM-101",
+      "player": "Rahat",
+      "groupId": "ec04be34-d24c-453d-b352-c256ba55a7c6",
+      "sequence": 89
+    },
+    {
+      "matchId": "cmsbaxesb002m3z013ijlvhdh",
+      "matchLabel": "Final",
+      "round": "FINAL",
+      "type": "GOAL",
+      "team": "GENJAM-101",
+      "player": "Siam",
+      "groupId": "a37c3a9c-2045-4224-bca9-745fd57de9a5",
+      "sequence": 90
+    },
+    {
+      "matchId": "cmsbaxesb002m3z013ijlvhdh",
+      "matchLabel": "Final",
+      "round": "FINAL",
+      "type": "ASSIST",
+      "team": "GENJAM-101",
+      "player": "Zuhair",
+      "groupId": "a37c3a9c-2045-4224-bca9-745fd57de9a5",
+      "sequence": 91
+    },
+    {
+      "matchId": "cmsbaxesb002m3z013ijlvhdh",
+      "matchLabel": "Final",
+      "round": "FINAL",
+      "type": "GOAL",
+      "team": "কমিটির টিম",
+      "player": "Shoriful Islam",
+      "groupId": "db58f41d-a4e4-4ee9-ba02-178ebb0c804b",
+      "sequence": 92
+    },
+    {
+      "matchId": "cmsbaxesb002m3z013ijlvhdh",
+      "matchLabel": "Final",
+      "round": "FINAL",
+      "type": "GOAL",
+      "team": "GENJAM-101",
+      "player": "Siam",
+      "groupId": "3cbb53e4-bf22-4eb4-abb6-f125f1a6f59c",
+      "sequence": 93
+    },
+    {
+      "matchId": "cmsbaxesb002m3z013ijlvhdh",
+      "matchLabel": "Final",
+      "round": "FINAL",
+      "type": "ASSIST",
+      "team": "GENJAM-101",
+      "player": "Zuhair",
+      "groupId": "3cbb53e4-bf22-4eb4-abb6-f125f1a6f59c",
+      "sequence": 94
+    },
+    {
+      "matchId": "cmsbaxesb002m3z013ijlvhdh",
+      "matchLabel": "Final",
+      "round": "FINAL",
+      "type": "GOAL",
+      "team": "GENJAM-101",
+      "player": "Rahat",
+      "groupId": "ac578f98-5b08-42f0-8253-4f531a2fcfb1",
+      "sequence": 95
+    },
+    {
+      "matchId": "cmsbaxesb002m3z013ijlvhdh",
+      "matchLabel": "Final",
+      "round": "FINAL",
+      "type": "ASSIST",
+      "team": "GENJAM-101",
+      "player": "Zuhair",
+      "groupId": "ac578f98-5b08-42f0-8253-4f531a2fcfb1",
+      "sequence": 96
+    },
+    {
+      "matchId": "cmsbaxesb002m3z013ijlvhdh",
+      "matchLabel": "Final",
+      "round": "FINAL",
+      "type": "GOAL",
+      "team": "কমিটির টিম",
+      "player": "Mahfuz Mahi",
+      "groupId": "49cc9477-6f5f-4332-b47b-03a97b42c4b4",
+      "sequence": 97
+    },
+    {
+      "matchId": "cmsbaxesb002m3z013ijlvhdh",
+      "matchLabel": "Final",
+      "round": "FINAL",
+      "type": "ASSIST",
+      "team": "কমিটির টিম",
+      "player": "Mahfuz Mahi",
+      "groupId": "49cc9477-6f5f-4332-b47b-03a97b42c4b4",
+      "sequence": 98
+    },
+    {
+      "matchId": "cmsbaxesb002m3z013ijlvhdh",
+      "matchLabel": "Final",
+      "round": "FINAL",
+      "type": "GOAL",
+      "team": "GENJAM-101",
+      "player": "Siam",
+      "groupId": "b3d5675c-b0c0-46a7-b49f-d9dde728b468",
+      "sequence": 99
+    },
+    {
+      "matchId": "cmsbaxesb002m3z013ijlvhdh",
+      "matchLabel": "Final",
+      "round": "FINAL",
+      "type": "YELLOW_CARD",
+      "team": "GENJAM-101",
+      "player": "Sheak",
+      "groupId": "bd8cf0a8-ceb1-49a4-8803-1b8c4c54d535",
+      "sequence": 100
+    },
+    {
+      "matchId": "cmsbaxesb002m3z013ijlvhdh",
+      "matchLabel": "Final",
+      "round": "FINAL",
+      "type": "YELLOW_CARD",
+      "team": "কমিটির টিম",
+      "player": "Kazi Rafid Mostakin",
+      "groupId": "3f9c9fd2-4e61-4954-a54e-c75a92a1af5e",
+      "sequence": 101
+    },
+    {
+      "matchId": "cmsbaxesb002m3z013ijlvhdh",
+      "matchLabel": "Final",
+      "round": "FINAL",
+      "type": "GOAL",
+      "team": "GENJAM-101",
+      "player": "Zuhair",
+      "groupId": "5f88a3e4-5640-4d7f-957d-30a4242b4715",
+      "sequence": 102
+    },
+    {
+      "matchId": "cmsbaxesb002m3z013ijlvhdh",
+      "matchLabel": "Final",
+      "round": "FINAL",
+      "type": "GOAL",
+      "team": "GENJAM-101",
+      "player": "Shaman",
+      "groupId": "b51ff580-37ab-43f6-8125-ee15950382c4",
+      "sequence": 103
+    },
+    {
+      "matchId": "cmsbaxesb002m3z013ijlvhdh",
+      "matchLabel": "Final",
+      "round": "FINAL",
+      "type": "ASSIST",
+      "team": "GENJAM-101",
+      "player": "Siam",
+      "groupId": "b51ff580-37ab-43f6-8125-ee15950382c4",
+      "sequence": 104
+    }
+  ],
+  "predictions": [
+    {
+      "matchId": "cmsbax9c4001s3z01s3kthor2",
+      "matchLabel": "Match 1",
+      "team": "কমিটির টিম",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbax9c4001s3z01s3kthor2",
+      "matchLabel": "Match 1",
+      "team": "Molom Bahini",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbax9c4001s3z01s3kthor2",
+      "matchLabel": "Match 1",
+      "team": "কমিটির টিম",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbaxccc00283z01uzhlwxev",
+      "matchLabel": "Match 17",
+      "team": "Fall 25",
+      "voterName": "Dip",
+      "voterSemester": "6"
+    },
+    {
+      "matchId": "cmsbax9c4001s3z01s3kthor2",
+      "matchLabel": "Match 1",
+      "team": "কমিটির টিম",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbax9c4001s3z01s3kthor2",
+      "matchLabel": "Match 1",
+      "team": "কমিটির টিম",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbax9c4001s3z01s3kthor2",
+      "matchLabel": "Match 1",
+      "team": "কমিটির টিম",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbax9c4001s3z01s3kthor2",
+      "matchLabel": "Match 1",
+      "team": "কমিটির টিম",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbax9c4001s3z01s3kthor2",
+      "matchLabel": "Match 1",
+      "team": "কমিটির টিম",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbax9c4001s3z01s3kthor2",
+      "matchLabel": "Match 1",
+      "team": "কমিটির টিম",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbax9c4001s3z01s3kthor2",
+      "matchLabel": "Match 1",
+      "team": "কমিটির টিম",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbax9c4001s3z01s3kthor2",
+      "matchLabel": "Match 1",
+      "team": "কমিটির টিম",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbax9c4001s3z01s3kthor2",
+      "matchLabel": "Match 1",
+      "team": "Molom Bahini",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbax9c4001s3z01s3kthor2",
+      "matchLabel": "Match 1",
+      "team": "কমিটির টিম",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbax9c4001s3z01s3kthor2",
+      "matchLabel": "Match 1",
+      "team": "কমিটির টিম",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbax9c4001s3z01s3kthor2",
+      "matchLabel": "Match 1",
+      "team": "কমিটির টিম",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbax9c4001s3z01s3kthor2",
+      "matchLabel": "Match 1",
+      "team": "Molom Bahini",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbax9c4001s3z01s3kthor2",
+      "matchLabel": "Match 1",
+      "team": "Molom Bahini",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbax9c4001s3z01s3kthor2",
+      "matchLabel": "Match 1",
+      "team": "কমিটির টিম",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbax9c4001s3z01s3kthor2",
+      "matchLabel": "Match 1",
+      "team": "Molom Bahini",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbax9c4001s3z01s3kthor2",
+      "matchLabel": "Match 1",
+      "team": "Molom Bahini",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbax9c4001s3z01s3kthor2",
+      "matchLabel": "Match 1",
+      "team": "Molom Bahini",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbax9c4001s3z01s3kthor2",
+      "matchLabel": "Match 1",
+      "team": "Molom Bahini",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbax9c4001s3z01s3kthor2",
+      "matchLabel": "Match 1",
+      "team": "Molom Bahini",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbaxa90001x3z01z5p5laa9",
+      "matchLabel": "Match 6",
+      "team": "Dilly Dally FC",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbax9c4001s3z01s3kthor2",
+      "matchLabel": "Match 1",
+      "team": "Molom Bahini",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbax9c4001s3z01s3kthor2",
+      "matchLabel": "Match 1",
+      "team": "কমিটির টিম",
+      "voterName": "Dip",
+      "voterSemester": "6"
+    },
+    {
+      "matchId": "cmsbax9c4001s3z01s3kthor2",
+      "matchLabel": "Match 1",
+      "team": "কমিটির টিম",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbax9c4001s3z01s3kthor2",
+      "matchLabel": "Match 1",
+      "team": "কমিটির টিম",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbax9c4001s3z01s3kthor2",
+      "matchLabel": "Match 1",
+      "team": "কমিটির টিম",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbaxa90001x3z01z5p5laa9",
+      "matchLabel": "Match 6",
+      "team": "Molom Bahini",
+      "voterName": "Akib",
+      "voterSemester": "5"
+    },
+    {
+      "matchId": "cmsbax9c4001s3z01s3kthor2",
+      "matchLabel": "Match 1",
+      "team": "Molom Bahini",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbaxaen001y3z0107ia74ag",
+      "matchLabel": "Match 7",
+      "team": "GENJAM-101",
+      "voterName": "Akib",
+      "voterSemester": "5"
+    },
+    {
+      "matchId": "cmsbax9c4001s3z01s3kthor2",
+      "matchLabel": "Match 1",
+      "team": "কমিটির টিম",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbax9c4001s3z01s3kthor2",
+      "matchLabel": "Match 1",
+      "team": "কমিটির টিম",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbax9c4001s3z01s3kthor2",
+      "matchLabel": "Match 1",
+      "team": "কমিটির টিম",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbax9c4001s3z01s3kthor2",
+      "matchLabel": "Match 1",
+      "team": "কমিটির টিম",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbaxa1n001w3z0168hjtv0d",
+      "matchLabel": "Match 5",
+      "team": "Molom Bahini",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbaxakb001z3z01740kahmo",
+      "matchLabel": "Match 8",
+      "team": "কমিটির টিম",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbaxakb001z3z01740kahmo",
+      "matchLabel": "Match 8",
+      "team": "Fall 25",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbaxccc00283z01uzhlwxev",
+      "matchLabel": "Match 17",
+      "team": "Fall 25",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbaxbv900253z011920n1g2",
+      "matchLabel": "Match 14",
+      "team": "Molom Bahini",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbaxc6o00273z01ne63brl9",
+      "matchLabel": "Match 16",
+      "team": "কমিটির টিম",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbaxchz00293z011dl2bqhe",
+      "matchLabel": "Match 18",
+      "team": "কমিটির টিম",
+      "voterName": "Adib",
+      "voterSemester": "3"
+    },
+    {
+      "matchId": "cmsbaxcod002a3z01dszjfbqa",
+      "matchLabel": "Match 19",
+      "team": "The Bottleneck",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbaxcod002a3z01dszjfbqa",
+      "matchLabel": "Match 19",
+      "team": "Koshai FC",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbaxdd6002e3z015f44zs81",
+      "matchLabel": "Match 23",
+      "team": "Fall 25",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbaxdoi002g3z01edsy35ay",
+      "matchLabel": "Match 25",
+      "team": "Molom Bahini",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbaxdw2002h3z01o19p5h6s",
+      "matchLabel": "Match 26",
+      "team": "৭ এ ৭ FC",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbaxe8i002j3z01304ssky2",
+      "matchLabel": "Match 28",
+      "team": "৭ এ ৭ FC",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbaxee6002k3z01cuesqnwl",
+      "matchLabel": "Semifinal 1 (1st vs 4th)",
+      "team": "কমিটির টিম",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "matchId": "cmsbaxee6002k3z01cuesqnwl",
+      "matchLabel": "Semifinal 1 (1st vs 4th)",
+      "team": "কমিটির টিম",
+      "voterName": null,
+      "voterSemester": null
+    }
+  ],
+  "championPredictions": [
+    {
+      "team": "Koshai FC",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "team": "Molom Bahini",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "team": "Fall 25",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "team": "GENJAM-101",
+      "voterName": "Dip",
+      "voterSemester": "6"
+    },
+    {
+      "team": "GENJAM-101",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "team": "Dilly Dally FC",
+      "voterName": "Mashrafi",
+      "voterSemester": "4"
+    },
+    {
+      "team": "GENJAM-101",
+      "voterName": "Sarder Akib Latif",
+      "voterSemester": "6"
+    },
+    {
+      "team": "Molom Bahini",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "team": "GENJAM-101",
+      "voterName": "Choto Rahat",
+      "voterSemester": "6"
+    },
+    {
+      "team": "কমিটির টিম",
+      "voterName": "SAR",
+      "voterSemester": "00"
+    },
+    {
+      "team": "কমিটির টিম",
+      "voterName": "Kazi",
+      "voterSemester": "3rd"
+    },
+    {
+      "team": "কমিটির টিম",
+      "voterName": "Adnan",
+      "voterSemester": "2nd"
+    },
+    {
+      "team": "Molom Bahini",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "team": "GENJAM-101",
+      "voterName": "Nandinee",
+      "voterSemester": "April 2026"
+    },
+    {
+      "team": "GENJAM-101",
+      "voterName": "Essa",
+      "voterSemester": "6th Semester (Fall 27)"
+    },
+    {
+      "team": "কমিটির টিম",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "team": "Koshai FC",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "team": "কমিটির টিম",
+      "voterName": "Adib",
+      "voterSemester": "3"
+    },
+    {
+      "team": "কমিটির টিম",
+      "voterName": "Hakim Al Amman",
+      "voterSemester": "5th"
+    },
+    {
+      "team": "কমিটির টিম",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "team": "কমিটির টিম",
+      "voterName": "Rumi Islam",
+      "voterSemester": "1st semester"
+    },
+    {
+      "team": "কমিটির টিম",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "team": "The Bottleneck",
+      "voterName": "Arman",
+      "voterSemester": "3rd"
+    },
+    {
+      "team": "কমিটির টিম",
+      "voterName": "MD ZAHIDUL ISLAM",
+      "voterSemester": "3rd"
+    },
+    {
+      "team": "কমিটির টিম",
+      "voterName": "Shaikh Fulmia",
+      "voterSemester": "3rd"
+    },
+    {
+      "team": "কমিটির টিম",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "team": "GENJAM-101",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "team": "GENJAM-101",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "team": "Fall 25",
+      "voterName": "Mehek",
+      "voterSemester": "2"
+    },
+    {
+      "team": "কমিটির টিম",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "team": "GENJAM-101",
+      "voterName": "sohel",
+      "voterSemester": "5th"
+    },
+    {
+      "team": "GENJAM-101",
+      "voterName": null,
+      "voterSemester": null
+    },
+    {
+      "team": "GENJAM-101",
+      "voterName": "Siam",
+      "voterSemester": "6"
+    },
+    {
+      "team": "Molom Bahini",
+      "voterName": "Saifur Rahman",
+      "voterSemester": "5th"
+    },
+    {
+      "team": "Molom Bahini",
+      "voterName": "Akib",
+      "voterSemester": "5"
+    }
+  ]
+}
