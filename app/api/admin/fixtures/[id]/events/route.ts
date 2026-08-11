@@ -2,15 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/db";
 import { eventSchema } from "@/lib/validation";
-import { requireAdmin } from "@/lib/requireAdmin";
+import { requireUser } from "@/lib/userAuth";
+import { logAudit } from "@/lib/audit";
 
 export const dynamic = "force-dynamic";
 
 type Params = { params: Promise<{ id: string }> };
 
 export async function POST(request: NextRequest, { params }: Params) {
-  const unauthorized = await requireAdmin();
-  if (unauthorized) return unauthorized;
+  const result = await requireUser(["ADMIN", "SCORER"]);
+  if (result instanceof NextResponse) return result;
+  const { user: actor } = result;
 
   const { id } = await params;
   const body = await request.json().catch(() => null);
@@ -48,6 +50,14 @@ export async function POST(request: NextRequest, { params }: Params) {
     });
   });
 
+  await logAudit({
+    actor,
+    action: "fixture.event.create",
+    entityType: "Match",
+    entityId: id,
+    summary: `Logged a ${type.toLowerCase().replace("_", " ")}${assistPlayerId ? " (with assist)" : ""}`,
+  });
+
   return NextResponse.json({ match: updated }, { status: 201 });
 }
 
@@ -57,12 +67,14 @@ export async function POST(request: NextRequest, { params }: Params) {
  * never been started. Distinct from DELETE /events/latest (undo one event):
  * this is for redoing a match from scratch, e.g. the wrong fixture was
  * started live by accident, or it was finished before it should have been.
- * Gated client-side by the same admin-password re-entry as other
- * destructive actions (delete fixture, undo last event).
+ * Gated client-side by the same password re-entry as other destructive
+ * actions (delete fixture, undo last event), and ADMIN-only — a SCORER can
+ * undo a single event but can't wipe a match's whole history.
  */
 export async function DELETE(_request: NextRequest, { params }: Params) {
-  const unauthorized = await requireAdmin();
-  if (unauthorized) return unauthorized;
+  const result = await requireUser(["ADMIN"]);
+  if (result instanceof NextResponse) return result;
+  const { user: actor } = result;
 
   const { id } = await params;
   const match = await prisma.match.findUnique({ where: { id } });
@@ -81,8 +93,18 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
         winnerTeamId: null,
         penaltyHomeScore: null,
         penaltyAwayScore: null,
+        extraTimePlayed: false,
       },
     });
+  });
+
+  await logAudit({
+    actor,
+    action: "fixture.reset",
+    entityType: "Match",
+    entityId: id,
+    summary: "Reset match to unstarted, cleared all events",
+    before: match,
   });
 
   return NextResponse.json({ match: updated });

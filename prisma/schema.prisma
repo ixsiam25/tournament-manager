@@ -33,6 +33,146 @@ enum Position {
   FWD
 }
 
+enum TeamFormation {
+  BATCH
+  AUCTION
+}
+
+enum UserRole {
+  ADMIN
+  SCORER
+  OWNER
+}
+
+enum SeasonStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum MediaTag {
+  TROPHY
+  ACTION
+  TEAM
+  CROWD
+}
+
+enum RegistrationSource {
+  SELF_SERVE
+  ADMIN_MANUAL
+  EXCEL_IMPORT
+}
+
+enum RegistrationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum AuctionLotStatus {
+  QUEUED
+  IN_PROGRESS
+  SOLD
+  UNSOLD
+}
+
+/// One row per tournament season. `ACTIVE` seasons drive the live
+/// Team/Player/Match tables (unscoped, as today); `ARCHIVED` seasons are
+/// frozen and read only from `resultsJson` — never re-derived from live
+/// rows, since a past season's table must never change again. Exactly one
+/// `ACTIVE` season is enforced in code (the rollover wizard), not by the DB.
+model Season {
+  id     String       @id @default(cuid())
+  number Int          @unique
+  name   String
+  slug   String       @unique
+  year   Int
+  status SeasonStatus @default(ACTIVE)
+
+  /// How this season's teams are built — semester batches (as Season IX) or
+  /// a live auction. Gates which admin screens exist for the season.
+  teamFormation TeamFormation @default(BATCH)
+
+  startsOn DateTime?
+  endsOn   DateTime?
+  recap    String?
+  /// Points at a MediaAsset.id for this season's hero image. Not a Prisma
+  /// relation (would need a second named relation back from MediaAsset) —
+  /// just resolved by a lookup in app code when rendering.
+  heroMediaId String?
+
+  /// Denormalised for cheap `/legacy` index cards, so listing every season
+  /// doesn't need to unpack each one's `resultsJson`.
+  championTeamName String?
+  runnerUpTeamName String?
+  topScorerName    String?
+
+  /// The full frozen record for an ARCHIVED season — see `lib/seasonArchive.ts`
+  /// for the shape. Null for the current ACTIVE season (nothing to freeze yet).
+  resultsJson Json?
+
+  /// Format questionnaire, captured once at season creation (Stage 4.1's
+  /// rollover wizard). Nullable/defaulted because Season IX is being
+  /// backfilled without ever going through that wizard.
+  targetTeamCount Int?
+  squadSizeMin    Int?
+  squadSizeMax    Int?
+
+  /// Soft-target registration cutoff — an admin-toggled switch, never closed
+  /// automatically just because `targetTeamCount` was reached.
+  registrationOpen               Boolean @default(false)
+  registrationSelfServeEnabled   Boolean @default(false)
+  registrationExcelImportEnabled Boolean @default(false)
+
+  /// Presentational/scheduling fields that are always read together: match
+  /// format (single/double round robin, groups+knockout), knockout
+  /// structure, match duration + buffer minutes, day start time, and the
+  /// pitch list (name + optional availability window each). See
+  /// `lib/scheduleRandomizer.ts` (Stage 4.2) for the shape consumed from here.
+  formatConfig Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  mediaAssets     MediaAsset[]
+  registrations   Registration[]
+  auctionLots     AuctionLot[]
+  auctionSettings AuctionSettings?
+}
+
+/// A stable human identity that persists across seasons, independent of
+/// whichever team-scoped `Player` row represents them in a given season.
+/// Without this, "all-time top scorer" is impossible — a player row is
+/// recreated from scratch every season.
+model Person {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  players       Player[]
+  registrations Registration[]
+}
+
+/// An uploaded photo (or future video) attached to a season — trophy shots,
+/// action photos, team photos, crowd shots. Reuses the same Netlify Blobs
+/// storage as player photos (`lib/blobStore.ts`), just a different key
+/// namespace and its own metadata row.
+model MediaAsset {
+  id          String   @id @default(cuid())
+  seasonId    String
+  season      Season   @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  key         String
+  contentType String
+  caption     String
+  credit      String?
+  tag         MediaTag
+  sortOrder   Int      @default(0)
+  isHero      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([seasonId])
+}
+
 model Team {
   id                  String   @id @default(cuid())
   name                String   @unique
@@ -54,6 +194,57 @@ model Team {
   events              MatchEvent[]
   predictions         Prediction[]
   championPredictions ChampionPrediction[]
+  users               User[]
+  auctionLots         AuctionLot[]
+}
+
+/// A named account, replacing the old shared ADMIN_PASSWORD and per-team
+/// `Team.managerPasswordHash`. `ADMIN` and `SCORER` are unscoped; `OWNER` is
+/// scoped to exactly one team via `teamId` — a manager account in
+/// everything but name (kept as a distinct role rather than reusing
+/// "manager" so the role enum reads the same way for every account type).
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  username     String   @unique
+  passwordHash String
+  role         UserRole
+  teamId       String?
+  team         Team?    @relation(fields: [teamId], references: [id])
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  auditLogs             AuditLog[]
+  reviewedRegistrations Registration[]
+  auctionSales          AuctionLot[]
+
+  @@index([teamId])
+}
+
+/// Records who changed what, for admin actions that used to be anonymous
+/// under the single shared admin password. Written after a mutation
+/// succeeds (see `lib/audit.ts`) — a logging failure must never fail the
+/// underlying action, so this is best-effort, not transactional with the
+/// write it describes.
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
+  /// Denormalised so the log entry still reads sensibly after a user is
+  /// deleted (userId goes null, this stays).
+  actorName  String
+  action     String
+  entityType String
+  entityId   String?
+  summary    String
+  before     Json?
+  after      Json?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
 }
 
 /// Small key/value store for settings that need to be changeable from the
@@ -72,12 +263,22 @@ model Player {
   position     Position?
   isCaptain    Boolean   @default(false)
   photoUrl     String?
-  teamId       String
-  team         Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  /// Nullable so an AUCTION season's unsold players (registered but not yet
+  /// bought by a team) can exist. Postgres doesn't treat NULLs as equal, so
+  /// the [teamId, jerseyNumber] uniqueness below still allows any number of
+  /// unsold players to coexist.
+  teamId       String?
+  team         Team?     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  /// Links to the stable cross-season identity, once backfilled/assigned.
+  /// Nullable so this stays additive for existing rows until Stage 1's
+  /// backfill script runs.
+  personId     String?
+  person       Person?   @relation(fields: [personId], references: [id])
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
-  events MatchEvent[]
+  events     MatchEvent[]
+  auctionLot AuctionLot?
 
   @@unique([teamId, jerseyNumber])
 }
@@ -105,6 +306,11 @@ model Match {
   winnerTeam       Team?       @relation("MatchWinner", fields: [winnerTeamId], references: [id])
   penaltyHomeScore Int?
   penaltyAwayScore Int?
+  /// Set when admin chooses "play extra time" from the draw-resolution
+  /// prompt — the match stays LIVE (score keeps accumulating through the
+  /// same events endpoint) rather than finishing immediately, and this flag
+  /// stops extra time being offered a second time on the same match.
+  extraTimePlayed  Boolean     @default(false)
   startedAt        DateTime?
   finishedAt       DateTime?
   createdAt        DateTime    @default(now())
@@ -169,4 +375,72 @@ model MatchEvent {
   @@index([groupId])
   @@index([playerId])
   @@index([type])
+}
+
+/// A public/self-serve or admin-entered signup for a season, reviewed by an
+/// admin before it becomes a real `Player`. `affiliation` is deliberately
+/// free text (not an APU-semester enum) — this tournament isn't assumed to
+/// be APU-batch-based going forward.
+model Registration {
+  id               String             @id @default(cuid())
+  seasonId         String
+  season           Season             @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  personId         String?
+  person           Person?            @relation(fields: [personId], references: [id])
+  name             String
+  affiliation      String
+  position         Position?
+  contact          String
+  photoKey         String?
+  source           RegistrationSource
+  status           RegistrationStatus @default(PENDING)
+  notes            String?
+  reviewedByUserId String?
+  reviewedBy       User?              @relation(fields: [reviewedByUserId], references: [id])
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  @@index([seasonId])
+  @@index([status])
+}
+
+/// One per AUCTION season — the budget/pricing rules the console and
+/// `lib/auction.ts` enforce. `minSquad`/`maxSquad` are deliberately not
+/// duplicated here; they come from `Season.squadSizeMin`/`squadSizeMax`,
+/// captured once in the rollover wizard's format questionnaire.
+model AuctionSettings {
+  id            String    @id @default(cuid())
+  seasonId      String    @unique
+  season        Season    @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  budgetPerTeam Int
+  basePrice     Int
+  bidIncrement  Int
+  lockedAt      DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+/// One auction lot per registered-and-approved player in an AUCTION season.
+/// `order` is the queue position the admin/auctioneer runs through; `round`
+/// distinguishes the first pass from a second round for unsold players.
+model AuctionLot {
+  id           String           @id @default(cuid())
+  seasonId     String
+  season       Season           @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  playerId     String           @unique
+  player       Player           @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  order        Int
+  round        Int              @default(1)
+  status       AuctionLotStatus @default(QUEUED)
+  soldToTeamId String?
+  soldToTeam   Team?            @relation(fields: [soldToTeamId], references: [id])
+  soldPrice    Int?
+  soldAt       DateTime?
+  soldByUserId String?
+  soldBy       User?            @relation(fields: [soldByUserId], references: [id])
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@index([seasonId])
+  @@index([status])
 }

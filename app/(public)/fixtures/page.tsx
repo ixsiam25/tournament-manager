@@ -3,6 +3,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { AutoRefresh } from "@/components/AutoRefresh";
 import { Crest } from "@/components/Crest";
+import { MATCH_DISPLAY_ORDER_BY } from "@/lib/matchOrder";
 
 export const revalidate = 15;
 
@@ -22,7 +23,7 @@ export default async function FixturesPage({
   const [matches, teams] = await Promise.all([
     prisma.match.findMany({
       include: { homeTeam: true, awayTeam: true },
-      orderBy: [{ round: "asc" }, { scheduledAt: "asc" }, { createdAt: "asc" }],
+      orderBy: MATCH_DISPLAY_ORDER_BY,
     }),
     prisma.team.findMany({ orderBy: { name: "asc" } }),
   ]);
@@ -216,6 +217,7 @@ function ScoreOrTime({
     homeTeamId: string | null;
     penaltyHomeScore: number | null;
     penaltyAwayScore: number | null;
+    extraTimePlayed: boolean;
     homeTeam: { name: string } | null;
     awayTeam: { name: string } | null;
   };
@@ -226,20 +228,35 @@ function ScoreOrTime({
     const winnerName =
       match.winnerTeamId === match.homeTeamId ? match.homeTeam?.name : match.awayTeam?.name;
 
+    // A drawn regulation score that extra time then broke isn't "wasDraw"
+    // anymore (the running score already includes extra-time goals), so
+    // that case is called out separately from the still-level-after-ET
+    // cases below.
+    let resultNote: string | null = null;
+    if (wasDraw && match.winnerTeamId) {
+      if (decidedOnPenalties) {
+        resultNote = `${winnerName} won ${
+          match.winnerTeamId === match.homeTeamId
+            ? `${match.penaltyHomeScore}–${match.penaltyAwayScore}`
+            : `${match.penaltyAwayScore}–${match.penaltyHomeScore}`
+        } on pens`;
+      } else if (match.extraTimePlayed) {
+        resultNote = `${winnerName} advances (after extra time)`;
+      } else {
+        resultNote = `${winnerName} advances`;
+      }
+    } else if (!wasDraw && match.extraTimePlayed && match.winnerTeamId) {
+      resultNote = `${winnerName} won after extra time`;
+    }
+
     return (
       <span className="flex min-w-14 shrink-0 flex-col items-center gap-0.5 sm:min-w-20">
         <span className="rounded-block bg-background px-2.5 py-1 text-center text-sm font-bold tabular-nums sm:px-4 sm:py-1.5 sm:text-base">
           {match.homeScore} – {match.awayScore}
         </span>
-        {wasDraw && match.winnerTeamId && (
+        {resultNote && (
           <span className="text-center text-[10px] uppercase tracking-wide text-muted sm:text-xs">
-            {decidedOnPenalties
-              ? `${winnerName} won ${
-                  match.winnerTeamId === match.homeTeamId
-                    ? `${match.penaltyHomeScore}–${match.penaltyAwayScore}`
-                    : `${match.penaltyAwayScore}–${match.penaltyHomeScore}`
-                } on pens`
-              : `${winnerName} advances`}
+            {resultNote}
           </span>
         )}
       </span>

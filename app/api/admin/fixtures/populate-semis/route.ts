@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireAdmin } from "@/lib/requireAdmin";
+import { requireUser } from "@/lib/userAuth";
+import { logAudit } from "@/lib/audit";
 import { getStandings } from "@/lib/standings";
 
 export const dynamic = "force-dynamic";
@@ -13,8 +14,9 @@ export const dynamic = "force-dynamic";
  * semifinal slots, or none, is a setup mistake this refuses to guess at.
  */
 export async function POST() {
-  const unauthorized = await requireAdmin();
-  if (unauthorized) return unauthorized;
+  const result = await requireUser(["ADMIN"]);
+  if (result instanceof NextResponse) return result;
+  const { user: actor } = result;
 
   const [standings, teamCount, semis] = await Promise.all([
     getStandings(),
@@ -59,6 +61,13 @@ export async function POST() {
       data: { homeTeamId: second.teamId, awayTeamId: third.teamId },
     }),
   ]);
+
+  await logAudit({
+    actor,
+    action: "fixture.populate_semis",
+    entityType: "Match",
+    summary: `Populated semifinals from standings: ${first.teamName} v ${fourth.teamName}, ${second.teamName} v ${third.teamName}`,
+  });
 
   return NextResponse.json({ matches: [updatedSf1, updatedSf2] });
 }

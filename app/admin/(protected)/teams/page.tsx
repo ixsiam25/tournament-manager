@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { usePasswordConfirm } from "@/components/PasswordConfirm";
 import { Crest } from "@/components/Crest";
+import { useRequireAdminRole } from "@/components/useRequireAdminRole";
 
 type Team = {
   id: string;
@@ -15,6 +16,7 @@ type Team = {
 };
 
 export default function TeamsAdminPage() {
+  useRequireAdminRole();
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState("");

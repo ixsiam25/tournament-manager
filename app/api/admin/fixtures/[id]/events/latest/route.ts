@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireAdmin } from "@/lib/requireAdmin";
+import { requireUser } from "@/lib/userAuth";
+import { logAudit } from "@/lib/audit";
 
 export const dynamic = "force-dynamic";
 
 type Params = { params: Promise<{ id: string }> };
 
 export async function DELETE(_request: NextRequest, { params }: Params) {
-  const unauthorized = await requireAdmin();
-  if (unauthorized) return unauthorized;
+  const result = await requireUser(["ADMIN", "SCORER"]);
+  if (result instanceof NextResponse) return result;
+  const { user: actor } = result;
 
   const { id } = await params;
 
@@ -34,6 +36,15 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
         awayScore: { decrement: awayGoals },
       },
     });
+  });
+
+  await logAudit({
+    actor,
+    action: "fixture.event.undo",
+    entityType: "Match",
+    entityId: id,
+    summary: `Undid the last logged event (${group.length} row(s))`,
+    before: group,
   });
 
   return NextResponse.json({ match: updated });

@@ -3,10 +3,15 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { StartMatchButton } from "@/components/StartMatchButton";
 import { Crest } from "@/components/Crest";
+import { getSessionUser } from "@/lib/userAuth";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboardPage() {
+  // The layout already gated ADMIN|SCORER; re-checked here only to decide
+  // whether to show the management quick-links below (SCORER shouldn't).
+  const user = await getSessionUser(["ADMIN", "SCORER"]);
+  const isAdmin = user?.role === "ADMIN";
   const [teamCount, playerCount, matchCount, liveMatch, upcoming] = await Promise.all([
     prisma.team.count(),
     prisma.player.count(),
@@ -99,17 +104,19 @@ export default async function AdminDashboardPage() {
         </ul>
       )}
 
-      <div className="mt-8 flex flex-wrap gap-3">
-        <Link href="/admin/teams" className="rounded-full border border-line px-4 py-2 text-sm font-medium hover:bg-surface">
-          Manage teams
-        </Link>
-        <Link href="/admin/players" className="rounded-full border border-line px-4 py-2 text-sm font-medium hover:bg-surface">
-          Manage players
-        </Link>
-        <Link href="/admin/fixtures" className="rounded-full border border-line px-4 py-2 text-sm font-medium hover:bg-surface">
-          Manage fixtures
-        </Link>
-      </div>
+      {isAdmin && (
+        <div className="mt-8 flex flex-wrap gap-3">
+          <Link href="/admin/teams" className="rounded-full border border-line px-4 py-2 text-sm font-medium hover:bg-surface">
+            Manage teams
+          </Link>
+          <Link href="/admin/players" className="rounded-full border border-line px-4 py-2 text-sm font-medium hover:bg-surface">
+            Manage players
+          </Link>
+          <Link href="/admin/fixtures" className="rounded-full border border-line px-4 py-2 text-sm font-medium hover:bg-surface">
+            Manage fixtures
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

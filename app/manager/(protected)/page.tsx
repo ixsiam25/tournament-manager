@@ -1,7 +1,6 @@
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
-import { MANAGER_COOKIE_NAME, verifyManagerSessionToken } from "@/lib/managerAuth";
+import { getSessionUser } from "@/lib/userAuth";
 import { PlayerCard } from "@/components/PlayerCard";
 import { PhotoUploader } from "@/components/PhotoUploader";
 import { TeamSettingsForm } from "@/components/TeamSettingsForm";
@@ -10,9 +9,11 @@ import { ManagerSquadEditor } from "@/components/ManagerSquadEditor";
 export const dynamic = "force-dynamic";
 
 export default async function ManagerPortalPage() {
-  const token = (await cookies()).get(MANAGER_COOKIE_NAME)?.value;
-  const teamId = await verifyManagerSessionToken(token);
-  if (!teamId) redirect("/manager/login");
+  // The layout already gated OWNER — re-checked here (cheap, same pattern
+  // as the admin dashboard) just to get teamId in this page's own scope.
+  const user = await getSessionUser(["OWNER"]);
+  if (!user?.teamId) redirect("/manager/login");
+  const teamId = user.teamId;
 
   const [team, players] = await Promise.all([
     prisma.team.findUnique({ where: { id: teamId }, select: { name: true, logoUrl: true } }),

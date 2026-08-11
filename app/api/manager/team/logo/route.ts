@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/db";
-import { requireManager } from "@/lib/managerAuth";
-import { getPhotoStore } from "@/lib/blobStore";
+import { requireUser } from "@/lib/userAuth";
+import { logAudit } from "@/lib/audit";
+import { uploadMedia } from "@/lib/mediaStore";
 
 export const dynamic = "force-dynamic";
 
@@ -10,9 +11,10 @@ const MAX_BYTES = 4 * 1024 * 1024; // 4MB — the client already downscales befo
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
 export async function POST(request: NextRequest) {
-  const result = await requireManager();
+  const result = await requireUser(["OWNER"]);
   if (result instanceof NextResponse) return result;
-  const { teamId } = result;
+  const { user: actor } = result;
+  const teamId = actor.teamId!;
 
   const formData = await request.formData().catch(() => null);
   const file = formData?.get("logo");
@@ -31,11 +33,16 @@ export async function POST(request: NextRequest) {
   // cache header on the serving route safe.
   const key = `team-${teamId}-${randomUUID()}`;
   const buffer = await file.arrayBuffer();
-  const store = getPhotoStore();
-  await store.set(key, buffer, { metadata: { contentType: file.type } });
-
-  const logoUrl = `/api/photos/${key}`;
+  const logoUrl = await uploadMedia(key, buffer, file.type);
   const team = await prisma.team.update({ where: { id: teamId }, data: { logoUrl } });
+
+  await logAudit({
+    actor,
+    action: "team.logo.update",
+    entityType: "Team",
+    entityId: teamId,
+    summary: "Manager updated team logo",
+  });
 
   return NextResponse.json({ team });
 }

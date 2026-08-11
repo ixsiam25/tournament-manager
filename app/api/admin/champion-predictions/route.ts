@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireAdmin } from "@/lib/requireAdmin";
+import { requireUser } from "@/lib/userAuth";
+import { logAudit } from "@/lib/audit";
 import { championPredictionSettingsSchema } from "@/lib/validation";
 import {
   getChampionPredictionSettings,
@@ -11,8 +12,8 @@ import {
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const unauthorized = await requireAdmin();
-  if (unauthorized) return unauthorized;
+  const result = await requireUser(["ADMIN"]);
+  if (result instanceof NextResponse) return result;
 
   const [predictions, settings] = await Promise.all([
     prisma.championPrediction.findMany({
@@ -25,8 +26,9 @@ export async function GET() {
 }
 
 export async function PATCH(request: NextRequest) {
-  const unauthorized = await requireAdmin();
-  if (unauthorized) return unauthorized;
+  const result = await requireUser(["ADMIN"]);
+  if (result instanceof NextResponse) return result;
+  const { user: actor } = result;
 
   const body = await request.json().catch(() => null);
   const parsed = championPredictionSettingsSchema.safeParse(body);
@@ -40,6 +42,13 @@ export async function PATCH(request: NextRequest) {
   if (parsed.data.closeAt !== undefined) {
     await setChampionPredictionCloseAt(parsed.data.closeAt);
   }
+  await logAudit({
+    actor,
+    action: "champion_predictions.update",
+    entityType: "AppSetting",
+    summary: "Updated champion-prediction settings",
+    after: parsed.data,
+  });
 
   const settings = await getChampionPredictionSettings();
   return NextResponse.json({ settings });

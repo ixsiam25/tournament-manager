@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireAdmin } from "@/lib/requireAdmin";
+import { requireUser } from "@/lib/userAuth";
+import { logAudit } from "@/lib/audit";
 
 export const dynamic = "force-dynamic";
 
 type Params = { params: Promise<{ id: string }> };
 
 export async function POST(_request: NextRequest, { params }: Params) {
-  const unauthorized = await requireAdmin();
-  if (unauthorized) return unauthorized;
+  const result = await requireUser(["ADMIN", "SCORER"]);
+  if (result instanceof NextResponse) return result;
+  const { user: actor } = result;
 
   const { id } = await params;
   const existing = await prisma.match.findUnique({ where: { id } });
@@ -23,6 +25,13 @@ export async function POST(_request: NextRequest, { params }: Params) {
   const match = await prisma.match.update({
     where: { id },
     data: { status: "LIVE", startedAt: new Date() },
+  });
+  await logAudit({
+    actor,
+    action: "fixture.start",
+    entityType: "Match",
+    entityId: match.id,
+    summary: `Started a ${match.round.toLowerCase()} match`,
   });
   return NextResponse.json({ match });
 }

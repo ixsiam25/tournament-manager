@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/db";
-import { requireManager } from "@/lib/managerAuth";
-import { getPhotoStore } from "@/lib/blobStore";
+import { requireUser } from "@/lib/userAuth";
+import { logAudit } from "@/lib/audit";
+import { uploadMedia } from "@/lib/mediaStore";
 
 export const dynamic = "force-dynamic";
 
@@ -12,9 +13,10 @@ const MAX_BYTES = 4 * 1024 * 1024; // 4MB — the client already downscales befo
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
 export async function POST(request: NextRequest, { params }: Params) {
-  const result = await requireManager();
+  const result = await requireUser(["OWNER"]);
   if (result instanceof NextResponse) return result;
-  const { teamId } = result;
+  const { user: actor } = result;
+  const teamId = actor.teamId!;
 
   const { id: playerId } = await params;
   const player = await prisma.player.findUnique({ where: { id: playerId } });
@@ -43,11 +45,16 @@ export async function POST(request: NextRequest, { params }: Params) {
   // cache header on the serving route safe.
   const key = `${playerId}-${randomUUID()}`;
   const buffer = await file.arrayBuffer();
-  const store = getPhotoStore();
-  await store.set(key, buffer, { metadata: { contentType: file.type } });
-
-  const photoUrl = `/api/photos/${key}`;
+  const photoUrl = await uploadMedia(key, buffer, file.type);
   const updated = await prisma.player.update({ where: { id: playerId }, data: { photoUrl } });
+
+  await logAudit({
+    actor,
+    action: "player.photo.update",
+    entityType: "Player",
+    entityId: playerId,
+    summary: `Manager updated ${player.name}'s photo`,
+  });
 
   return NextResponse.json({ player: updated });
 }

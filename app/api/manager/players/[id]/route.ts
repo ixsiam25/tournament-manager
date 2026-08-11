@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireManager } from "@/lib/managerAuth";
+import { requireUser } from "@/lib/userAuth";
+import { logAudit } from "@/lib/audit";
 import { managerPlayerPositionSchema } from "@/lib/validation";
 
 export const dynamic = "force-dynamic";
@@ -10,9 +11,10 @@ type Params = { params: Promise<{ id: string }> };
 /** Lets a manager move one of their own players between positions on the
  * pitch formation — nothing else about the player is editable here. */
 export async function PATCH(request: NextRequest, { params }: Params) {
-  const result = await requireManager();
+  const result = await requireUser(["OWNER"]);
   if (result instanceof NextResponse) return result;
-  const { teamId } = result;
+  const { user: actor } = result;
+  const teamId = actor.teamId!;
 
   const { id: playerId } = await params;
   const player = await prisma.player.findUnique({ where: { id: playerId } });
@@ -32,6 +34,15 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   const updated = await prisma.player.update({
     where: { id: playerId },
     data: { position: parsed.data.position },
+  });
+  await logAudit({
+    actor,
+    action: "player.position.update",
+    entityType: "Player",
+    entityId: playerId,
+    summary: `Manager set ${player.name}'s position to ${parsed.data.position ?? "unassigned"}`,
+    before: { position: player.position },
+    after: { position: updated.position },
   });
   return NextResponse.json({ player: updated });
 }

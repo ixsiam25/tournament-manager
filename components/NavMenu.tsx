@@ -12,10 +12,18 @@ const NAV_ITEMS = [
   { href: "/roster", label: "Players" },
   { href: "/teams", label: "Teams" },
   { href: "/predictions", label: "Champions Prediction" },
+  { href: "/register", label: "Register" },
+  { href: "/auction", label: "Auction" },
+  { href: "/legacy", label: "Legacy" },
 ];
 
-export function NavMenu() {
+export function NavMenu({ showRegister, showAuction }: { showRegister: boolean; showAuction: boolean }) {
   const pathname = usePathname();
+  const navItems = NAV_ITEMS.filter((item) => {
+    if (item.href === "/register") return showRegister;
+    if (item.href === "/auction") return showAuction;
+    return true;
+  });
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -79,7 +87,7 @@ export function NavMenu() {
           className="absolute right-0 top-[calc(100%+8px)] z-20 w-56 origin-top-right animate-card-in overflow-hidden rounded-block-lg border-2 border-line-strong bg-surface shadow-block"
         >
           <nav className="py-1.5">
-            {NAV_ITEMS.map((item) => {
+            {navItems.map((item) => {
               const active = pathname === item.href;
               return (
                 <Link

@@ -35,7 +35,7 @@ async function getPlayerEventCounts(type: "GOAL" | "ASSIST"): Promise<PlayerStat
         playerId: g.playerId,
         playerName: player?.name ?? "Unknown player",
         teamId: player?.teamId ?? null,
-        teamName: player?.team.name ?? "Unknown team",
+        teamName: player?.team?.name ?? "Unknown team",
         photoUrl: player?.photoUrl ?? null,
         count: g._count._all,
       };

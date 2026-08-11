@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { usePasswordConfirm } from "@/components/PasswordConfirm";
+import { useRequireAdminRole } from "@/components/useRequireAdminRole";
 
 type Team = { id: string; name: string };
 type PlayerPosition = "GK" | "DEF" | "MID" | "FWD" | null;
@@ -25,6 +26,7 @@ const POSITION_LABELS: Record<string, string> = {
 };
 
 export default function PlayersAdminPage() {
+  useRequireAdminRole();
   const [teams, setTeams] = useState<Team[]>([]);
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);

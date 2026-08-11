@@ -15,6 +15,8 @@
   --live-dark: #c2410c;
   --maroon: #7a1128;
   --gold: #b8860b;
+  --silver: #8b8b8b;
+  --bronze: #a15c2e;
   --royal: #1e3a8a;
 }
 
@@ -33,6 +35,8 @@
   --live-dark: #ea580c;
   --maroon: #a3253f;
   --gold: #d4af37;
+  --silver: #b0b0b0;
+  --bronze: #c17a45;
   --royal: #3b5fc4;
 }
 
@@ -51,6 +55,8 @@
   --color-live-dark: var(--live-dark);
   --color-maroon: var(--maroon);
   --color-gold: var(--gold);
+  --color-silver: var(--silver);
+  --color-bronze: var(--bronze);
   --color-royal: var(--royal);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);

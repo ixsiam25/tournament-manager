@@ -27,7 +27,9 @@ a login wall that blocks batch export; revisit if photos are wanted later).
   polling happens when nothing is live.
 - **Single-admin auth**, no user accounts: one shared `ADMIN_PASSWORD` +
   an HMAC-SHA256-signed session cookie (`lib/adminAuth.ts`, 12h TTL),
-  gated by `proxy.ts` (Next.js 16's renamed `middleware.ts`).
+  enforced **per-route** via `requireAdmin()` (`lib/requireAdmin.ts`) plus a
+  server-side redirect guard in `app/admin/(protected)/layout.tsx` — not by
+  a shared `proxy.ts`/`middleware.ts`, see the note in §2.
 - **Semifinal/final fixtures start with both teams `null`** (`TBD vs TBD`)
   until the league phase resolves; the admin assigns them later via
   `/admin/fixtures/[id]`.
@@ -70,16 +72,21 @@ a login wall that blocks batch export; revisit if photos are wanted later).
 | Framework  | **Next.js 16** (App Router) + React 19 + TypeScript          |
 | Styling    | Tailwind CSS v4, CSS-variable palette (green + red, Bangladesh-flag-inspired per the [@apubfl](https://www.instagram.com/apubfl/) reference), light default + manual dark toggle |
 | Database   | Postgres via **Prisma 7** + `@prisma/adapter-neon` (Neon)     |
-| Admin auth | `proxy.ts` gate + HMAC cookie (`lib/adminAuth.ts`), no user table |
+| Admin auth | Per-route `requireAdmin()` guard + HMAC cookie (`lib/adminAuth.ts`), no user table |
 | Validation | `zod` (`lib/validation.ts`)                                   |
-| Deployment | Cloudflare Workers via `@opennextjs/cloudflare` (not Pages)   |
+| Deployment | **Netlify** (`@netlify/plugin-nextjs`) — see §7, this superseded an earlier Cloudflare Workers plan |
 
 > **Next.js 16, not 15** — `create-next-app@latest` installed 16.2.11.
 > Breaking changes from 15 that affect this codebase: `middleware.ts` is
 > renamed to `proxy.ts` (exported function `proxy`, **nodejs runtime only**,
-> no more edge runtime for it — this is actually fine here since Cloudflare
-> Workers via OpenNext run everything under `nodejs_compat` anyway); and
-> `params`/`cookies()` are fully async everywhere (no sync fallback).
+> no more edge runtime for it). **This codebase doesn't actually have a
+> `proxy.ts`**, though — the original deploy target was Cloudflare Workers,
+> which doesn't support Next's Node Proxy/Middleware at all, so auth was
+> written as a per-route guard (`lib/requireAdmin.ts`) from the start
+> instead. That per-route guard was kept even after the project moved to
+> Netlify (§7), which *would* support `proxy.ts` — it already worked and
+> there was no reason to change it. `params`/`cookies()` are fully async
+> everywhere in Next.js 16 (no sync fallback).
 
 ## 3. Information architecture
 
@@ -109,8 +116,10 @@ POST /api/admin/fixtures/[id]/events   Log a goal (+ optional assist)
 DELETE /api/admin/fixtures/[id]/events/latest   Undo the last logged goal/assist (password-gated)
 ```
 
-`proxy.ts` gates `/admin/:path*` and `/api/admin/:path*` (except
-`/admin/login` and `/api/admin/login`).
+`/api/admin/:path*` routes each call `requireAdmin()` individually (except
+`/api/admin/login`); `/admin/:path*` pages are covered by the redirect guard
+in `app/admin/(protected)/layout.tsx` (except `/admin/login`, which sits
+outside that route group). See the note in §2.
 
 ## 4. Live match flow (core mechanism)
 

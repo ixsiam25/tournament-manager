@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireAdmin } from "@/lib/requireAdmin";
+import { requireUser } from "@/lib/userAuth";
+import { logAudit } from "@/lib/audit";
 import { finishMatchSchema } from "@/lib/validation";
 
 export const dynamic = "force-dynamic";
@@ -8,8 +9,9 @@ export const dynamic = "force-dynamic";
 type Params = { params: Promise<{ id: string }> };
 
 export async function POST(request: NextRequest, { params }: Params) {
-  const unauthorized = await requireAdmin();
-  if (unauthorized) return unauthorized;
+  const result = await requireUser(["ADMIN", "SCORER"]);
+  if (result instanceof NextResponse) return result;
+  const { user: actor } = result;
 
   const { id } = await params;
   const existing = await prisma.match.findUnique({ where: { id } });
@@ -32,9 +34,32 @@ export async function POST(request: NextRequest, { params }: Params) {
 
   if (isDraw && isKnockout && !resolution) {
     return NextResponse.json(
-      { error: "Draw needs a resolution", code: "draw_needs_resolution" },
+      {
+        error: "Draw needs a resolution",
+        code: "draw_needs_resolution",
+        extraTimeAvailable: !existing.extraTimePlayed,
+      },
       { status: 409 },
     );
+  }
+
+  // Extra time doesn't finish the match — it puts the ball back in play so
+  // admin can keep logging goals through the same LIVE events endpoint, and
+  // can only be chosen once per match (the client hides the option once
+  // extraTimePlayed is set, but this is the actual enforcement).
+  if (resolution?.method === "EXTRA_TIME") {
+    if (existing.extraTimePlayed) {
+      return NextResponse.json({ error: "Extra time has already been played for this match" }, { status: 400 });
+    }
+    const match = await prisma.match.update({ where: { id }, data: { extraTimePlayed: true } });
+    await logAudit({
+      actor,
+      action: "fixture.extra_time",
+      entityType: "Match",
+      entityId: match.id,
+      summary: "Started extra time",
+    });
+    return NextResponse.json({ match, stillLive: true });
   }
 
   let winnerTeamId: string | null = null;
@@ -71,6 +96,15 @@ export async function POST(request: NextRequest, { params }: Params) {
       penaltyHomeScore,
       penaltyAwayScore,
     },
+  });
+  await logAudit({
+    actor,
+    action: "fixture.finish",
+    entityType: "Match",
+    entityId: match.id,
+    summary: `Finished a ${match.round.toLowerCase()} match ${match.homeScore}-${match.awayScore}${
+      resolution ? ` (${resolution.method.toLowerCase()})` : ""
+    }`,
   });
   return NextResponse.json({ match });
 }

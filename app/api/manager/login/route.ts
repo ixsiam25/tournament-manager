@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { verifyPassword } from "@/lib/passwords";
-import { MANAGER_COOKIE_NAME, createManagerSessionToken } from "@/lib/managerAuth";
+import { USER_COOKIE_NAME, createUserSessionToken } from "@/lib/userAuth";
 
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null);
@@ -12,19 +12,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Team and password are required" }, { status: 400 });
   }
 
-  const team = await prisma.team.findUnique({ where: { id: teamId } });
-  if (!team?.managerPasswordHash || !(await verifyPassword(password, team.managerPasswordHash))) {
+  const owner = await prisma.user.findFirst({ where: { teamId, role: "OWNER" }, include: { team: true } });
+  if (!owner || !(await verifyPassword(password, owner.passwordHash))) {
     return NextResponse.json({ error: "Incorrect team or password" }, { status: 401 });
   }
-  if (team.managerLoginBlocked) {
+  if (!owner.isActive) {
     return NextResponse.json(
       { error: "This team's login has been blocked by the admin" },
       { status: 403 },
     );
   }
 
-  const response = NextResponse.json({ ok: true, teamName: team.name });
-  response.cookies.set(MANAGER_COOKIE_NAME, await createManagerSessionToken(team.id), {
+  const response = NextResponse.json({ ok: true, teamName: owner.team?.name });
+  response.cookies.set(USER_COOKIE_NAME, await createUserSessionToken(owner.id), {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",

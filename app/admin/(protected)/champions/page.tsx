@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRequireAdminRole } from "@/components/useRequireAdminRole";
 
 type Prediction = {
   id: string;
@@ -14,6 +15,7 @@ type Prediction = {
 type Settings = { enabled: boolean; closeAt: string | null };
 
 export default function ChampionsAdminPage() {
+  useRequireAdminRole();
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [settings, setSettings] = useState<Settings | null>(null);
   // Snapshotted once per fetch (not called during render) so the "is it past

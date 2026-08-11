@@ -54,7 +54,7 @@ export function usePasswordConfirm() {
       <div className="w-full max-w-sm rounded-2xl border border-line bg-surface p-6 shadow-lg">
         <p className="mb-4 font-semibold">{pending.message}</p>
         <form onSubmit={submit}>
-          <label className="mb-1 block text-sm font-medium">Confirm admin password</label>
+          <label className="mb-1 block text-sm font-medium">Confirm your password</label>
           <input
             type="password"
             autoFocus

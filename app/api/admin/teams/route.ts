@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { teamSchema } from "@/lib/validation";
-import { requireAdmin } from "@/lib/requireAdmin";
+import { requireUser } from "@/lib/userAuth";
+import { logAudit } from "@/lib/audit";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const unauthorized = await requireAdmin();
-  if (unauthorized) return unauthorized;
+  const result = await requireUser(["ADMIN"]);
+  if (result instanceof NextResponse) return result;
 
   const teams = await prisma.team.findMany({
     orderBy: { name: "asc" },
@@ -17,8 +18,9 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const unauthorized = await requireAdmin();
-  if (unauthorized) return unauthorized;
+  const result = await requireUser(["ADMIN"]);
+  if (result instanceof NextResponse) return result;
+  const { user: actor } = result;
 
   const body = await request.json().catch(() => null);
   const parsed = teamSchema.safeParse(body);
@@ -27,5 +29,15 @@ export async function POST(request: NextRequest) {
   }
 
   const team = await prisma.team.create({ data: parsed.data });
+  const teamForAudit: Record<string, unknown> = { ...team };
+  delete teamForAudit.managerPasswordHash;
+  await logAudit({
+    actor,
+    action: "team.create",
+    entityType: "Team",
+    entityId: team.id,
+    summary: `Added team "${team.name}"`,
+    after: teamForAudit,
+  });
   return NextResponse.json({ team }, { status: 201 });
 }

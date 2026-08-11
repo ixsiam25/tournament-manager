@@ -9,43 +9,11 @@ export function SecurityPanel({ teams: initialTeams }: { teams: Team[] }) {
   const [teams, setTeams] = useState(initialTeams);
   const { confirmWithPassword, modal } = usePasswordConfirm();
 
-  const [adminPassword, setAdminPassword] = useState("");
-  const [adminSaving, setAdminSaving] = useState(false);
-  const [adminMessage, setAdminMessage] = useState<string | null>(null);
-  const [adminError, setAdminError] = useState<string | null>(null);
-
   const [teamPasswords, setTeamPasswords] = useState<Record<string, string>>({});
   const [savingTeamId, setSavingTeamId] = useState<string | null>(null);
   const [teamError, setTeamError] = useState<string | null>(null);
   const [teamMessage, setTeamMessage] = useState<string | null>(null);
   const [savingAll, setSavingAll] = useState(false);
-
-  async function handleAdminPasswordChange(e: React.FormEvent) {
-    e.preventDefault();
-    setAdminError(null);
-    setAdminMessage(null);
-    if (adminPassword.length < 6) {
-      setAdminError("Password must be at least 6 characters");
-      return;
-    }
-    const confirmed = await confirmWithPassword("Change the admin password?");
-    if (!confirmed) return;
-
-    setAdminSaving(true);
-    const res = await fetch("/api/admin/security/admin-password", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password: adminPassword }),
-    });
-    setAdminSaving(false);
-    if (!res.ok) {
-      const body = await res.json().catch(() => ({}));
-      setAdminError(body.error ?? "Failed to change password");
-      return;
-    }
-    setAdminPassword("");
-    setAdminMessage("Admin password changed.");
-  }
 
   async function handleSetTeamPassword(teamId: string) {
     const password = teamPasswords[teamId] ?? "";
@@ -135,31 +103,13 @@ export function SecurityPanel({ teams: initialTeams }: { teams: Team[] }) {
     <div>
       {modal}
       <h1 className="mb-6 heading-display text-2xl">Security</h1>
-
-      <section className="mb-8 rounded-block-lg border-2 border-line-strong bg-surface p-6 shadow-block">
-        <h2 className="mb-1 font-black uppercase tracking-wide">Admin password</h2>
-        <p className="mb-4 text-sm text-muted">Used to log into this admin console.</p>
-        <form onSubmit={handleAdminPasswordChange} className="flex flex-wrap items-end gap-3">
-          <div className="min-w-48 flex-1">
-            <label className="mb-1 block text-sm font-medium">New password</label>
-            <input
-              type="password"
-              value={adminPassword}
-              onChange={(e) => setAdminPassword(e.target.value)}
-              className="w-full rounded-block border-2 border-line bg-background px-3 py-2 text-sm outline-none focus:border-pitch"
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={adminSaving}
-            className="rounded-block bg-pitch px-5 py-2 text-sm font-bold text-white disabled:opacity-60"
-          >
-            {adminSaving ? "Saving…" : "Change password"}
-          </button>
-        </form>
-        {adminError && <p className="mt-3 text-sm text-live">{adminError}</p>}
-        {adminMessage && <p className="mt-3 text-sm text-pitch-dark">{adminMessage}</p>}
-      </section>
+      <p className="mb-6 text-sm text-muted">
+        ADMIN and SCORER account passwords are managed from{" "}
+        <a href="/admin/users" className="underline">
+          Users
+        </a>
+        . This page is for team manager logins only.
+      </p>
 
       <section className="rounded-block-lg border-2 border-line-strong bg-surface p-6 shadow-block">
         <div className="mb-1 flex flex-wrap items-center justify-between gap-3">

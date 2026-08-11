@@ -34,8 +34,13 @@ export const fixtureSchema = z.object({
 });
 
 /** How admin resolves a drawn SEMIFINAL/FINAL when finishing it — regulation
- * score alone can't say who advances. */
+ * score alone can't say who advances. `EXTRA_TIME` doesn't finish the match
+ * (see the finish route) — it puts the ball back in play for admin to keep
+ * logging goals, and can only be chosen once per match. */
 export const drawResolutionSchema = z.union([
+  z.object({
+    method: z.literal("EXTRA_TIME"),
+  }),
   z.object({
     method: z.literal("PENALTIES"),
     penaltyHomeScore: z.coerce.number().int().min(0).max(99),
@@ -71,9 +76,28 @@ export const championPredictionSettingsSchema = z.object({
   closeAt: z.string().trim().min(1).optional().nullable(),
 });
 
+export const announcementSettingsSchema = z.object({
+  enabled: z.boolean().optional(),
+  text: z.string().trim().max(280).optional(),
+  level: z.enum(["info", "warn"]).optional(),
+  expiresAt: z.string().trim().min(1).optional().nullable(),
+});
+
 export const championPredictionSchema = z.object({
   teamId: z.string().trim().min(1, "Team is required"),
   voterId: z.string().trim().min(1, "Voter id is required").max(100),
   voterName: z.string().trim().max(60).optional().nullable(),
   voterSemester: z.string().trim().max(30).optional().nullable(),
+});
+
+export const registrationSchema = z.object({
+  name: z.string().trim().min(1, "Name is required").max(60),
+  affiliation: z.string().trim().min(1, "Affiliation is required").max(80),
+  position: z.enum(["GK", "DEF", "MID", "FWD"]).optional().nullable(),
+  contact: z.string().trim().min(1, "Contact is required").max(120),
+});
+
+export const registrationReviewSchema = z.object({
+  status: z.enum(["APPROVED", "REJECTED"]),
+  notes: z.string().trim().max(300).optional().nullable(),
 });

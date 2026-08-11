@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 export default function AdminLoginPage() {
   const router = useRouter();
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -17,7 +18,7 @@ export default function AdminLoginPage() {
       const res = await fetch("/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ username, password }),
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
@@ -38,12 +39,22 @@ export default function AdminLoginPage() {
         className="w-full max-w-sm rounded-2xl border border-line bg-surface p-8 shadow-sm"
       >
         <h1 className="text-xl font-extrabold">Admin Login</h1>
-        <p className="mt-1 text-sm text-muted">Enter the admin password to continue.</p>
+        <p className="mt-1 text-sm text-muted">Enter your username and password to continue.</p>
 
-        <label className="mt-6 block text-sm font-medium">Password</label>
+        <label className="mt-6 block text-sm font-medium">Username</label>
+        <input
+          type="text"
+          autoFocus
+          required
+          autoCapitalize="none"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          className="mt-1.5 w-full rounded-lg border border-line bg-background px-3.5 py-2.5 outline-none focus:border-pitch"
+        />
+
+        <label className="mt-4 block text-sm font-medium">Password</label>
         <input
           type="password"
-          autoFocus
           required
           value={password}
           onChange={(e) => setPassword(e.target.value)}

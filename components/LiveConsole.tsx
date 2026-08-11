@@ -23,6 +23,7 @@ type Match = {
   awayTeam: Team | null;
   homeScore: number;
   awayScore: number;
+  extraTimePlayed: boolean;
   events: EventRow[];
 };
 
@@ -48,6 +49,7 @@ export function LiveConsole({ matchId }: { matchId: string }) {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [drawPrompt, setDrawPrompt] = useState<"choose" | "penalties" | "manual" | null>(null);
+  const [extraTimeAvailable, setExtraTimeAvailable] = useState(true);
   const [penHomeScore, setPenHomeScore] = useState("");
   const [penAwayScore, setPenAwayScore] = useState("");
   const { confirmWithPassword, modal } = usePasswordConfirm();
@@ -187,6 +189,7 @@ export function LiveConsole({ matchId }: { matchId: string }) {
 
   async function finish(
     resolution?:
+      | { method: "EXTRA_TIME" }
       | { method: "PENALTIES"; penaltyHomeScore: number; penaltyAwayScore: number }
       | { method: "MANUAL"; winnerTeamId: string },
   ) {
@@ -199,16 +202,29 @@ export function LiveConsole({ matchId }: { matchId: string }) {
       body: resolution ? JSON.stringify({ resolution }) : undefined,
     });
     setBusy(false);
+    const body = await res.json().catch(() => ({}));
     if (res.ok) {
+      if (body.stillLive) {
+        // Extra time was chosen — the match is still LIVE, not finished.
+        // Drop back into the normal scoring console instead of navigating
+        // away.
+        setDrawPrompt(null);
+        load();
+        return;
+      }
       router.push("/admin/fixtures");
       return;
     }
-    const body = await res.json().catch(() => ({}));
     if (body.code === "draw_needs_resolution") {
+      setExtraTimeAvailable(!!body.extraTimeAvailable);
       setDrawPrompt("choose");
       return;
     }
     setError(body.error ?? "Failed to finish match");
+  }
+
+  function confirmExtraTime() {
+    finish({ method: "EXTRA_TIME" });
   }
 
   function confirmPenalties() {
@@ -241,13 +257,20 @@ export function LiveConsole({ matchId }: { matchId: string }) {
       {modal}
       <div className="mb-6 flex items-center justify-between">
         <h1 className="heading-display text-2xl">Live Console</h1>
-        <span
-          className={
-            "rounded-full px-3 py-1 text-xs font-bold " +
-            (isLive ? "bg-live/10 text-live" : "bg-line text-muted")
-          }
-        >
-          {match.status}
+        <span className="flex items-center gap-2">
+          {match.extraTimePlayed && (
+            <span className="rounded-full bg-line px-3 py-1 text-xs font-bold text-muted">
+              Extra time
+            </span>
+          )}
+          <span
+            className={
+              "rounded-full px-3 py-1 text-xs font-bold " +
+              (isLive ? "bg-live/10 text-live" : "bg-line text-muted")
+            }
+          >
+            {match.status}
+          </span>
         </span>
       </div>
 
@@ -328,28 +351,45 @@ export function LiveConsole({ matchId }: { matchId: string }) {
       {drawPrompt && (
         <div className="mb-6 rounded-2xl border border-line bg-surface p-5">
           <p className="mb-3 font-bold">
-            {match.homeScore}–{match.awayScore} is level — how was this decided?
+            {match.homeScore}–{match.awayScore} is level — how should this be decided?
           </p>
           {drawPrompt === "choose" && (
-            <div className="flex flex-wrap gap-3">
-              <button
-                onClick={() => setDrawPrompt("penalties")}
-                className="rounded-full bg-pitch px-5 py-2 text-sm font-bold text-white"
-              >
-                Penalty shootout
-              </button>
-              <button
-                onClick={() => setDrawPrompt("manual")}
-                className="rounded-full border border-line px-5 py-2 text-sm font-bold"
-              >
-                Pick winner directly
-              </button>
-              <button
-                onClick={() => setDrawPrompt(null)}
-                className="rounded-full border border-line px-5 py-2 text-sm font-medium text-muted"
-              >
-                Cancel
-              </button>
+            <div className="space-y-3">
+              <div className="flex flex-wrap gap-3">
+                {extraTimeAvailable && (
+                  <button
+                    onClick={confirmExtraTime}
+                    disabled={busy}
+                    className="rounded-full bg-pitch px-5 py-2 text-sm font-bold text-white disabled:opacity-60"
+                  >
+                    Play extra time
+                  </button>
+                )}
+                <button
+                  onClick={() => setDrawPrompt("penalties")}
+                  className={
+                    "rounded-full px-5 py-2 text-sm font-bold " +
+                    (extraTimeAvailable ? "border border-line" : "bg-pitch text-white")
+                  }
+                >
+                  Penalty shootout
+                </button>
+                <button
+                  onClick={() => setDrawPrompt("manual")}
+                  className="rounded-full border border-line px-5 py-2 text-sm font-bold"
+                >
+                  Pick winner directly
+                </button>
+                <button
+                  onClick={() => setDrawPrompt(null)}
+                  className="rounded-full border border-line px-5 py-2 text-sm font-medium text-muted"
+                >
+                  Cancel
+                </button>
+              </div>
+              {!extraTimeAvailable && (
+                <p className="text-xs text-muted">Extra time has already been played for this match.</p>
+              )}
             </div>
           )}
           {drawPrompt === "penalties" && (

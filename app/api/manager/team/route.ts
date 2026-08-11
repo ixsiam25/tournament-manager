@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireManager } from "@/lib/managerAuth";
+import { requireUser } from "@/lib/userAuth";
+import { logAudit } from "@/lib/audit";
 import { teamSchema } from "@/lib/validation";
 
 export const dynamic = "force-dynamic";
@@ -8,9 +9,10 @@ export const dynamic = "force-dynamic";
 const managerTeamSchema = teamSchema.pick({ name: true });
 
 export async function PATCH(request: NextRequest) {
-  const result = await requireManager();
+  const result = await requireUser(["OWNER"]);
   if (result instanceof NextResponse) return result;
-  const { teamId } = result;
+  const { user: actor } = result;
+  const teamId = actor.teamId!;
 
   const body = await request.json().catch(() => null);
   const parsed = managerTeamSchema.safeParse(body);
@@ -19,9 +21,19 @@ export async function PATCH(request: NextRequest) {
   }
 
   try {
+    const before = await prisma.team.findUnique({ where: { id: teamId } });
     const team = await prisma.team.update({
       where: { id: teamId },
       data: { name: parsed.data.name },
+    });
+    await logAudit({
+      actor,
+      action: "team.rename",
+      entityType: "Team",
+      entityId: team.id,
+      summary: `Manager renamed team "${before?.name}" to "${team.name}"`,
+      before: before ? { name: before.name } : undefined,
+      after: { name: team.name },
     });
     return NextResponse.json({ team });
   } catch {
