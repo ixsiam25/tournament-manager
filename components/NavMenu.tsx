@@ -17,11 +17,22 @@ const NAV_ITEMS = [
   { href: "/legacy", label: "Legacy" },
 ];
 
-export function NavMenu({ showRegister, showAuction }: { showRegister: boolean; showAuction: boolean }) {
+const SEASON_ONLY_HREFS = new Set(["/fixtures", "/standings", "/players", "/roster", "/teams", "/predictions"]);
+
+export function NavMenu({
+  showRegister,
+  showAuction,
+  hasActiveSeason,
+}: {
+  showRegister: boolean;
+  showAuction: boolean;
+  hasActiveSeason: boolean;
+}) {
   const pathname = usePathname();
   const navItems = NAV_ITEMS.filter((item) => {
     if (item.href === "/register") return showRegister;
     if (item.href === "/auction") return showAuction;
+    if (SEASON_ONLY_HREFS.has(item.href)) return hasActiveSeason;
     return true;
   });
   const [open, setOpen] = useState(false);

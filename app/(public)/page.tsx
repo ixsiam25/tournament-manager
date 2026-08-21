@@ -75,16 +75,20 @@ export default async function HomePage() {
 
       {registrationOpen && activeSeason && <RegistrationOpenBanner seasonName={activeSeason.name} />}
 
-      <LiveStatusWidget initial={initial} />
-      <div className="mt-8">
-        <PlayerStatList
-          title="Top Scorers"
-          icon="⚽"
-          rows={topScorers}
-          limit={3}
-          viewAllHref="/players"
-        />
-      </div>
+      {activeSeason && (
+        <>
+          <LiveStatusWidget initial={initial} />
+          <div className="mt-8">
+            <PlayerStatList
+              title="Top Scorers"
+              icon="⚽"
+              rows={topScorers}
+              limit={3}
+              viewAllHref="/players"
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 }

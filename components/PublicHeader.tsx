@@ -18,7 +18,7 @@ export async function PublicHeader() {
         </Link>
         <div className="flex items-center gap-3">
           <ThemeToggle />
-          <NavMenu showRegister={showRegister} showAuction={showAuction} />
+          <NavMenu showRegister={showRegister} showAuction={showAuction} hasActiveSeason={!!activeSeason} />
         </div>
       </div>
     </header>
