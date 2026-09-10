@@ -60,11 +60,11 @@ export default async function AdminDashboardPage() {
         <StatCard label="Matches" value={matchCount} />
       </div>
 
-      <h2 className="mb-3 mt-8 text-sm font-bold uppercase tracking-wide text-muted">
+      <h2 className="mb-3 mt-8 text-sm font-bold uppercase tracking-wide text-muted-foreground">
         Upcoming matches
       </h2>
       {upcoming.length === 0 ? (
-        <p className="text-sm text-muted">No upcoming fixtures.</p>
+        <p className="text-sm text-muted-foreground">No upcoming fixtures.</p>
       ) : (
         <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
           {upcoming.map((m) => (
@@ -72,19 +72,19 @@ export default async function AdminDashboardPage() {
               <div className="flex min-w-0 flex-wrap items-center gap-2 sm:flex-1 sm:gap-3">
                 <DashboardTeamLogo logoUrl={m.homeTeam?.logoUrl} name={m.homeTeam?.name} />
                 <span className="text-sm font-bold sm:text-base">{m.homeTeam?.name ?? "TBD"}</span>
-                <span className="shrink-0 text-xs text-muted sm:text-sm">vs</span>
+                <span className="shrink-0 text-xs text-muted-foreground sm:text-sm">vs</span>
                 <span className="text-sm font-bold sm:text-base">{m.awayTeam?.name ?? "TBD"}</span>
                 <DashboardTeamLogo logoUrl={m.awayTeam?.logoUrl} name={m.awayTeam?.name} />
               </div>
               <div className="flex shrink-0 flex-col items-end gap-1 sm:items-end">
                 <div className="flex items-center justify-between gap-3">
                   {m.scheduledAt && (
-                    <p className="text-xs text-muted">{new Date(m.scheduledAt).toLocaleString()}</p>
+                    <p className="text-xs text-muted-foreground">{new Date(m.scheduledAt).toLocaleString()}</p>
                   )}
                   <StartMatchButton matchId={m.id} disabled={!m.homeTeamId || !m.awayTeamId} />
                 </div>
                 {(m.mainReferee || m.assistantReferee) && (
-                  <p className="text-xs text-muted">
+                  <p className="text-xs text-muted-foreground">
                     {m.mainReferee && (
                       <span>
                         Ref: <span className="font-medium text-foreground">{m.mainReferee}</span>
@@ -138,7 +138,7 @@ function StatCard({ label, value }: { label: string; value: number }) {
   return (
     <div className="rounded-2xl border border-line bg-surface p-5 text-center">
       <p className="heading-display text-3xl tabular-nums">{value}</p>
-      <p className="mt-1 text-xs uppercase tracking-wide text-muted">{label}</p>
+      <p className="mt-1 text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
     </div>
   );
 }

@@ -197,11 +197,11 @@ export function AuctionConsole() {
     load();
   }
 
-  if (loading) return <p className="text-muted">Loading…</p>;
+  if (loading) return <p className="text-muted-foreground">Loading…</p>;
 
-  if (!season) return <p className="text-muted">No active season.</p>;
+  if (!season) return <p className="text-muted-foreground">No active season.</p>;
   if (season.teamFormation !== "AUCTION") {
-    return <p className="text-muted">&quot;{season.name}&quot; isn&apos;t an AUCTION-formation season.</p>;
+    return <p className="text-muted-foreground">&quot;{season.name}&quot; isn&apos;t an AUCTION-formation season.</p>;
   }
 
   if (needsSettings || !settings) {
@@ -254,7 +254,7 @@ export function AuctionConsole() {
       {modal}
       <div className="mb-6 flex items-center justify-between">
         <h1 className="heading-display text-2xl">Auction</h1>
-        <span className="text-sm text-muted">{queue.length} queued · {unsoldCount} unsold</span>
+        <span className="text-sm text-muted-foreground">{queue.length} queued · {unsoldCount} unsold</span>
       </div>
       {error && <p className="mb-4 text-sm text-live">{error}</p>}
 
@@ -271,7 +271,7 @@ export function AuctionConsole() {
               )}
               <div>
                 <p className="text-lg font-bold">{currentLot.player.name}</p>
-                <p className="text-sm text-muted">
+                <p className="text-sm text-muted-foreground">
                   {currentLot.player.position ?? "No position"} · base {settings.basePrice}
                 </p>
               </div>
@@ -319,7 +319,7 @@ export function AuctionConsole() {
           </div>
         ) : (
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-muted">No lot currently up.</p>
+            <p className="text-muted-foreground">No lot currently up.</p>
             <div className="flex gap-3">
               <button
                 onClick={nextLot}
@@ -343,13 +343,13 @@ export function AuctionConsole() {
         <button
           onClick={undo}
           disabled={busy}
-          className="mt-4 rounded-full border border-line px-4 py-1.5 text-xs font-medium text-muted disabled:opacity-40"
+          className="mt-4 rounded-full border border-line px-4 py-1.5 text-xs font-medium text-muted-foreground disabled:opacity-40"
         >
           Undo last sale
         </button>
       </section>
 
-      <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted">Teams</h2>
+      <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">Teams</h2>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
         {teams.map((t) => (
           <div key={t.teamId} className="rounded-2xl border border-line bg-surface p-4">
@@ -357,21 +357,21 @@ export function AuctionConsole() {
               <Crest size={22} name={t.teamName} />
               {t.teamName}
             </p>
-            <p className="text-sm text-muted">Squad: {t.squadCount}</p>
-            <p className="text-sm text-muted">Remaining: {t.remainingBudget}</p>
-            <p className="text-sm text-muted">Max bid: {t.maxAllowableBid}</p>
+            <p className="text-sm text-muted-foreground">Squad: {t.squadCount}</p>
+            <p className="text-sm text-muted-foreground">Remaining: {t.remainingBudget}</p>
+            <p className="text-sm text-muted-foreground">Max bid: {t.maxAllowableBid}</p>
           </div>
         ))}
-        {teams.length === 0 && <p className="text-sm text-muted">No teams yet — create some via Teams first.</p>}
+        {teams.length === 0 && <p className="text-sm text-muted-foreground">No teams yet — create some via Teams first.</p>}
       </div>
 
       {queue.length > 0 && (
         <>
-          <h2 className="mb-3 mt-6 text-sm font-bold uppercase tracking-wide text-muted">Up next</h2>
+          <h2 className="mb-3 mt-6 text-sm font-bold uppercase tracking-wide text-muted-foreground">Up next</h2>
           <ol className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface text-sm">
             {queue.slice(0, 10).map((l, i) => (
               <li key={l.id} className="flex items-center gap-3 px-4 py-2">
-                <span className="text-muted">{i + 1}</span>
+                <span className="text-muted-foreground">{i + 1}</span>
                 {l.player.name}
               </li>
             ))}

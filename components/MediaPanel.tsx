@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { MediaPhoto } from "@/components/SafeImage";
 import { useEffect, useRef, useState } from "react";
 import { downscaleToJpeg } from "@/lib/downscaleImage";
 import { usePasswordConfirm } from "@/components/PasswordConfirm";
@@ -159,7 +159,7 @@ export function MediaPanel() {
     if (res.ok) loadAssets(seasonId);
   }
 
-  if (loading) return <p className="text-muted">Loading…</p>;
+  if (loading) return <p className="text-muted-foreground">Loading…</p>;
 
   return (
     <div>
@@ -167,7 +167,7 @@ export function MediaPanel() {
       <h1 className="mb-6 heading-display text-2xl">Media</h1>
 
       {seasons.length === 0 ? (
-        <p className="text-muted">No seasons yet.</p>
+        <p className="text-muted-foreground">No seasons yet.</p>
       ) : (
         <>
           <label className="mb-6 block max-w-xs">
@@ -235,7 +235,7 @@ export function MediaPanel() {
                       <button
                         type="button"
                         onClick={() => removePending(i)}
-                        className="rounded-full border border-line px-3 py-1.5 text-xs font-medium text-muted"
+                        className="rounded-full border border-line px-3 py-1.5 text-xs font-medium text-muted-foreground"
                       >
                         Remove
                       </button>
@@ -259,7 +259,7 @@ export function MediaPanel() {
             {assets.map((a, i) => (
               <div key={a.id} className="space-y-2 rounded-xl border border-line bg-surface p-3">
                 <div className="relative aspect-square overflow-hidden rounded-lg bg-line">
-                  <Image src={`/api/photos/${a.key}`} alt={a.caption} fill sizes="200px" className="object-cover" />
+                  <MediaPhoto src={`/api/photos/${a.key}`} alt={a.caption} sizes="200px" />
                   {a.isHero && (
                     <span className="absolute left-1.5 top-1.5 rounded-full bg-gold px-2 py-0.5 text-[10px] font-bold uppercase text-black">
                       Hero
@@ -304,7 +304,7 @@ export function MediaPanel() {
                     disabled={busyId === a.id}
                     className={
                       "rounded-full border px-2 py-1 text-xs font-bold disabled:opacity-30 " +
-                      (a.isHero ? "border-gold text-gold" : "border-line text-muted")
+                      (a.isHero ? "border-gold text-gold" : "border-line text-muted-foreground")
                     }
                   >
                     {a.isHero ? "★ Hero" : "☆ Set hero"}
@@ -319,7 +319,7 @@ export function MediaPanel() {
                 </div>
               </div>
             ))}
-            {assets.length === 0 && <p className="col-span-full text-sm text-muted">No photos yet.</p>}
+            {assets.length === 0 && <p className="col-span-full text-sm text-muted-foreground">No photos yet.</p>}
           </div>
         </>
       )}

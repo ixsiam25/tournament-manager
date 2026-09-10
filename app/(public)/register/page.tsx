@@ -6,7 +6,7 @@ export default function RegisterPage() {
   return (
     <div>
       <h1 className="mb-2 heading-display text-2xl">Register</h1>
-      <p className="mb-6 text-muted">Sign up to play this season.</p>
+      <p className="mb-6 text-muted-foreground">Sign up to play this season.</p>
       <RegistrationForm />
     </div>
   );

@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { PlayerPhoto } from "@/components/SafeImage";
 
 const POSITION_LABELS: Record<string, string> = {
   GK: "GK",
@@ -24,7 +24,7 @@ export function PlayerCard({
     <div className="group relative flex w-24 flex-col items-center gap-1.5 rounded-block-lg border-2 border-line bg-surface/95 p-1.5 text-center shadow-block transition-transform hover:-translate-y-0.5 hover:border-line-strong">
       {photoUrl ? (
         <div className="relative aspect-[3/5] w-full overflow-hidden rounded-block">
-          <Image src={photoUrl} alt={name} fill sizes="96px" className="object-cover" />
+          <PlayerPhoto src={photoUrl} alt={name} sizes="96px" />
           <span className="absolute bottom-1 left-1 flex h-6 w-6 items-center justify-center rounded-block bg-brand text-xs font-extrabold text-white shadow-sm">
             {jerseyNumber}
           </span>

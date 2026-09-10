@@ -42,7 +42,7 @@ export function LegacySquadPicker({
           {teamId === championTeamId && <span className="text-sm">🏆</span>}
         </p>
         <label className="flex items-center gap-2 text-sm">
-          <span className="text-muted">View other squads</span>
+          <span className="text-muted-foreground">View other squads</span>
           <select
             value={teamId}
             onChange={(e) => setTeamId(e.target.value)}

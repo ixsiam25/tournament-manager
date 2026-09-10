@@ -75,7 +75,7 @@ export function NavMenu({
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="menu"
         aria-expanded={open}
-        className="flex items-center gap-1.5 rounded-block border-2 border-white/25 px-3.5 py-1.5 text-sm font-bold uppercase tracking-wide text-white hover:border-white hover:bg-white hover:text-black"
+        className="flex items-center gap-1.5 rounded-block border border-line-strong px-3.5 py-1.5 text-sm font-bold uppercase tracking-wide text-foreground hover:bg-foreground hover:text-background"
       >
         Menu
         <svg
@@ -95,7 +95,7 @@ export function NavMenu({
       {open && (
         <div
           role="menu"
-          className="absolute right-0 top-[calc(100%+8px)] z-20 w-56 origin-top-right animate-card-in overflow-hidden rounded-block-lg border-2 border-line-strong bg-surface shadow-block"
+          className="absolute right-0 top-[calc(100%+8px)] z-20 w-56 origin-top-right animate-card-in overflow-hidden rounded-block-lg border border-line bg-surface shadow-block"
         >
           <nav className="py-1.5">
             {navItems.map((item) => {
@@ -124,7 +124,7 @@ export function NavMenu({
               href="/manager/login"
               prefetch={false}
               role="menuitem"
-              className="block px-4 py-2 text-sm font-medium text-muted hover:bg-background hover:text-foreground"
+              className="block px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-background hover:text-foreground"
             >
               Manager login
             </Link>
@@ -132,7 +132,7 @@ export function NavMenu({
               href="/admin/login"
               prefetch={false}
               role="menuitem"
-              className="block px-4 py-2 text-sm font-medium text-muted hover:bg-background hover:text-foreground"
+              className="block px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-background hover:text-foreground"
             >
               Admin login
             </Link>

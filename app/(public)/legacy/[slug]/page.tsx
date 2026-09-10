@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { MediaFigure, MediaPhoto, PlayerPhoto } from "@/components/SafeImage";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import type { SeasonArchive } from "@/lib/seasonArchive";
@@ -57,33 +57,42 @@ export default async function LegacySeasonPage({ params }: { params: Promise<{ s
 
   return (
     <div>
-      {/* Hero */}
-      <div className="relative mb-8 overflow-hidden rounded-block-lg border-2 border-line-strong shadow-block">
-        {hero ? (
-          <div className="relative h-64 w-full sm:h-80">
-            <Image src={`/api/photos/${hero.key}`} alt={hero.caption} fill sizes="800px" className="object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
-          </div>
-        ) : (
-          <div className="stripe-texture h-40 w-full bg-pitch sm:h-48" />
-        )}
-        <div className={"px-5 py-6 sm:px-8 sm:py-8 " + (hero ? "absolute inset-x-0 bottom-0 text-white" : "bg-surface")}>
-          <p className="text-xs font-bold uppercase tracking-[0.3em] opacity-80">
-            Season {season.number} · {season.year}
-          </p>
-          <h1 className="heading-display mt-1 text-3xl sm:text-5xl">{season.name}</h1>
-          {archive.championResult && (
-            <div className="mt-4 flex items-center gap-3">
-              <Crest size={44} name={archive.championResult.championTeamName} />
-              <p className="heading-display text-lg sm:text-xl">
-                🏆 {archive.championResult.championTeamName}
+      {/* Masthead: the season's own front page. The hero photo used to be the
+          background with the headline reversed out over it, which left a bare
+          gradient whenever the image failed to load. It's now a captioned
+          figure below the headline — broadsheet order, and it simply isn't
+          rendered if the photo is unavailable. */}
+      <div className="stripe-texture relative mb-8 overflow-hidden rounded-block-lg border border-line bg-surface px-6 py-10 shadow-block sm:px-10 sm:py-12">
+        <p className="mb-4 text-[11px] font-bold uppercase tracking-[0.32em] text-brand">
+          Season {season.number} · {season.year}
+        </p>
+        <h1 className="heading-display text-4xl leading-[0.9] sm:text-6xl">{season.name}</h1>
+        {archive.championResult && (
+          <>
+            <hr className="my-5 h-px border-0 bg-line" />
+            <div className="flex items-center gap-3">
+              <Crest size={40} name={archive.championResult.championTeamName} />
+              <p className="lede not-italic">
+                <span className="font-semibold text-foreground">
+                  {archive.championResult.championTeamName}
+                </span>{" "}
+                — champions
               </p>
             </div>
-          )}
-        </div>
+          </>
+        )}
       </div>
 
-      {season.recap && <p className="mb-8 text-muted">{season.recap}</p>}
+      {hero && (
+        <MediaFigure
+          src={`/api/photos/${hero.key}`}
+          caption={hero.caption}
+          sizes="800px"
+          className="mb-10"
+        />
+      )}
+
+      {season.recap && <p className="mb-8 text-muted-foreground">{season.recap}</p>}
 
       {/* Stats strip */}
       <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-5">
@@ -154,7 +163,7 @@ export default async function LegacySeasonPage({ params }: { params: Promise<{ s
       {/* Officials */}
       {officials.length > 0 && (
         <Section title="Match Officials">
-          <p className="text-sm text-muted">{officials.join(", ")}</p>
+          <p className="text-sm text-muted-foreground">{officials.join(", ")}</p>
         </Section>
       )}
 
@@ -165,18 +174,12 @@ export default async function LegacySeasonPage({ params }: { params: Promise<{ s
             {mediaAssets.map((m) => (
               <figure
                 key={m.id}
-                className="group overflow-hidden rounded-block-lg border-2 border-line-strong bg-surface shadow-block"
+                className="group overflow-hidden rounded-block-lg border border-line bg-surface shadow-block"
               >
                 <div className="relative aspect-square overflow-hidden">
-                  <Image
-                    src={`/api/photos/${m.key}`}
-                    alt={m.caption}
-                    fill
-                    sizes="260px"
-                    className="object-cover transition-transform duration-300 group-hover:scale-110"
-                  />
+                  <MediaPhoto src={`/api/photos/${m.key}`} alt={m.caption} sizes="260px" className="object-cover transition-transform duration-300 group-hover:scale-110" />
                 </div>
-                <figcaption className="px-3 py-2 text-xs text-muted">
+                <figcaption className="px-3 py-2 text-xs text-muted-foreground">
                   {m.caption}
                   {m.credit && <span className="opacity-70"> — {m.credit}</span>}
                 </figcaption>
@@ -192,7 +195,7 @@ export default async function LegacySeasonPage({ params }: { params: Promise<{ s
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="mb-8">
-      <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted">{title}</h2>
+      <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">{title}</h2>
       {children}
     </section>
   );
@@ -200,10 +203,10 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function StatTile({ icon, label, value }: { icon: string; label: string; value: number }) {
   return (
-    <div className="rounded-block-lg border-2 border-line-strong bg-surface p-4 text-center shadow-block">
+    <div className="rounded-block-lg border border-line bg-surface p-4 text-center shadow-block">
       <p className="text-lg leading-none">{icon}</p>
       <p className="heading-display mt-1 text-2xl tabular-nums">{value}</p>
-      <p className="mt-1 text-xs uppercase tracking-wide text-muted">{label}</p>
+      <p className="mt-1 text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
     </div>
   );
 }
@@ -220,7 +223,7 @@ function PodiumStep({ row, rank }: { row: SeasonArchive["finalStandings"][number
     <div className="flex w-20 flex-col items-center sm:w-28">
       <Crest size={rank === 1 ? 40 : 32} name={row.teamName} />
       <p className="mt-1.5 line-clamp-1 text-center text-xs font-bold sm:text-sm">{row.teamName}</p>
-      <p className="text-[11px] font-bold text-muted">{row.points} pts</p>
+      <p className="text-[11px] font-bold text-muted-foreground">{row.points} pts</p>
       <div
         className={
           "mt-2 flex w-full items-start justify-center rounded-t-block-lg border-2 border-b-0 border-line-strong shadow-block " +
@@ -298,7 +301,7 @@ function FrozenMatchCard({ match, highlight }: { match: SeasonArchive["matches"]
           <Crest size={24} name={match.awayTeam} />
         </span>
       </div>
-      {note && <p className="mt-2 text-center text-xs uppercase tracking-wide text-muted">{note}</p>}
+      {note && <p className="mt-2 text-center text-xs uppercase tracking-wide text-muted-foreground">{note}</p>}
     </div>
   );
 }
@@ -314,12 +317,12 @@ function FrozenPlayerStatList({
 }) {
   const top3 = rows.slice(0, 3);
   return (
-    <div className="overflow-hidden rounded-block-lg border-2 border-line-strong bg-surface shadow-block">
+    <div className="overflow-hidden rounded-block-lg border border-line bg-surface shadow-block">
       <h3 className="border-b-2 border-line-strong px-5 py-4 font-black uppercase tracking-wide">
         {icon} {title}
       </h3>
       {top3.length === 0 ? (
-        <p className="p-5 text-sm text-muted">No data.</p>
+        <p className="p-5 text-sm text-muted-foreground">No data.</p>
       ) : (
         <ol className="divide-y-2 divide-line">
           {top3.map((row, i) => {
@@ -328,15 +331,15 @@ function FrozenPlayerStatList({
               <li key={row.playerId} className={"flex items-center gap-3 border-l-4 px-5 py-3 " + medal.border + " " + medal.chip}>
                 <span className={"w-6 shrink-0 text-center text-sm font-black " + medal.text}>{i + 1}</span>
                 {row.photoUrl ? (
-                  <span className="relative h-14 w-9 shrink-0 overflow-hidden rounded-block border-2 border-line-strong">
-                    <Image src={row.photoUrl} alt={row.playerName} fill sizes="36px" className="object-cover" />
+                  <span className="relative h-14 w-9 shrink-0 overflow-hidden rounded-block border border-line">
+                    <PlayerPhoto src={row.photoUrl} alt={row.playerName} sizes="36px" />
                   </span>
                 ) : (
                   <span className="h-14 w-9 shrink-0 rounded-block bg-line" />
                 )}
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-base font-bold">{row.playerName}</span>
-                  <span className="block truncate text-xs text-muted">{row.teamName}</span>
+                  <span className="block truncate text-xs text-muted-foreground">{row.teamName}</span>
                 </span>
                 <span className="shrink-0 text-xl font-black tabular-nums">{row.count}</span>
               </li>

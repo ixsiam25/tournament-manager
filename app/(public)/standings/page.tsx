@@ -12,7 +12,7 @@ export default async function StandingsPage() {
       <AutoRefresh />
       <h1 className="mb-6 heading-display text-2xl">League Standings</h1>
       <StandingsTable rows={rows} />
-      <p className="mt-3 text-xs text-muted">
+      <p className="mt-3 text-xs text-muted-foreground">
         Top 4 (highlighted) qualify for the semifinals. Click a team once to highlight it, click
         again to see their fixtures.
       </p>

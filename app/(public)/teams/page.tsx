@@ -19,7 +19,7 @@ export default async function TeamsPage() {
           <Link
             key={team.id}
             href={`/teams/${team.id}`}
-            className="flex flex-col items-center gap-2 rounded-block-lg border-2 border-line-strong bg-surface p-5 text-center shadow-block transition-transform hover:-translate-y-0.5 hover:bg-background"
+            className="flex flex-col items-center gap-2 rounded-block-lg border border-line bg-surface p-5 text-center shadow-block transition-transform hover:-translate-y-0.5 hover:bg-background"
           >
             {team.logoUrl ? (
               <Image
@@ -34,12 +34,12 @@ export default async function TeamsPage() {
             )}
             <span className="font-black uppercase tracking-wide">{team.name}</span>
             {team.managerName && (
-              <span className="text-xs text-muted">Manager: {team.managerName}</span>
+              <span className="text-xs text-muted-foreground">Manager: {team.managerName}</span>
             )}
-            <span className="text-xs text-muted">{team._count.players} players</span>
+            <span className="text-xs text-muted-foreground">{team._count.players} players</span>
           </Link>
         ))}
-        {teams.length === 0 && <p className="text-muted">No teams yet.</p>}
+        {teams.length === 0 && <p className="text-muted-foreground">No teams yet.</p>}
       </div>
     </div>
   );

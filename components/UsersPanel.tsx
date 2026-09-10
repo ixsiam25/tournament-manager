@@ -113,7 +113,7 @@ export function UsersPanel() {
 
       <section className="mb-8 rounded-2xl border border-line bg-surface p-6">
         <h2 className="mb-1 font-bold">New account</h2>
-        <p className="mb-4 text-sm text-muted">
+        <p className="mb-4 text-sm text-muted-foreground">
           ADMIN can reach every page. SCORER can only start/finish matches and log events via the
           live console.
         </p>
@@ -170,15 +170,15 @@ export function UsersPanel() {
       </section>
 
       {loading ? (
-        <p className="text-muted">Loading…</p>
+        <p className="text-muted-foreground">Loading…</p>
       ) : (
         <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
           {users.map((u) => (
             <li key={u.id} className="space-y-2.5 px-5 py-4">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="font-bold">{u.name}</span>
-                <span className="text-sm text-muted">@{u.username}</span>
-                <span className="rounded-full bg-line px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-muted">
+                <span className="text-sm text-muted-foreground">@{u.username}</span>
+                <span className="rounded-full bg-line px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-muted-foreground">
                   {u.role}
                 </span>
                 {!u.isActive && (
@@ -224,7 +224,7 @@ export function UsersPanel() {
               </div>
             </li>
           ))}
-          {users.length === 0 && <li className="px-5 py-6 text-center text-muted">No accounts yet.</li>}
+          {users.length === 0 && <li className="px-5 py-6 text-center text-muted-foreground">No accounts yet.</li>}
         </ul>
       )}
     </div>

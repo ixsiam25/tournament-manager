@@ -39,7 +39,7 @@ export default function AdminLoginPage() {
         className="w-full max-w-sm rounded-2xl border border-line bg-surface p-8 shadow-sm"
       >
         <h1 className="text-xl font-extrabold">Admin Login</h1>
-        <p className="mt-1 text-sm text-muted">Enter your username and password to continue.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Enter your username and password to continue.</p>
 
         <label className="mt-6 block text-sm font-medium">Username</label>
         <input

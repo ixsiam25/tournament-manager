@@ -55,7 +55,7 @@ export function FixtureEditor({ matchId }: { matchId: string }) {
     };
   }, [matchId]);
 
-  if (!match) return <p className="text-muted">Loading…</p>;
+  if (!match) return <p className="text-muted-foreground">Loading…</p>;
 
   async function save(patch: Partial<Match>) {
     setSaving(true);
@@ -188,7 +188,7 @@ export function FixtureEditor({ matchId }: { matchId: string }) {
         </Field>
 
         {error && <p className="text-sm text-live">{error}</p>}
-        {saving && <p className="text-sm text-muted">Saving…</p>}
+        {saving && <p className="text-sm text-muted-foreground">Saving…</p>}
 
         <div className="flex flex-wrap gap-3 pt-2">
           {match.status === "SCHEDULED" && (

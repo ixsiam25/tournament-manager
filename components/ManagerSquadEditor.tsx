@@ -59,7 +59,7 @@ export function ManagerSquadEditor({ players: initialPlayers }: { players: Playe
   return (
     <section className="mb-8">
       <h2 className="mb-1 font-black uppercase tracking-wide">Squad formation</h2>
-      <p className="mb-4 text-sm text-muted">
+      <p className="mb-4 text-sm text-muted-foreground">
         Assign each player&rsquo;s position — the first 6 players by jersey number are your
         starting lineup on the pitch below.
       </p>
@@ -73,7 +73,7 @@ export function ManagerSquadEditor({ players: initialPlayers }: { players: Playe
           <li key={p.id} className="flex items-center justify-between gap-3 px-5 py-3">
             <span className="min-w-0 truncate text-sm font-medium">
               #{p.jerseyNumber} {p.name}
-              {p.isCaptain && <span className="ml-1.5 text-xs text-muted">(C)</span>}
+              {p.isCaptain && <span className="ml-1.5 text-xs text-muted-foreground">(C)</span>}
             </span>
             <select
               value={p.position ?? ""}
@@ -90,7 +90,7 @@ export function ManagerSquadEditor({ players: initialPlayers }: { players: Playe
           </li>
         ))}
         {players.length === 0 && (
-          <li className="px-5 py-6 text-center text-sm text-muted">No players on your squad yet.</li>
+          <li className="px-5 py-6 text-center text-sm text-muted-foreground">No players on your squad yet.</li>
         )}
       </ul>
     </section>

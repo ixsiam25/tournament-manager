@@ -70,7 +70,7 @@ export function TeamSettingsForm({
   }
 
   return (
-    <section className="mb-8 rounded-block-lg border-2 border-line-strong bg-surface p-6 shadow-block">
+    <section className="mb-8 rounded-block-lg border border-line bg-surface p-6 shadow-block">
       <h2 className="mb-4 font-black uppercase tracking-wide">Team settings</h2>
       <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
         <div className="flex shrink-0 flex-col items-center gap-2">
@@ -80,10 +80,10 @@ export function TeamSettingsForm({
               alt={initialName}
               width={80}
               height={80}
-              className="h-20 w-20 rounded-block border-2 border-line-strong object-cover"
+              className="h-20 w-20 rounded-block border border-line object-cover"
             />
           ) : (
-            <span className="flex h-20 w-20 items-center justify-center rounded-block border-2 border-line-strong bg-line text-center text-[10px] text-muted">
+            <span className="flex h-20 w-20 items-center justify-center rounded-block border border-line bg-line text-center text-[10px] text-muted-foreground">
               No logo
             </span>
           )}

@@ -41,8 +41,11 @@ export function Crest({ size = 28, name }: { size?: number; name?: string | null
   // Without a name there is nothing to derive from, so keep the original
   // green/red BFL shield.
   const hue = name ? hashName(name) % 360 : null;
-  const fill = hue === null ? "var(--pitch)" : `hsl(${hue} 62% 42%)`;
-  const fillDark = hue === null ? "var(--brand)" : `hsl(${hue} 62% 32%)`;
+  // Low saturation on purpose: a row of fully saturated random hues fights
+  // the maroon-and-paper palette. These stay distinguishable from one another
+  // while reading as tonal heraldry rather than a colour wheel.
+  const fill = hue === null ? "var(--pitch)" : `hsl(${hue} 26% 38%)`;
+  const fillDark = hue === null ? "var(--brand)" : `hsl(${hue} 26% 28%)`;
 
   return (
     <svg width={size} height={height} viewBox="0 0 32 36" role="img" aria-label={name ?? undefined}>

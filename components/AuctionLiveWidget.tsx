@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { PlayerPhoto } from "@/components/SafeImage";
 import { useEffect, useRef, useState } from "react";
 import { Crest } from "@/components/Crest";
 import type { PublicAuctionStatus } from "@/lib/auction";
@@ -30,20 +30,20 @@ export function AuctionLiveWidget({ initial }: { initial: PublicAuctionStatus })
   }, []);
 
   if (!data.active) {
-    return <p className="text-muted">No auction is running right now.</p>;
+    return <p className="text-muted-foreground">No auction is running right now.</p>;
   }
 
   const { currentLot, teams, soldCount, queuedCount } = data;
 
   return (
     <div className="space-y-6">
-      <div className="rounded-block-lg border-2 border-line-strong bg-surface p-6 shadow-block">
+      <div className="rounded-block-lg border border-line bg-surface p-6 shadow-block">
         <div className="mb-4 flex items-center justify-between">
           <span className="inline-flex items-center gap-1.5 rounded-block bg-live px-2.5 py-1 text-xs font-black uppercase tracking-wide text-white">
             <span className="h-1.5 w-1.5 animate-pulse-live rounded-full bg-white" />
             Live
           </span>
-          <span className="text-xs font-bold uppercase tracking-wide text-muted">
+          <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
             {soldCount} sold · {queuedCount} left
           </span>
         </div>
@@ -51,25 +51,25 @@ export function AuctionLiveWidget({ initial }: { initial: PublicAuctionStatus })
           <div className="flex items-center gap-4">
             {currentLot.photoUrl ? (
               <div className="relative h-24 w-16 overflow-hidden rounded-lg border border-line-strong">
-                <Image src={currentLot.photoUrl} alt={currentLot.playerName} fill sizes="64px" className="object-cover" />
+                <PlayerPhoto src={currentLot.photoUrl} alt={currentLot.playerName} sizes="64px" />
               </div>
             ) : (
               <div className="h-24 w-16 rounded-lg bg-line" />
             )}
             <div>
               <p className="text-xl font-bold">{currentLot.playerName}</p>
-              <p className="text-sm text-muted">
+              <p className="text-sm text-muted-foreground">
                 {currentLot.position ?? "No position"} · base {currentLot.basePrice}
               </p>
             </div>
           </div>
         ) : (
-          <p className="text-muted">Between lots…</p>
+          <p className="text-muted-foreground">Between lots…</p>
         )}
       </div>
 
       <div>
-        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted">Team budgets</h2>
+        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">Team budgets</h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {teams.map((t) => (
             <div key={t.teamName} className="flex items-center justify-between rounded-2xl border border-line bg-surface px-4 py-3">
@@ -77,14 +77,14 @@ export function AuctionLiveWidget({ initial }: { initial: PublicAuctionStatus })
                 <Crest size={22} name={t.teamName} />
                 {t.teamName}
               </span>
-              <span className="text-right text-sm text-muted">
+              <span className="text-right text-sm text-muted-foreground">
                 {t.remainingBudget} left
                 <br />
                 squad {t.squadCount}
               </span>
             </div>
           ))}
-          {teams.length === 0 && <p className="text-sm text-muted">No teams yet.</p>}
+          {teams.length === 0 && <p className="text-sm text-muted-foreground">No teams yet.</p>}
         </div>
       </div>
     </div>

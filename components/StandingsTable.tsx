@@ -3,12 +3,17 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { motion } from "motion/react";
 import { useState } from "react";
 import type { StandingRow } from "@/lib/standings";
 import { Crest } from "@/components/Crest";
 
 /** Click a row once to highlight it for easier reading across the wide
- * table; click the same row again to jump to its filtered fixtures. */
+ * table; click the same row again to jump to its filtered fixtures.
+ *
+ * Rows are keyed by team and laid out with motion's `layout`, so when the
+ * table re-sorts mid-season the teams slide to their new positions instead of
+ * snapping — the movement is the point of a league table. */
 export function StandingsTable({ rows }: { rows: StandingRow[] }) {
   const router = useRouter();
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -29,10 +34,10 @@ export function StandingsTable({ rows }: { rows: StandingRow[] }) {
   }
 
   return (
-    <div className="overflow-x-auto rounded-block-lg border-2 border-line-strong bg-surface shadow-block">
+    <div className="overflow-x-auto rounded-block-lg border border-line bg-surface shadow-block">
       <table className="w-full min-w-[680px] text-base">
         <thead>
-          <tr className="border-b-2 border-line-strong text-left text-sm uppercase tracking-wide text-muted">
+          <tr className="border-b-2 border-line-strong text-left text-sm uppercase tracking-wide text-muted-foreground">
             <th className="px-5 py-4">#</th>
             <th className="px-5 py-4">Team</th>
             <th className="px-3 py-4 text-center">P</th>
@@ -54,8 +59,10 @@ export function StandingsTable({ rows }: { rows: StandingRow[] }) {
             // mismatched background while the row is scrolled horizontally.
             const rowBg = selected ? "bg-pitch/20" : i < 4 ? "bg-pitch/5" : "bg-surface";
             return (
-              <tr
+              <motion.tr
                 key={row.teamId}
+                layout
+                transition={{ type: "spring", stiffness: 320, damping: 34 }}
                 tabIndex={0}
                 role="button"
                 aria-pressed={selected}
@@ -77,7 +84,7 @@ export function StandingsTable({ rows }: { rows: StandingRow[] }) {
                       : "border-l-4 border-l-transparent hover:bg-background")
                 }
               >
-                <td className="px-5 py-4 text-muted">{i + 1}</td>
+                <td className="px-5 py-4 text-muted-foreground">{i + 1}</td>
                 <td className="px-5 py-4 font-medium">
                   <span className="flex items-center gap-3">
                     <Link
@@ -114,9 +121,20 @@ export function StandingsTable({ rows }: { rows: StandingRow[] }) {
                     rowBg
                   }
                 >
-                  {row.points}
+                  {/* Keyed on the value so a points change remounts the span
+                    * and replays the pop — the cheapest way to make a live
+                    * score update visible without a separate diffing pass. */}
+                  <motion.span
+                    key={row.points}
+                    initial={{ scale: 1.45 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 18 }}
+                    className="inline-block"
+                  >
+                    {row.points}
+                  </motion.span>
                 </td>
-              </tr>
+              </motion.tr>
             );
           })}
         </tbody>

@@ -78,7 +78,7 @@ export function AuditLogPanel() {
       </div>
 
       {loading ? (
-        <p className="text-muted">Loading…</p>
+        <p className="text-muted-foreground">Loading…</p>
       ) : (
         <>
           <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
@@ -86,14 +86,14 @@ export function AuditLogPanel() {
               <li key={e.id} className="flex flex-wrap items-baseline justify-between gap-2 px-5 py-3.5">
                 <div>
                   <span className="font-medium">{e.summary}</span>
-                  <span className="ml-2 text-xs text-muted">
+                  <span className="ml-2 text-xs text-muted-foreground">
                     {e.actorName} · {e.action}
                   </span>
                 </div>
-                <span className="shrink-0 text-xs text-muted">{new Date(e.createdAt).toLocaleString()}</span>
+                <span className="shrink-0 text-xs text-muted-foreground">{new Date(e.createdAt).toLocaleString()}</span>
               </li>
             ))}
-            {entries.length === 0 && <li className="px-5 py-6 text-center text-muted">No matching entries.</li>}
+            {entries.length === 0 && <li className="px-5 py-6 text-center text-muted-foreground">No matching entries.</li>}
           </ul>
 
           {totalPages > 1 && (
@@ -105,7 +105,7 @@ export function AuditLogPanel() {
               >
                 Previous
               </button>
-              <span className="text-muted">
+              <span className="text-muted-foreground">
                 Page {page} of {totalPages} · {total} total
               </span>
               <button

@@ -16,10 +16,10 @@ export function ChampionResultBanner({ result }: { result: ChampionResult }) {
       <p className="heading-display mt-1 text-2xl sm:text-3xl">{result.championTeamName}</p>
 
       {result.totalCorrect === 0 ? (
-        <p className="mt-3 text-sm text-muted">Nobody predicted this one — tough tournament to call.</p>
+        <p className="mt-3 text-sm text-muted-foreground">Nobody predicted this one — tough tournament to call.</p>
       ) : (
         <div className="mt-3">
-          <p className="mb-2 text-sm text-muted">
+          <p className="mb-2 text-sm text-muted-foreground">
             {result.totalCorrect} of {result.totalPredictions} predictions called it ({accuracy}%)
             {result.correctVoterNames.length > 0 ? " — congrats to:" : "."}
           </p>
@@ -34,7 +34,7 @@ export function ChampionResultBanner({ result }: { result: ChampionResult }) {
                 </span>
               ))}
               {result.anonymousCorrectCount > 0 && (
-                <span className="rounded-block border-2 border-line px-2.5 py-1 text-xs text-muted">
+                <span className="rounded-block border-2 border-line px-2.5 py-1 text-xs text-muted-foreground">
                   +{result.anonymousCorrectCount} anonymous
                 </span>
               )}

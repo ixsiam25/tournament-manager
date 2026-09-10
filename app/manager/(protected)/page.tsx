@@ -28,7 +28,7 @@ export default async function ManagerPortalPage() {
       <ManagerSquadEditor players={players} />
 
       <h1 className="mb-2 heading-display text-2xl">Player Photos</h1>
-      <p className="mb-6 text-sm text-muted">
+      <p className="mb-6 text-sm text-muted-foreground">
         Upload a clear headshot for each player — it becomes their player card across the site
         immediately. Best results: a 3:5 (portrait) photo, cropped to the head/shoulders.
       </p>
@@ -36,7 +36,7 @@ export default async function ManagerPortalPage() {
         {players.map((p) => (
           <div
             key={p.id}
-            className="flex flex-col items-center gap-3 rounded-block-lg border-2 border-line-strong bg-surface p-4 text-center shadow-block"
+            className="flex flex-col items-center gap-3 rounded-block-lg border border-line bg-surface p-4 text-center shadow-block"
           >
             <PlayerCard
               name={p.name}
@@ -49,7 +49,7 @@ export default async function ManagerPortalPage() {
           </div>
         ))}
         {players.length === 0 && (
-          <p className="col-span-full text-sm text-muted">No players on your squad yet.</p>
+          <p className="col-span-full text-sm text-muted-foreground">No players on your squad yet.</p>
         )}
       </div>
     </div>

@@ -1,43 +1,99 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* shadcn/ui and Kokonut UI components ship `dark:` utilities, which default
+ * to a `.dark` class. This app keeps the theme on <html data-theme>, so point
+ * the variant at that instead — see components/ThemeToggle.tsx. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 :root {
-  --background: #f6f5f1;
-  --foreground: #161312;
+  --background: #faf8f5;
+  --foreground: #1a1512;
   --surface: #ffffff;
-  --line: #e5ddd3;
-  --line-strong: #161312;
-  --muted: #6b6157;
-  --pitch: #16a34a;
-  --pitch-dark: #0f7a37;
-  --brand: #ce1126;
-  --brand-dark: #a10d1e;
-  --live: #ea580c;
-  --live-dark: #c2410c;
+  --line: #e7e0d7;
+  --line-strong: #2a2320;
+  --muted: #f2ece4;
+  --muted-foreground: #6f6357;
+  --pitch: #2f6b46;
+  --pitch-dark: #245538;
+  --brand: #7a1128;
+  --brand-dark: #5a0c1d;
+  --live: #b45309;
+  --live-dark: #92400e;
   --maroon: #7a1128;
-  --gold: #b8860b;
-  --silver: #8b8b8b;
-  --bronze: #a15c2e;
-  --royal: #1e3a8a;
+  --gold: #9a7b1f;
+  --silver: #8a8a8a;
+  --bronze: #9c6239;
+  --royal: #2f4a7a;
+
+  /* shadcn/ui tokens — bound to the palette above so components pulled in from
+   * the @shadcn and @kokonutui registries inherit the BFL look rather than
+   * shipping their own neutral greys. */
+  --card: var(--surface);
+  --card-foreground: var(--foreground);
+  --popover: var(--surface);
+  --popover-foreground: var(--foreground);
+  --primary: var(--foreground);
+  --primary-foreground: var(--surface);
+  --secondary: #f2ece4;
+  --secondary-foreground: var(--foreground);
+  --accent: #f2ece4;
+  --accent-foreground: var(--foreground);
+  --destructive: var(--brand);
+  --border: var(--line);
+  --input: var(--line);
+  --ring: var(--pitch);
+  --chart-1: var(--pitch);
+  --chart-2: var(--brand);
+  --chart-3: var(--royal);
+  --chart-4: var(--gold);
+  --chart-5: var(--live);
+  /* Hard-edged, matching --radius-block. shadcn defaults to 0.625rem, which
+   * would reintroduce the pill shapes the redesign removed. */
+  --radius: 2px;
 }
 
 :root[data-theme="dark"] {
-  --background: #120e0d;
-  --foreground: #f2ece6;
-  --surface: #1b1615;
-  --line: #322824;
-  --line-strong: #f2ece6;
-  --muted: #ab9d92;
-  --pitch: #22c55e;
-  --pitch-dark: #16a34a;
-  --brand: #ef4453;
-  --brand-dark: #ce1126;
-  --live: #fb923c;
-  --live-dark: #ea580c;
-  --maroon: #a3253f;
-  --gold: #d4af37;
-  --silver: #b0b0b0;
-  --bronze: #c17a45;
-  --royal: #3b5fc4;
+  --background: #15100f;
+  --foreground: #f2ede6;
+  --surface: #1e1817;
+  --line: #332a27;
+  --line-strong: #e8e0d6;
+  --muted: #261f1d;
+  --muted-foreground: #a89a8d;
+  --pitch: #4e9d6d;
+  --pitch-dark: #3b7d55;
+  --brand: #b8455e;
+  --brand-dark: #8e2c42;
+  --live: #d98324;
+  --live-dark: #b4661a;
+  --maroon: #b8455e;
+  --gold: #c8a54a;
+  --silver: #b3b3b3;
+  --bronze: #c07f4e;
+  --royal: #6e8ed6;
+
+  /* shadcn/ui tokens — dark counterparts. */
+  --card: var(--surface);
+  --card-foreground: var(--foreground);
+  --popover: var(--surface);
+  --popover-foreground: var(--foreground);
+  --primary: var(--foreground);
+  --primary-foreground: var(--background);
+  --secondary: #261f1d;
+  --secondary-foreground: var(--foreground);
+  --accent: #261f1d;
+  --accent-foreground: var(--foreground);
+  --destructive: var(--brand);
+  --border: var(--line);
+  --input: var(--line);
+  --ring: var(--pitch);
+  --chart-1: var(--pitch);
+  --chart-2: var(--brand);
+  --chart-3: var(--royal);
+  --chart-4: var(--gold);
+  --chart-5: var(--live);
 }
 
 @theme inline {
@@ -57,16 +113,41 @@
   --color-gold: var(--gold);
   --color-silver: var(--silver);
   --color-bronze: var(--bronze);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
   --color-royal: var(--royal);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-display: var(--font-display);
+  --font-serif: "Iowan Old Style", "Charter", "Bitstream Charter", "Sitka Text", Cambria, Georgia, serif;
 
   /* Blocky geometry — hard-edged, not pill-shaped. Everything in the app
    * used to be rounded-full/rounded-2xl; this is the one dial that controls
    * the whole "strong, sporty" redesign. */
-  --radius-block: 4px;
-  --radius-block-lg: 6px;
+  --radius-block: 2px;
+  --radius-block-lg: 3px;
 
   --animate-pulse-live: pulse-live 1.6s ease-in-out infinite;
   --animate-score-flash: score-flash 0.7s ease-out;
@@ -119,16 +200,27 @@ body {
   outline-offset: 2px;
 }
 
+/* Standfirst / kicker type — the serif line that sits under a headline in a
+ * match programme. Italic by default; that's the point of it. */
+.lede {
+  font-family: "Iowan Old Style", "Charter", "Bitstream Charter", "Sitka Text", Cambria, Georgia, serif;
+  font-style: italic;
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  color: var(--muted-foreground);
+}
+
 .heading-display {
   font-family: var(--font-display);
   letter-spacing: 0.02em;
   text-transform: uppercase;
 }
 
-/* Hard-edged "brutalist" offset shadow — the signature card treatment for
- * the redesign, used instead of soft blurred shadows. */
+/* Was a 3px hard offset — the brutalist signature. The editorial pass gets its
+ * separation from hairline rules and whitespace instead, so this is now barely
+ * a lift: enough to seat a card on the page, not enough to be a "card". */
 .shadow-block {
-  box-shadow: 3px 3px 0 0 var(--line-strong);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--foreground) 7%, transparent);
 }
 
 /* Repeating diagonal stripe texture for hero/section backgrounds — graphic,
@@ -136,9 +228,17 @@ body {
 .stripe-texture {
   background-image: repeating-linear-gradient(
     -45deg,
-    color-mix(in srgb, var(--foreground) 6%, transparent) 0,
-    color-mix(in srgb, var(--foreground) 6%, transparent) 2px,
-    transparent 2px,
-    transparent 14px
+    color-mix(in srgb, var(--foreground) 3%, transparent) 0,
+    color-mix(in srgb, var(--foreground) 3%, transparent) 1px,
+    transparent 1px,
+    transparent 22px
   );
+}
+
+/* shadcn/ui base layer — makes a bare `border` utility resolve to --border,
+ * which registry components (shadcn, Kokonut UI) assume. */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
 }

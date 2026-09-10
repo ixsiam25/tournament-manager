@@ -51,7 +51,7 @@ export default async function FixturesPage({
       <AutoRefresh />
       <h1 className="mb-4 heading-display text-2xl">Fixtures</h1>
 
-      <p className="mb-6 rounded-block border-2 border-line-strong bg-surface px-4 py-3 text-xs text-muted sm:text-sm">
+      <p className="mb-6 rounded-block border border-line bg-surface px-4 py-3 text-xs text-muted-foreground sm:text-sm">
         Times below are per the published plan. The BFL committee reserves the right to adjust or
         overwrite any kickoff time on the day as needed.
       </p>
@@ -63,7 +63,7 @@ export default async function FixturesPage({
             "rounded-block border-2 px-3 py-1.5 text-xs font-bold uppercase tracking-wide " +
             (!teamFilter
               ? "border-pitch bg-pitch/10 text-pitch-dark"
-              : "border-line text-muted hover:border-line-strong hover:text-foreground")
+              : "border-line text-muted-foreground hover:border-line-strong hover:text-foreground")
           }
         >
           All teams
@@ -76,7 +76,7 @@ export default async function FixturesPage({
               "flex items-center gap-1.5 rounded-block border-2 px-3 py-1.5 text-xs font-bold uppercase tracking-wide " +
               (teamFilter === t.id
                 ? "border-pitch bg-pitch/10 text-pitch-dark"
-                : "border-line text-muted hover:border-line-strong hover:text-foreground")
+                : "border-line text-muted-foreground hover:border-line-strong hover:text-foreground")
             }
           >
             {t.logoUrl ? (
@@ -101,10 +101,10 @@ export default async function FixturesPage({
           if (!list || list.length === 0) return null;
           return (
             <section key={round}>
-              <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted">
+              <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">
                 {ROUND_LABELS[round]}
               </h2>
-              <ul className="divide-y-2 divide-line overflow-hidden rounded-block-lg border-2 border-line-strong bg-surface shadow-block">
+              <ul className="divide-y-2 divide-line overflow-hidden rounded-block-lg border border-line bg-surface shadow-block">
                 {list.map(({ match, number }) => (
                   <li
                     key={match.id}
@@ -113,14 +113,14 @@ export default async function FixturesPage({
                       statusRowClass(match.status)
                     }
                   >
-                    <span className="w-5 shrink-0 text-center text-xs font-bold text-muted tabular-nums sm:w-8 sm:text-sm">
+                    <span className="w-5 shrink-0 text-center text-xs font-bold text-muted-foreground tabular-nums sm:w-8 sm:text-sm">
                       {number}
                     </span>
                     <div className="flex min-w-0 flex-1 items-center justify-center gap-2 sm:gap-3">
                       <TeamName team={match.homeTeam} align="right" />
                       <span className="flex shrink-0 items-center gap-1.5 sm:gap-2">
                         <TeamLogo logoUrl={match.homeTeam?.logoUrl} name={match.homeTeam?.name} />
-                        <span className="text-sm font-bold text-muted sm:text-base">-</span>
+                        <span className="text-sm font-bold text-muted-foreground sm:text-base">-</span>
                         <TeamLogo logoUrl={match.awayTeam?.logoUrl} name={match.awayTeam?.name} />
                       </span>
                       <TeamName team={match.awayTeam} align="left" />
@@ -133,7 +133,7 @@ export default async function FixturesPage({
           );
         })}
         {filtered.length === 0 && (
-          <p className="text-muted">
+          <p className="text-muted-foreground">
             {activeTeam ? `No fixtures found for ${activeTeam.name}.` : "No fixtures yet."}
           </p>
         )}
@@ -255,7 +255,7 @@ function ScoreOrTime({
           {match.homeScore} – {match.awayScore}
         </span>
         {resultNote && (
-          <span className="text-center text-[10px] uppercase tracking-wide text-muted sm:text-xs">
+          <span className="text-center text-[10px] uppercase tracking-wide text-muted-foreground sm:text-xs">
             {resultNote}
           </span>
         )}
@@ -268,7 +268,7 @@ function ScoreOrTime({
         {match.scheduledAt ? KICKOFF_TIME.format(match.scheduledAt) : "TBD"}
       </span>
       {match.venue && (
-        <span className="text-[10px] uppercase tracking-wide text-muted sm:text-xs">
+        <span className="text-[10px] uppercase tracking-wide text-muted-foreground sm:text-xs">
           {match.venue}
         </span>
       )}

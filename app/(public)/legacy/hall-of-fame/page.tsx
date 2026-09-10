@@ -2,6 +2,10 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import type { SeasonArchive } from "@/lib/seasonArchive";
 import { Crest } from "@/components/Crest";
+import { Reveal } from "@/components/motion/Reveal";
+import { CountUp } from "@/components/motion/CountUp";
+import { TiltCard } from "@/components/motion/TiltCard";
+import SlicedText from "@/components/kokonutui/sliced-text";
 
 export const revalidate = 60;
 
@@ -64,37 +68,51 @@ export default async function HallOfFamePage() {
 
   return (
     <div>
-      <div className="stripe-texture relative mb-10 overflow-hidden rounded-block-lg border-2 border-line-strong bg-surface px-6 py-10 shadow-block sm:px-10 sm:py-14">
-        <p className="mb-2 text-xs font-bold uppercase tracking-[0.3em] text-brand">The names that stuck</p>
-        <h1 className="heading-display text-4xl leading-none sm:text-6xl">Hall of Fame</h1>
+      <div className="stripe-texture relative mb-10 overflow-hidden rounded-block-lg border border-line bg-surface px-6 py-10 shadow-block sm:px-10 sm:py-14">
+        <p className="mb-4 text-[11px] font-bold uppercase tracking-[0.32em] text-brand">The names that stuck</p>
+        <h1 className="sr-only">Hall of Fame</h1>
+        <div aria-hidden>
+          <SlicedText
+            text="Hall of Fame"
+            className="heading-display text-4xl leading-none sm:text-6xl"
+            containerClassName="w-auto text-left"
+          />
+        </div>
         {mostDecoratedTeam && (
-          <p className="mt-3 text-sm text-muted">
-            Most decorated:{" "}
-            <span className="font-bold text-foreground">
-              {mostDecoratedTeam[0]} ({mostDecoratedTeam[1]}× champion)
-            </span>
-          </p>
+          <>
+            <hr className="my-5 h-px border-0 bg-line" />
+            <p className="lede max-w-prose">
+              Most decorated:{" "}
+              <span className="font-semibold not-italic text-foreground">
+                {mostDecoratedTeam[0]}
+              </span>{" "}
+              — {mostDecoratedTeam[1]}× champion.
+            </p>
+          </>
         )}
       </div>
 
       <Section title="🏆 Trophy Shelf">
         {seasons.length === 0 ? (
-          <p className="text-sm text-muted">No archived seasons yet.</p>
+          <p className="text-sm text-muted-foreground">No archived seasons yet.</p>
         ) : (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-            {[...seasons].reverse().map((s) => (
-              <Link
-                key={s.slug}
-                href={`/legacy/${s.slug}`}
-                className="group flex flex-col items-center rounded-block-lg border-2 border-line-strong bg-surface p-4 text-center shadow-block transition-transform hover:-translate-y-1 hover:border-gold"
-              >
-                <span className="mb-2 text-2xl transition-transform group-hover:scale-110">🏆</span>
-                <Crest size={36} name={s.championTeamName ?? s.name} />
-                <p className="mt-2 line-clamp-1 text-sm font-bold">{s.championTeamName ?? "—"}</p>
-                <p className="text-[11px] uppercase tracking-wide text-muted">
-                  S{s.number} · {s.year}
-                </p>
-              </Link>
+            {[...seasons].reverse().map((s, i) => (
+              <Reveal key={s.slug} index={i}>
+                <TiltCard glow="var(--gold)" className="h-full rounded-block-lg">
+                  <Link
+                    href={`/legacy/${s.slug}`}
+                    className="group flex h-full flex-col items-center overflow-hidden rounded-block-lg border border-line bg-surface p-4 text-center shadow-block transition-colors hover:border-gold"
+                  >
+                    <span className="mb-2 text-2xl transition-transform group-hover:scale-110">🏆</span>
+                    <Crest size={36} name={s.championTeamName ?? s.name} />
+                    <p className="mt-2 line-clamp-1 text-sm font-bold">{s.championTeamName ?? "—"}</p>
+                    <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                      S{s.number} · {s.year}
+                    </p>
+                  </Link>
+                </TiltCard>
+              </Reveal>
             ))}
           </div>
         )}
@@ -114,8 +132,10 @@ export default async function HallOfFamePage() {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="mb-8">
-      <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted">{title}</h2>
+    <section className="mb-10">
+      <h2 className="mb-3 border-b border-line pb-2 text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+        {title}
+      </h2>
       {children}
     </section>
   );
@@ -123,31 +143,34 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function AggregateList({ icon, rows, unit }: { icon: string; rows: Aggregate[]; unit: string }) {
   return (
-    <div className="overflow-hidden rounded-block-lg border-2 border-line-strong bg-surface shadow-block">
+    <div className="overflow-hidden rounded-block-lg border border-line bg-surface shadow-block">
       {rows.length === 0 ? (
-        <p className="p-5 text-sm text-muted">No data yet.</p>
+        <p className="p-5 text-sm text-muted-foreground">No data yet.</p>
       ) : (
         <ol className="divide-y-2 divide-line">
           {rows.map((row, i) => {
             const medal = i < 3 ? MEDAL[(i + 1) as 1 | 2 | 3] : null;
             return (
-              <li
+              <Reveal
+                as="li"
                 key={row.personId}
+                index={i}
+                distance={8}
                 className={
                   "flex items-center gap-3 px-5 py-3 " +
                   (medal ? "border-l-4 " + medal.border + " " + medal.chip : "")
                 }
               >
-                <span className={"w-6 shrink-0 text-center text-sm font-black " + (medal ? medal.text : "text-muted")}>
+                <span className={"w-6 shrink-0 text-center text-sm font-black " + (medal ? medal.text : "text-muted-foreground")}>
                   {i + 1}
                 </span>
                 <span className="flex-1 truncate text-base font-bold">
                   {icon} {row.name}
                 </span>
-                <span className="shrink-0 text-sm font-bold text-muted">
-                  {row.count} {row.count === 1 ? unit.replace(/s$/, "") : unit}
+                <span className="shrink-0 text-sm font-bold text-muted-foreground">
+                  <CountUp value={row.count} /> {row.count === 1 ? unit.replace(/s$/, "") : unit}
                 </span>
-              </li>
+              </Reveal>
             );
           })}
         </ol>

@@ -92,7 +92,7 @@ export function LiveConsole({ matchId }: { matchId: string }) {
     };
   }, [matchId]);
 
-  if (!match) return <p className="text-muted">Loading…</p>;
+  if (!match) return <p className="text-muted-foreground">Loading…</p>;
 
   function openPanel(teamId: string, mode: "goal" | "card") {
     setOpen({ teamId, mode });
@@ -259,14 +259,14 @@ export function LiveConsole({ matchId }: { matchId: string }) {
         <h1 className="heading-display text-2xl">Live Console</h1>
         <span className="flex items-center gap-2">
           {match.extraTimePlayed && (
-            <span className="rounded-full bg-line px-3 py-1 text-xs font-bold text-muted">
+            <span className="rounded-full bg-line px-3 py-1 text-xs font-bold text-muted-foreground">
               Extra time
             </span>
           )}
           <span
             className={
               "rounded-full px-3 py-1 text-xs font-bold " +
-              (isLive ? "bg-live/10 text-live" : "bg-line text-muted")
+              (isLive ? "bg-live/10 text-live" : "bg-line text-muted-foreground")
             }
           >
             {match.status}
@@ -382,13 +382,13 @@ export function LiveConsole({ matchId }: { matchId: string }) {
                 </button>
                 <button
                   onClick={() => setDrawPrompt(null)}
-                  className="rounded-full border border-line px-5 py-2 text-sm font-medium text-muted"
+                  className="rounded-full border border-line px-5 py-2 text-sm font-medium text-muted-foreground"
                 >
                   Cancel
                 </button>
               </div>
               {!extraTimeAvailable && (
-                <p className="text-xs text-muted">Extra time has already been played for this match.</p>
+                <p className="text-xs text-muted-foreground">Extra time has already been played for this match.</p>
               )}
             </div>
           )}
@@ -396,7 +396,7 @@ export function LiveConsole({ matchId }: { matchId: string }) {
             <div className="space-y-3">
               <div className="flex flex-wrap items-end gap-3">
                 <label className="block">
-                  <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-muted">
+                  <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-muted-foreground">
                     {match.homeTeam?.name ?? "Home"} (pens)
                   </span>
                   <input
@@ -408,7 +408,7 @@ export function LiveConsole({ matchId }: { matchId: string }) {
                   />
                 </label>
                 <label className="block">
-                  <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-muted">
+                  <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-muted-foreground">
                     {match.awayTeam?.name ?? "Away"} (pens)
                   </span>
                   <input
@@ -430,7 +430,7 @@ export function LiveConsole({ matchId }: { matchId: string }) {
                 </button>
                 <button
                   onClick={() => setDrawPrompt("choose")}
-                  className="rounded-full border border-line px-5 py-2 text-sm font-medium text-muted"
+                  className="rounded-full border border-line px-5 py-2 text-sm font-medium text-muted-foreground"
                 >
                   Back
                 </button>
@@ -457,7 +457,7 @@ export function LiveConsole({ matchId }: { matchId: string }) {
               </div>
               <button
                 onClick={() => setDrawPrompt("choose")}
-                className="rounded-full border border-line px-5 py-2 text-sm font-medium text-muted"
+                className="rounded-full border border-line px-5 py-2 text-sm font-medium text-muted-foreground"
               >
                 Back
               </button>
@@ -466,18 +466,18 @@ export function LiveConsole({ matchId }: { matchId: string }) {
         </div>
       )}
 
-      <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted">Events</h2>
+      <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">Events</h2>
       <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
         {match.events.map((e) => (
           <li key={e.id} className="flex justify-between px-5 py-3 text-sm">
             <span>
               {EVENT_LABELS[e.type]} {e.player.name}
-              <span className="ml-1.5 text-xs text-muted">({e.team.name})</span>
+              <span className="ml-1.5 text-xs text-muted-foreground">({e.team.name})</span>
             </span>
           </li>
         ))}
         {match.events.length === 0 && (
-          <li className="px-5 py-6 text-center text-muted">No events yet.</li>
+          <li className="px-5 py-6 text-center text-muted-foreground">No events yet.</li>
         )}
       </ul>
     </div>
@@ -549,11 +549,11 @@ function TeamPanel({
       ) : open === "goal" ? (
         <div className="space-y-2.5 text-left">
           <div>
-            <p className="mb-1 text-xs font-bold uppercase tracking-wide text-muted">Scorer</p>
+            <p className="mb-1 text-xs font-bold uppercase tracking-wide text-muted-foreground">Scorer</p>
             <PlayerPicker players={players} value={scorerId} onChange={setScorerId} placeholder="Select scorer…" />
           </div>
           <div>
-            <p className="mb-1 text-xs font-bold uppercase tracking-wide text-muted">Assist</p>
+            <p className="mb-1 text-xs font-bold uppercase tracking-wide text-muted-foreground">Assist</p>
             <PlayerPicker
               players={players.filter((p) => p.id !== scorerId)}
               value={assistId}
@@ -577,7 +577,7 @@ function TeamPanel({
       ) : (
         <div className="space-y-2.5 text-left">
           <div>
-            <p className="mb-1 text-xs font-bold uppercase tracking-wide text-muted">Player</p>
+            <p className="mb-1 text-xs font-bold uppercase tracking-wide text-muted-foreground">Player</p>
             <PlayerPicker players={players} value={cardPlayerId} onChange={setCardPlayerId} placeholder="Select player…" />
           </div>
           <div className="flex gap-2">
@@ -679,7 +679,7 @@ function PlayerPicker({
             <span className="min-w-0 flex-1 truncate text-left">{selected.name}</span>
           </>
         ) : (
-          <span className="min-w-0 flex-1 truncate text-left text-muted">{placeholder}</span>
+          <span className="min-w-0 flex-1 truncate text-left text-muted-foreground">{placeholder}</span>
         )}
         <svg
           width="12"
@@ -698,14 +698,14 @@ function PlayerPicker({
       {open && (
         <div
           role="listbox"
-          className="absolute left-0 right-0 top-[calc(100%+4px)] z-30 max-h-60 overflow-y-auto rounded-block-lg border-2 border-line-strong bg-surface shadow-block"
+          className="absolute left-0 right-0 top-[calc(100%+4px)] z-30 max-h-60 overflow-y-auto rounded-block-lg border border-line bg-surface shadow-block"
         >
           <button
             type="button"
             onClick={() => pick("")}
             className={
               "block w-full px-3 py-2 text-left text-sm " +
-              (value === "" ? "bg-pitch/10 font-bold text-pitch-dark" : "text-muted hover:bg-background")
+              (value === "" ? "bg-pitch/10 font-bold text-pitch-dark" : "text-muted-foreground hover:bg-background")
             }
           >
             {placeholder}

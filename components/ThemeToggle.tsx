@@ -4,16 +4,19 @@ import { useSyncExternalStore } from "react";
 
 export const THEME_STORAGE_KEY = "theme";
 
-// The root layout renders <html data-theme="dark"> directly, so dark is
-// correct even before this runs (or with JS disabled entirely). This script
-// only needs to flip it back to light when that was the visitor's stored
-// choice — inlined in <head> so it happens before paint, no flash.
+// First visit follows the device; after that the visitor's own choice wins.
+// The root layout ships no `data-theme` at all, which the stylesheet reads as
+// light, and this script — inlined in <head>, so it runs before paint —
+// resolves the real value. With JS off the site stays light, which is the
+// safer of the two to render un-corrected on paper-toned styling.
 export const noFlashThemeScript = `
 (function () {
   try {
-    if (localStorage.getItem('${THEME_STORAGE_KEY}') === 'light') {
-      document.documentElement.setAttribute('data-theme', 'light');
-    }
+    var stored = localStorage.getItem('${THEME_STORAGE_KEY}');
+    var dark = stored
+      ? stored === 'dark'
+      : window.matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
   } catch (e) {}
 })();
 `;
@@ -26,7 +29,25 @@ const listeners = new Set<() => void>();
 
 function subscribe(callback: () => void) {
   listeners.add(callback);
-  return () => listeners.delete(callback);
+
+  // Track the OS setting too, so a visitor who has never touched the toggle
+  // follows their device live rather than only at page load.
+  const query = window.matchMedia("(prefers-color-scheme: dark)");
+  function handleSystemChange() {
+    try {
+      if (localStorage.getItem(THEME_STORAGE_KEY)) return;
+    } catch {
+      // localStorage unavailable — treat it as "no stored preference"
+    }
+    document.documentElement.setAttribute("data-theme", query.matches ? "dark" : "light");
+    listeners.forEach((listener) => listener());
+  }
+  query.addEventListener("change", handleSystemChange);
+
+  return () => {
+    listeners.delete(callback);
+    query.removeEventListener("change", handleSystemChange);
+  };
 }
 
 function getSnapshot() {
@@ -34,20 +55,18 @@ function getSnapshot() {
 }
 
 function getServerSnapshot() {
-  // Matches the new default the no-flash script applies, so the toggle's
-  // icon doesn't flip right after hydration for a visitor with no stored
-  // preference.
-  return true;
+  // Matches the server-rendered markup, which carries no `data-theme` and so
+  // reads as light. A visitor whose device is dark sees the icon settle once
+  // on hydration — unavoidable without knowing the OS setting server-side.
+  return false;
 }
 
 function setDarkTheme(next: boolean) {
   document.documentElement.setAttribute("data-theme", next ? "dark" : "light");
   try {
-    if (next) {
-      localStorage.removeItem(THEME_STORAGE_KEY);
-    } else {
-      localStorage.setItem(THEME_STORAGE_KEY, "light");
-    }
+    // Always an explicit value now: using the toggle at all means the visitor
+    // has opted out of following their device.
+    localStorage.setItem(THEME_STORAGE_KEY, next ? "dark" : "light");
   } catch {
     // localStorage unavailable — theme just won't persist across reloads
   }
@@ -66,7 +85,7 @@ export function ThemeToggle() {
       onClick={toggle}
       aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
       title={isDark ? "Switch to light theme" : "Switch to dark theme"}
-      className="flex h-8 w-8 items-center justify-center rounded-block border-2 border-white/25 text-white/70 hover:border-white hover:text-white"
+      className="flex h-8 w-8 items-center justify-center rounded-block border border-line text-muted-foreground hover:border-line-strong hover:text-foreground"
     >
       {isDark ? (
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

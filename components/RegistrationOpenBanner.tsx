@@ -10,7 +10,7 @@ export function RegistrationOpenBanner({ seasonName }: { seasonName: string }) {
         <p className="text-xs font-bold uppercase tracking-[0.3em] text-pitch-dark">📝 Registration Open</p>
         <p className="heading-display mt-1 text-xl sm:text-2xl">Join {seasonName}</p>
       </div>
-      <span className="shrink-0 rounded-block border-2 border-line-strong bg-background px-4 py-2 text-xs font-bold uppercase tracking-wide shadow-block">
+      <span className="shrink-0 rounded-block border border-line bg-background px-4 py-2 text-xs font-bold uppercase tracking-wide shadow-block">
         Register →
       </span>
     </Link>

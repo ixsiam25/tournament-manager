@@ -18,8 +18,8 @@ export function VoterIdentityForm() {
   const semester = useSyncExternalStore(subscribeVoterIdentity, getVoterSemester, getServerSnapshot);
 
   return (
-    <div className="mb-6 rounded-block-lg border-2 border-line-strong bg-surface p-4 shadow-block">
-      <p className="mb-2 text-xs font-bold uppercase tracking-wide text-muted">
+    <div className="mb-6 rounded-block-lg border border-line bg-surface p-4 shadow-block">
+      <p className="mb-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">
         Who&rsquo;s voting? <span className="font-normal normal-case">(optional)</span>
       </p>
       <div className="flex flex-col gap-2 sm:flex-row">

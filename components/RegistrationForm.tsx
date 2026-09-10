@@ -63,11 +63,11 @@ export function RegistrationForm() {
     }
   }
 
-  if (checking) return <p className="text-muted">Loading…</p>;
+  if (checking) return <p className="text-muted-foreground">Loading…</p>;
 
   if (!open) {
     return (
-      <p className="rounded-block-lg border-2 border-line-strong bg-surface p-5 text-muted">
+      <p className="rounded-block-lg border border-line bg-surface p-5 text-muted-foreground">
         Registration isn&apos;t open right now{seasonName ? ` for ${seasonName}` : ""}. Check back later.
       </p>
     );
@@ -145,7 +145,7 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
     <label className="block">
       <span className="mb-1 block text-sm font-medium">{label}</span>
       {children}
-      {hint && <span className="mt-1 block text-xs text-muted">{hint}</span>}
+      {hint && <span className="mt-1 block text-xs text-muted-foreground">{hint}</span>}
     </label>
   );
 }

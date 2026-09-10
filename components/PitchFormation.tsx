@@ -68,7 +68,7 @@ export function PitchFormation({ players }: { players: Player[] }) {
   const rows = assignToFormation(players);
 
   return (
-    <div className="relative overflow-hidden rounded-block-lg border-2 border-line-strong bg-pitch p-4 shadow-block sm:p-6">
+    <div className="relative overflow-hidden rounded-block-lg border border-line bg-pitch p-4 shadow-block sm:p-6">
       {/* Pitch markings */}
       <svg
         className="pointer-events-none absolute inset-0 h-full w-full opacity-40"

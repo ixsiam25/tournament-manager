@@ -15,7 +15,7 @@ export default async function PredictionsPage() {
   return (
     <div>
       <h1 className="mb-2 heading-display text-2xl">🏆 Champions Prediction</h1>
-      <p className="mb-6 text-sm text-muted">
+      <p className="mb-6 text-sm text-muted-foreground">
         Who&rsquo;s taking the Season IX trophy? Cast your prediction below.
       </p>
       {result && <ChampionResultBanner result={result} />}

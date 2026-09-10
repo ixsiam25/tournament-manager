@@ -71,10 +71,47 @@ a login wall that blocks batch export; revisit if photos are wanted later).
 | ---------- | ------------------------------------------------------------ |
 | Framework  | **Next.js 16** (App Router) + React 19 + TypeScript          |
 | Styling    | Tailwind CSS v4, CSS-variable palette (green + red, Bangladesh-flag-inspired per the [@apubfl](https://www.instagram.com/apubfl/) reference), light default + manual dark toggle |
+| Components | **shadcn/ui** (`radix-nova` style) + the **Kokonut UI** registry (`@kokonutui`), animated with **motion** — see §2.1 |
 | Database   | Postgres via **Prisma 7** + `@prisma/adapter-neon` (Neon)     |
 | Admin auth | Per-route `requireAdmin()` guard + HMAC cookie (`lib/adminAuth.ts`), no user table |
 | Validation | `zod` (`lib/validation.ts`)                                   |
 | Deployment | **Netlify** (`@netlify/plugin-nextjs`) — see §7, this superseded an earlier Cloudflare Workers plan |
+
+### 2.1 Component registries and design tokens
+
+Components can be pulled from two shadcn registries, both wired in
+`components.json`:
+
+```bash
+npx shadcn@latest add @shadcn/<name>
+npx shadcn@latest add @kokonutui/<name>
+```
+
+Kokonut components land in `components/kokonutui/` and import `motion/react`,
+so `motion` is a hard runtime dependency, not a nice-to-have.
+
+Two conventions in `app/globals.css` make those components inherit the BFL look
+instead of shipping their own neutral greys:
+
+- **`dark:` is bound to `[data-theme="dark"]`**, not shadcn's default `.dark`
+  class, because the theme lives on `<html data-theme>` (see
+  `components/ThemeToggle.tsx`). The `@custom-variant dark` line at the top of
+  `globals.css` does this — don't remove it, or every `dark:` utility in a
+  pulled-in component silently stops working.
+- **shadcn's tokens are aliased to this palette** (`--card: var(--surface)`,
+  `--border: var(--line)`, `--ring: var(--pitch)`, `--radius: 4px` to match
+  `--radius-block`, etc.), so registry components come out hard-edged and warm
+  rather than rounded and grey.
+
+> **`--muted` changed meaning.** It used to be this app's muted *text* colour.
+> shadcn and Kokonut both use `--muted` as a muted *surface* and
+> `--muted-foreground` for the text, so the app converged on that: use
+> **`text-muted-foreground`**, not `text-muted`. `text-muted` now resolves to a
+> near-background surface colour and will render as invisible text.
+
+Re-running `npx shadcn@latest init` will overwrite all of the above — it
+rewrites `globals.css` with default neutral tokens. If you ever need to, diff
+`globals.css` afterwards and restore the palette.
 
 > **Next.js 16, not 15** — `create-next-app@latest` installed 16.2.11.
 > Breaking changes from 15 that affect this codebase: `middleware.ts` is

@@ -161,10 +161,10 @@ export function RegistrationsPanel() {
     if (importInputRef.current) importInputRef.current.value = "";
   }
 
-  if (loading) return <p className="text-muted">Loading…</p>;
+  if (loading) return <p className="text-muted-foreground">Loading…</p>;
 
   if (!season) {
-    return <p className="text-muted">No active season — open one via Season first.</p>;
+    return <p className="text-muted-foreground">No active season — open one via Season first.</p>;
   }
 
   return (
@@ -176,12 +176,12 @@ export function RegistrationsPanel() {
           <span
             className={
               "rounded-full px-2 py-0.5 text-xs font-bold uppercase tracking-wide " +
-              (season.registrationOpen ? "bg-pitch/10 text-pitch-dark" : "bg-line text-muted")
+              (season.registrationOpen ? "bg-pitch/10 text-pitch-dark" : "bg-line text-muted-foreground")
             }
           >
             {season.registrationOpen ? "Open" : "Closed"}
           </span>
-          <span className="ml-2 text-sm text-muted">for {season.name}</span>
+          <span className="ml-2 text-sm text-muted-foreground">for {season.name}</span>
         </div>
         <button
           onClick={toggleRegistrationOpen}
@@ -261,10 +261,10 @@ export function RegistrationsPanel() {
                 disabled={busy}
                 className="w-full text-sm"
               />
-              <p className="text-xs text-muted">Fill the template exactly (Name, Affiliation, Position, Contact) and upload it here.</p>
+              <p className="text-xs text-muted-foreground">Fill the template exactly (Name, Affiliation, Position, Contact) and upload it here.</p>
             </div>
           ) : (
-            <p className="text-sm text-muted">Excel import isn&apos;t enabled for this season.</p>
+            <p className="text-sm text-muted-foreground">Excel import isn&apos;t enabled for this season.</p>
           )}
         </section>
       </div>
@@ -279,7 +279,7 @@ export function RegistrationsPanel() {
               onClick={() => setStatusFilter(s)}
               className={
                 "rounded-full border px-3 py-1 text-xs font-bold uppercase " +
-                (statusFilter === s ? "border-pitch bg-pitch/10 text-pitch-dark" : "border-line text-muted")
+                (statusFilter === s ? "border-pitch bg-pitch/10 text-pitch-dark" : "border-line text-muted-foreground")
               }
             >
               {s || "All"}
@@ -311,13 +311,13 @@ export function RegistrationsPanel() {
             )}
             <div className="min-w-0 flex-1">
               <span className="font-bold">{r.name}</span>
-              <span className="ml-2 text-sm text-muted">{r.affiliation}</span>
-              {r.position && <span className="ml-2 text-xs text-muted">{r.position}</span>}
-              <span className="ml-2 rounded-full bg-line px-2 py-0.5 text-[10px] font-bold uppercase text-muted">
+              <span className="ml-2 text-sm text-muted-foreground">{r.affiliation}</span>
+              {r.position && <span className="ml-2 text-xs text-muted-foreground">{r.position}</span>}
+              <span className="ml-2 rounded-full bg-line px-2 py-0.5 text-[10px] font-bold uppercase text-muted-foreground">
                 {SOURCE_LABELS[r.source]}
               </span>
             </div>
-            <span className="text-xs text-muted">{r.contact}</span>
+            <span className="text-xs text-muted-foreground">{r.contact}</span>
             {r.status === "PENDING" ? (
               <div className="flex gap-2">
                 <button
@@ -347,7 +347,7 @@ export function RegistrationsPanel() {
             )}
           </li>
         ))}
-        {registrations.length === 0 && <li className="px-5 py-6 text-center text-muted">No registrations.</li>}
+        {registrations.length === 0 && <li className="px-5 py-6 text-center text-muted-foreground">No registrations.</li>}
       </ul>
     </div>
   );

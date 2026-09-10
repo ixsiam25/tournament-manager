@@ -10,9 +10,9 @@ export async function PublicHeader() {
   const showAuction = activeSeason?.teamFormation === "AUCTION";
 
   return (
-    <header className="sticky top-0 z-10 border-b-2 border-black bg-black">
+    <header className="sticky top-0 z-10 border-b border-line-strong bg-background/92 backdrop-blur-sm">
       <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-5 py-4">
-        <Link href="/" prefetch={false} className="heading-display flex items-center gap-2 text-lg text-white">
+        <Link href="/" prefetch={false} className="heading-display flex items-center gap-2 text-lg text-foreground">
           <BrandLogo />
           BFL Season IX
         </Link>

@@ -131,7 +131,7 @@ export default function TeamsAdminPage() {
       {error && <p className="mb-4 text-sm text-live">{error}</p>}
 
       {loading ? (
-        <p className="text-muted">Loading…</p>
+        <p className="text-muted-foreground">Loading…</p>
       ) : (
         <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
           {teams.map((team) => (
@@ -151,17 +151,17 @@ export default function TeamsAdminPage() {
                   </span>
                 )}
                 <span className="font-medium">{team.name}</span>
-                {team.shortName && <span className="ml-2 text-sm text-muted">({team.shortName})</span>}
-                <span className="ml-3 text-xs text-muted">{team._count.players} players</span>
+                {team.shortName && <span className="ml-2 text-sm text-muted-foreground">({team.shortName})</span>}
+                <span className="ml-3 text-xs text-muted-foreground">{team._count.players} players</span>
                 {team.managerName && (
-                  <span className="ml-3 text-xs text-muted">Manager: {team.managerName}</span>
+                  <span className="ml-3 text-xs text-muted-foreground">Manager: {team.managerName}</span>
                 )}
               </div>
               <div className="flex gap-3 text-sm font-medium">
-                <button onClick={() => handleRename(team)} className="text-muted hover:text-foreground">
+                <button onClick={() => handleRename(team)} className="text-muted-foreground hover:text-foreground">
                   Rename
                 </button>
-                <button onClick={() => handleEditManager(team)} className="text-muted hover:text-foreground">
+                <button onClick={() => handleEditManager(team)} className="text-muted-foreground hover:text-foreground">
                   Manager
                 </button>
                 <button onClick={() => handleDelete(team)} className="text-live">
@@ -170,7 +170,7 @@ export default function TeamsAdminPage() {
               </div>
             </li>
           ))}
-          {teams.length === 0 && <li className="px-5 py-6 text-center text-muted">No teams yet.</li>}
+          {teams.length === 0 && <li className="px-5 py-6 text-center text-muted-foreground">No teams yet.</li>}
         </ul>
       )}
     </div>

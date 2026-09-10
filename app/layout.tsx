@@ -32,12 +32,16 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      data-theme="dark"
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} ${anton.variable} h-full antialiased`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: noFlashThemeScript }} />
+        <noscript>
+          {/* Scroll-reveal elements ship with opacity:0 baked into the HTML.
+              Without JS nothing ever animates them in, so show them outright. */}
+          <style>{`[data-reveal]{opacity:1!important;transform:none!important}`}</style>
+        </noscript>
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">{children}</body>
     </html>

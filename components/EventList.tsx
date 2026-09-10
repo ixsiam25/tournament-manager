@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { PlayerPhoto } from "@/components/SafeImage";
 
 export type EventItem = {
   id: string;
@@ -21,16 +21,10 @@ export function EventList({ events, className }: { events: EventItem[]; classNam
   return (
     <ul className={"space-y-1.5 " + (className ?? "")}>
       {events.map((e) => (
-        <li key={e.id} className="flex items-center gap-2 text-sm text-muted">
+        <li key={e.id} className="flex items-center gap-2 text-sm text-muted-foreground">
           {e.player.photoUrl ? (
             <span className="relative h-6 w-6 shrink-0 overflow-hidden rounded-block border border-line-strong">
-              <Image
-                src={e.player.photoUrl}
-                alt={e.player.name}
-                fill
-                sizes="24px"
-                className="object-cover"
-              />
+              <PlayerPhoto src={e.player.photoUrl} alt={e.player.name} sizes="24px" />
             </span>
           ) : (
             <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-block bg-line text-[10px] font-bold">

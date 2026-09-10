@@ -104,15 +104,15 @@ export default function ChampionsAdminPage() {
               {isOpen ? "Open" : "Closed"}
             </span>
             {!settings?.enabled && (
-              <span className="ml-2 text-xs text-muted">turned off manually</span>
+              <span className="ml-2 text-xs text-muted-foreground">turned off manually</span>
             )}
             {settings?.enabled && scheduledPast && (
-              <span className="ml-2 text-xs text-muted">
+              <span className="ml-2 text-xs text-muted-foreground">
                 auto-closed at {new Date(settings.closeAt!).toLocaleString()}
               </span>
             )}
             {settings?.enabled && settings.closeAt && !scheduledPast && (
-              <span className="ml-2 text-xs text-muted">
+              <span className="ml-2 text-xs text-muted-foreground">
                 will auto-close at {new Date(settings.closeAt).toLocaleString()}
               </span>
             )}
@@ -154,7 +154,7 @@ export default function ChampionsAdminPage() {
                 patchSettings({ closeAt: null });
               }}
               disabled={saving}
-              className="rounded-full border border-line px-4 py-2 text-sm font-medium text-muted disabled:opacity-40"
+              className="rounded-full border border-line px-4 py-2 text-sm font-medium text-muted-foreground disabled:opacity-40"
             >
               Clear schedule
             </button>
@@ -164,19 +164,19 @@ export default function ChampionsAdminPage() {
       </div>
 
       {loading ? (
-        <p className="text-muted">Loading…</p>
+        <p className="text-muted-foreground">Loading…</p>
       ) : (
         <>
           {tally.length > 0 && (
             <div className="mb-6 rounded-2xl border border-line bg-surface p-4">
-              <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted">
+              <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">
                 {predictions.length} prediction{predictions.length === 1 ? "" : "s"}
               </h2>
               <div className="space-y-1.5">
                 {tally.map((t) => (
                   <div key={t.name} className="flex items-center justify-between text-sm">
                     <span className="font-medium">{t.name}</span>
-                    <span className="tabular-nums text-muted">{t.count}</span>
+                    <span className="tabular-nums text-muted-foreground">{t.count}</span>
                   </div>
                 ))}
               </div>
@@ -188,16 +188,16 @@ export default function ChampionsAdminPage() {
               <li key={p.id} className="flex items-center justify-between px-5 py-3.5">
                 <div>
                   <span className="font-medium">{p.voterName || "Anonymous"}</span>
-                  {p.voterSemester && <span className="ml-2 text-xs text-muted">{p.voterSemester}</span>}
+                  {p.voterSemester && <span className="ml-2 text-xs text-muted-foreground">{p.voterSemester}</span>}
                 </div>
                 <div className="flex items-center gap-3 text-sm">
                   <span className="font-medium">{p.team.name}</span>
-                  <span className="text-xs text-muted">{new Date(p.createdAt).toLocaleString()}</span>
+                  <span className="text-xs text-muted-foreground">{new Date(p.createdAt).toLocaleString()}</span>
                 </div>
               </li>
             ))}
             {predictions.length === 0 && (
-              <li className="px-5 py-6 text-center text-muted">No predictions yet.</li>
+              <li className="px-5 py-6 text-center text-muted-foreground">No predictions yet.</li>
             )}
           </ul>
         </>

@@ -29,7 +29,7 @@ export default async function TeamSquadPage({
 
   return (
     <div>
-      <Link href="/teams" className="mb-4 inline-block text-sm text-muted hover:text-foreground">
+      <Link href="/teams" className="mb-4 inline-block text-sm text-muted-foreground hover:text-foreground">
         ← All teams
       </Link>
       <div className="mb-6 flex items-center gap-3">
@@ -39,7 +39,7 @@ export default async function TeamSquadPage({
             alt={team.name}
             width={50}
             height={50}
-            className="rounded-block border-2 border-line-strong object-cover"
+            className="rounded-block border border-line object-cover"
           />
         ) : (
           <Crest size={45} name={team.name} />
@@ -47,7 +47,7 @@ export default async function TeamSquadPage({
         <div>
           <h1 className="heading-display text-2xl">{team.name}</h1>
           {team.managerName && (
-            <p className="text-sm text-muted">Manager: {team.managerName}</p>
+            <p className="text-sm text-muted-foreground">Manager: {team.managerName}</p>
           )}
         </div>
       </div>
@@ -56,9 +56,9 @@ export default async function TeamSquadPage({
         <PitchFormation players={mainSquad} />
 
         <div>
-          <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted">Extras</h2>
+          <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">Extras</h2>
           {extras.length === 0 ? (
-            <p className="text-sm text-muted">No extra squad players.</p>
+            <p className="text-sm text-muted-foreground">No extra squad players.</p>
           ) : (
             <div className="flex flex-row flex-wrap gap-3 lg:flex-col lg:items-start">
               {extras.map((p) => (

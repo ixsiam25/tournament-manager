@@ -174,7 +174,7 @@ export function SeasonRolloverWizard() {
     router.refresh();
   }
 
-  if (loading || !status) return <p className="text-muted">Loading…</p>;
+  if (loading || !status) return <p className="text-muted-foreground">Loading…</p>;
 
   return (
     <div>
@@ -185,7 +185,7 @@ export function SeasonRolloverWizard() {
       {status.activeSeason ? (
         <section className="mb-8 rounded-2xl border border-line bg-surface p-6">
           <h2 className="mb-1 font-bold">Step 1 — Freeze &quot;{status.activeSeason.name}&quot;</h2>
-          <p className="mb-4 text-sm text-muted">
+          <p className="mb-4 text-sm text-muted-foreground">
             Locks in the final results permanently. You can&apos;t open a new season until this is done.
           </p>
           {status.preflight && !status.preflight.ok && (
@@ -345,7 +345,7 @@ export function SeasonRolloverWizard() {
 
           <section className="rounded-2xl border border-line bg-surface p-6">
             <h2 className="mb-1 font-bold">Pitches</h2>
-            <p className="mb-4 text-xs text-muted">Leave start/end blank for an all-day pitch.</p>
+            <p className="mb-4 text-xs text-muted-foreground">Leave start/end blank for an all-day pitch.</p>
             <div className="space-y-3">
               {pitches.map((p, i) => (
                 <div key={i} className="flex flex-wrap items-end gap-2">
@@ -376,7 +376,7 @@ export function SeasonRolloverWizard() {
                     <button
                       type="button"
                       onClick={() => removePitch(i)}
-                      className="rounded-full border border-line px-3 py-2 text-xs font-medium text-muted"
+                      className="rounded-full border border-line px-3 py-2 text-xs font-medium text-muted-foreground"
                     >
                       Remove
                     </button>
@@ -412,7 +412,7 @@ export function SeasonRolloverWizard() {
                 />
                 Excel bulk import
               </label>
-              <p className="text-xs text-muted">Admin manual add is always available regardless.</p>
+              <p className="text-xs text-muted-foreground">Admin manual add is always available regardless.</p>
             </div>
           </section>
 
@@ -432,7 +432,7 @@ export function SeasonRolloverWizard() {
 function Field({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
   return (
     <label className={"block " + (className ?? "")}>
-      <span className="mb-1 block text-xs font-medium text-muted">{label}</span>
+      <span className="mb-1 block text-xs font-medium text-muted-foreground">{label}</span>
       {children}
     </label>
   );

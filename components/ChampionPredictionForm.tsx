@@ -88,8 +88,8 @@ export function ChampionPredictionForm({ teams }: { teams: Team[] }) {
   const closed = tally !== null && !tally.open;
 
   return (
-    <div className="rounded-block-lg border-2 border-line-strong bg-surface p-4 shadow-block sm:p-6">
-      <p className="mb-4 text-sm text-muted">
+    <div className="rounded-block-lg border border-line bg-surface p-4 shadow-block sm:p-6">
+      <p className="mb-4 text-sm text-muted-foreground">
         {closed
           ? "Predictions are closed."
           : submitted
@@ -143,7 +143,7 @@ export function ChampionPredictionForm({ teams }: { teams: Team[] }) {
 
       {total > 0 && (
         <div className="mt-6 border-t-2 border-line pt-4">
-          <p className="mb-3 text-xs font-bold uppercase tracking-wide text-muted">
+          <p className="mb-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">
             {total} prediction{total === 1 ? "" : "s"} so far
           </p>
           <div className="space-y-2">
@@ -156,7 +156,7 @@ export function ChampionPredictionForm({ teams }: { teams: Team[] }) {
                   <span className="h-2 flex-1 overflow-hidden rounded-block bg-line">
                     <span className="block h-full bg-royal transition-all" style={{ width: `${pct}%` }} />
                   </span>
-                  <span className="w-14 shrink-0 text-right text-xs text-muted tabular-nums">
+                  <span className="w-14 shrink-0 text-right text-xs text-muted-foreground tabular-nums">
                     {pct}% ({count})
                   </span>
                 </div>

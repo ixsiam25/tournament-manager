@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { PlayerPhoto } from "@/components/SafeImage";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Crest } from "@/components/Crest";
@@ -33,7 +34,7 @@ export function RosterList({ players }: { players: RosterPlayer[] }) {
   return (
     <div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-muted">
+        <p className="text-sm text-muted-foreground">
           {players.length} players across {teamCount} teams
         </p>
         <button
@@ -58,15 +59,15 @@ export function RosterList({ players }: { players: RosterPlayer[] }) {
         </button>
       </div>
 
-      <ul className="divide-y-2 divide-line overflow-hidden rounded-block-lg border-2 border-line-strong bg-surface shadow-block">
+      <ul className="divide-y-2 divide-line overflow-hidden rounded-block-lg border border-line bg-surface shadow-block">
         {sorted.map((p) => (
           <li key={p.id} className="flex items-center gap-3 px-4 py-3 sm:gap-4 sm:px-6 sm:py-3.5">
             {p.photoUrl ? (
-              <span className="relative h-9 w-9 shrink-0 overflow-hidden rounded-block border-2 border-line-strong">
-                <Image src={p.photoUrl} alt={p.name} fill sizes="36px" className="object-cover" />
+              <span className="relative h-9 w-9 shrink-0 overflow-hidden rounded-block border border-line">
+                <PlayerPhoto src={p.photoUrl} alt={p.name} sizes="36px" />
               </span>
             ) : (
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-block bg-line text-xs font-bold text-muted">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-block bg-line text-xs font-bold text-muted-foreground">
                 {p.jerseyNumber}
               </span>
             )}
@@ -81,7 +82,7 @@ export function RosterList({ players }: { players: RosterPlayer[] }) {
               </span>
               <Link
                 href={`/teams/${p.teamId}`}
-                className="flex min-w-0 items-center gap-1 text-xs text-muted hover:text-foreground hover:underline"
+                className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground hover:text-foreground hover:underline"
               >
                 {p.teamLogoUrl ? (
                   <Image
@@ -98,7 +99,7 @@ export function RosterList({ players }: { players: RosterPlayer[] }) {
               </Link>
             </span>
             {p.position && (
-              <span className="shrink-0 rounded-block border border-line px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-muted">
+              <span className="shrink-0 rounded-block border border-line px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
                 {p.position}
               </span>
             )}
@@ -107,7 +108,7 @@ export function RosterList({ players }: { players: RosterPlayer[] }) {
             </span>
           </li>
         ))}
-        {sorted.length === 0 && <li className="px-6 py-6 text-center text-muted">No players yet.</li>}
+        {sorted.length === 0 && <li className="px-6 py-6 text-center text-muted-foreground">No players yet.</li>}
       </ul>
     </div>
   );

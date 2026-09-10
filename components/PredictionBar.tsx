@@ -84,14 +84,14 @@ export function PredictionBar({
   const yourTeamId = tally?.yourTeamId ?? null;
 
   return (
-    <div className={compact ? "mb-4" : "rounded-block-lg border-2 border-line-strong bg-surface p-4 shadow-block"}>
+    <div className={compact ? "mb-4" : "rounded-block-lg border border-line bg-surface p-4 shadow-block"}>
       <div className="mb-2 flex items-center justify-between">
         {showLabel ? (
           <p className="text-xs font-bold uppercase tracking-wide text-gold">🏆 Winner Prediction</p>
         ) : (
           <span />
         )}
-        <p className="text-xs text-muted">
+        <p className="text-xs text-muted-foreground">
           {votingOpen ? `${total} vote${total === 1 ? "" : "s"}` : "Voting closed"}
         </p>
       </div>
@@ -163,7 +163,7 @@ function PickButton({
       )}
       <span className="min-w-0 flex-1">
         <span className="block truncate text-xs font-bold sm:text-sm">{team.name}</span>
-        <span className="block text-xs text-muted">{pct}%</span>
+        <span className="block text-xs text-muted-foreground">{pct}%</span>
       </span>
       {selected && <span className="shrink-0 text-xs font-bold text-gold">✓</span>}
     </button>

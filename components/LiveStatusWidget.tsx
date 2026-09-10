@@ -58,7 +58,7 @@ export function LiveStatusWidget({ initial }: { initial: LiveResponse }) {
     const { match, recentResults } = data;
     return (
       <div className="space-y-4">
-        <div className="animate-card-in rounded-block-lg border-2 border-line-strong bg-surface p-6 shadow-block">
+        <div className="animate-card-in rounded-block-lg border border-line bg-surface p-6 shadow-block">
           <PredictionBar
             matchId={match.id}
             homeTeam={match.homeTeam}
@@ -79,7 +79,7 @@ export function LiveStatusWidget({ initial }: { initial: LiveResponse }) {
               logoUrl={match.homeTeam?.logoUrl}
               score={match.homeScore}
             />
-            <span className="text-sm font-bold uppercase text-muted">vs</span>
+            <span className="text-sm font-bold uppercase text-muted-foreground">vs</span>
             <TeamScore
               teamId={match.awayTeam?.id}
               name={match.awayTeam?.name ?? "TBD"}
@@ -98,7 +98,7 @@ export function LiveStatusWidget({ initial }: { initial: LiveResponse }) {
   return (
     <div className="space-y-4">
       {nextFixture && (
-        <div className="animate-card-in rounded-block-lg border-2 border-line-strong bg-surface p-6 shadow-block">
+        <div className="animate-card-in rounded-block-lg border border-line bg-surface p-6 shadow-block">
           <PredictionBar
             matchId={nextFixture.id}
             homeTeam={nextFixture.homeTeam}
@@ -106,14 +106,14 @@ export function LiveStatusWidget({ initial }: { initial: LiveResponse }) {
             votingOpen
             compact
           />
-          <p className="mb-3 text-xs font-bold uppercase tracking-wide text-muted">Next match</p>
+          <p className="mb-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Next match</p>
           <div className="flex items-center justify-between text-center">
             <NextFixtureTeam team={nextFixture.homeTeam} />
-            <span className="text-sm font-bold uppercase text-muted">vs</span>
+            <span className="text-sm font-bold uppercase text-muted-foreground">vs</span>
             <NextFixtureTeam team={nextFixture.awayTeam} />
           </div>
           {nextFixture.scheduledAt && (
-            <p className="mt-3 text-center text-sm text-muted">
+            <p className="mt-3 text-center text-sm text-muted-foreground">
               {new Date(nextFixture.scheduledAt).toLocaleString()}
               {nextFixture.venue ? ` · ${nextFixture.venue}` : ""}
             </p>
@@ -122,7 +122,7 @@ export function LiveStatusWidget({ initial }: { initial: LiveResponse }) {
       )}
       <RecentResults results={recentResults} />
       {!nextFixture && recentResults.length === 0 && (
-        <p className="text-center text-muted">No matches scheduled yet.</p>
+        <p className="text-center text-muted-foreground">No matches scheduled yet.</p>
       )}
     </div>
   );
@@ -131,8 +131,8 @@ export function LiveStatusWidget({ initial }: { initial: LiveResponse }) {
 function RecentResults({ results }: { results: LiveMatch[] }) {
   if (results.length === 0) return null;
   return (
-    <div className="animate-card-in rounded-block-lg border-2 border-line-strong bg-surface p-6 shadow-block">
-      <p className="mb-3 text-xs font-bold uppercase tracking-wide text-muted">Recent results</p>
+    <div className="animate-card-in rounded-block-lg border border-line bg-surface p-6 shadow-block">
+      <p className="mb-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Recent results</p>
       <ul className="divide-y-2 divide-line">
         {results.map((m) => (
           <li key={m.id} className="py-2.5">

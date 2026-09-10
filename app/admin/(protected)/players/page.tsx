@@ -194,7 +194,7 @@ export default function PlayersAdminPage() {
       </div>
 
       {loading ? (
-        <p className="text-muted">Loading…</p>
+        <p className="text-muted-foreground">Loading…</p>
       ) : (
         <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
           {visiblePlayers.map((player) => (
@@ -211,21 +211,21 @@ export default function PlayersAdminPage() {
                 ) : (
                   <span className="mr-2 h-7 w-7 rounded-full bg-line" />
                 )}
-                <span className="mr-2 text-muted">#{player.jerseyNumber}</span>
+                <span className="mr-2 text-muted-foreground">#{player.jerseyNumber}</span>
                 <span className="font-medium">{player.name}</span>
                 {player.isCaptain && (
                   <span className="ml-1.5 rounded-full bg-brand/15 px-1.5 py-0.5 text-[10px] font-bold text-brand">
                     C
                   </span>
                 )}
-                <span className="ml-3 text-xs text-muted">{player.team.name}</span>
+                <span className="ml-3 text-xs text-muted-foreground">{player.team.name}</span>
               </div>
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => handleToggleCaptain(player)}
                   title={player.isCaptain ? "Remove captain" : "Make captain"}
                   className={
-                    "text-lg leading-none " + (player.isCaptain ? "text-brand" : "text-line hover:text-muted")
+                    "text-lg leading-none " + (player.isCaptain ? "text-brand" : "text-line hover:text-muted-foreground")
                   }
                 >
                   ★
@@ -248,7 +248,7 @@ export default function PlayersAdminPage() {
             </li>
           ))}
           {visiblePlayers.length === 0 && (
-            <li className="px-5 py-6 text-center text-muted">No players yet.</li>
+            <li className="px-5 py-6 text-center text-muted-foreground">No players yet.</li>
           )}
         </ul>
       )}

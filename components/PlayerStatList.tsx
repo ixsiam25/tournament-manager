@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { PlayerPhoto } from "@/components/SafeImage";
 import Link from "next/link";
 
 export type PlayerStatRow = {
@@ -26,12 +26,12 @@ export function PlayerStatList({
   const visible = limit ? rows.slice(0, limit) : rows;
 
   return (
-    <div className="overflow-hidden rounded-block-lg border-2 border-line-strong bg-surface shadow-block">
+    <div className="overflow-hidden rounded-block-lg border border-line bg-surface shadow-block">
       <h2 className="border-b-2 border-line-strong px-5 py-4 font-black uppercase tracking-wide">
         {icon} {title}
       </h2>
       {visible.length === 0 ? (
-        <p className="p-5 text-sm text-muted">No data yet.</p>
+        <p className="p-5 text-sm text-muted-foreground">No data yet.</p>
       ) : (
         <ol className="divide-y-2 divide-line">
           {visible.map((row, i) => (
@@ -42,12 +42,12 @@ export function PlayerStatList({
                 (i < 3 ? "border-l-4 border-l-pitch bg-pitch/5" : "")
               }
             >
-              <span className="w-5 shrink-0 text-center text-sm font-bold text-muted">
+              <span className="w-5 shrink-0 text-center text-sm font-bold text-muted-foreground">
                 {i + 1}
               </span>
               {row.photoUrl ? (
-                <span className="relative h-14 w-9 shrink-0 overflow-hidden rounded-block border-2 border-line-strong">
-                  <Image src={row.photoUrl} alt={row.playerName} fill sizes="36px" className="object-cover" />
+                <span className="relative h-14 w-9 shrink-0 overflow-hidden rounded-block border border-line">
+                  <PlayerPhoto src={row.photoUrl} alt={row.playerName} sizes="36px" />
                 </span>
               ) : (
                 <span className="h-14 w-9 shrink-0 rounded-block bg-line" />
@@ -57,12 +57,12 @@ export function PlayerStatList({
                 {row.teamId ? (
                   <Link
                     href={`/teams/${row.teamId}`}
-                    className="block truncate text-xs text-muted hover:text-foreground hover:underline"
+                    className="block truncate text-xs text-muted-foreground hover:text-foreground hover:underline"
                   >
                     {row.teamName}
                   </Link>
                 ) : (
-                  <span className="block truncate text-xs text-muted">{row.teamName}</span>
+                  <span className="block truncate text-xs text-muted-foreground">{row.teamName}</span>
                 )}
               </span>
               <span className="shrink-0 text-xl font-black tabular-nums">{row.count}</span>

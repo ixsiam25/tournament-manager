@@ -68,7 +68,7 @@ export function AnnouncementSettingsPanel() {
     patch({ text, level, expiresAt: expiresAtInput ? new Date(expiresAtInput).toISOString() : null });
   }
 
-  if (loading || !settings) return <p className="text-muted">Loading…</p>;
+  if (loading || !settings) return <p className="text-muted-foreground">Loading…</p>;
 
   const scheduledPast = settings.expiresAt ? new Date(settings.expiresAt).getTime() <= loadedAt : false;
   const isLive = settings.enabled && !!settings.text.trim() && !scheduledPast;
@@ -78,17 +78,17 @@ export function AnnouncementSettingsPanel() {
       <section className="space-y-4 rounded-2xl border border-line bg-surface p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-sm font-bold uppercase tracking-wide text-muted">Announcement banner</h2>
+            <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Announcement banner</h2>
             <span
               className={
                 "mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-bold uppercase tracking-wide " +
-                (isLive ? "bg-pitch/10 text-pitch-dark" : "bg-line text-muted")
+                (isLive ? "bg-pitch/10 text-pitch-dark" : "bg-line text-muted-foreground")
               }
             >
               {isLive ? "Showing on the site" : "Not showing"}
             </span>
             {settings.enabled && scheduledPast && (
-              <span className="ml-2 text-xs text-muted">expired at {new Date(settings.expiresAt!).toLocaleString()}</span>
+              <span className="ml-2 text-xs text-muted-foreground">expired at {new Date(settings.expiresAt!).toLocaleString()}</span>
             )}
           </div>
           <button

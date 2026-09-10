@@ -240,10 +240,10 @@ export default function FixturesAdminPage() {
       </form>
       {!loading && byRound.get("LEAGUE") === undefined && teams.length >= 2 && (
         <div className="mb-6 rounded-2xl border border-line bg-surface p-4">
-          <h2 className="mb-1 text-sm font-bold uppercase tracking-wide text-muted">
+          <h2 className="mb-1 text-sm font-bold uppercase tracking-wide text-muted-foreground">
             Generate round-robin pairings
           </h2>
-          <p className="mb-3 text-xs text-muted">
+          <p className="mb-3 text-xs text-muted-foreground">
             Bulk-creates league fixtures with both teams assigned but no kickoff time yet — pure
             combinatorics, nothing to review. Pick the teams, then use &quot;Randomize kickoff
             order&quot; below to schedule them.
@@ -286,7 +286,7 @@ export default function FixturesAdminPage() {
       {error && <p className="mb-4 text-sm text-live">{error}</p>}
 
       {loading ? (
-        <p className="text-muted">Loading…</p>
+        <p className="text-muted-foreground">Loading…</p>
       ) : (
         <div className="space-y-8">
           {(["LEAGUE", "SEMIFINAL", "FINAL"] as const).map((r) => {
@@ -295,7 +295,7 @@ export default function FixturesAdminPage() {
             return (
               <section key={r}>
                 <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                  <h2 className="text-sm font-bold uppercase tracking-wide text-muted">
+                  <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
                     {ROUND_LABELS[r]}
                   </h2>
                   {r === "LEAGUE" && (
@@ -326,7 +326,7 @@ export default function FixturesAdminPage() {
                       <span className={scheduleWorstRest !== null && scheduleWorstRest < 10 ? "text-live" : "text-pitch-dark"}>
                         {scheduleWorstRest} min
                       </span>{" "}
-                      <span className="font-normal text-muted">— nothing is saved yet</span>
+                      <span className="font-normal text-muted-foreground">— nothing is saved yet</span>
                     </p>
                     <ul className="mb-3 max-h-64 divide-y divide-line overflow-y-auto text-sm">
                       {schedulePreview.map((p) => (
@@ -334,7 +334,7 @@ export default function FixturesAdminPage() {
                           <span>
                             {p.homeTeamName} vs {p.awayTeamName}
                           </span>
-                          <span className="text-muted">
+                          <span className="text-muted-foreground">
                             {p.time} · {p.pitch}
                           </span>
                         </li>
@@ -360,7 +360,7 @@ export default function FixturesAdminPage() {
                           setSchedulePreview(null);
                           setScheduleWorstRest(null);
                         }}
-                        className="rounded-full border border-line px-4 py-1.5 text-xs font-medium text-muted"
+                        className="rounded-full border border-line px-4 py-1.5 text-xs font-medium text-muted-foreground"
                       >
                         Cancel
                       </button>
@@ -375,7 +375,7 @@ export default function FixturesAdminPage() {
                           {m.homeTeam?.name ?? "TBD"} vs {m.awayTeam?.name ?? "TBD"}
                         </span>
                         {m.status !== "SCHEDULED" && (
-                          <span className="ml-3 text-sm tabular-nums text-muted">
+                          <span className="ml-3 text-sm tabular-nums text-muted-foreground">
                             {m.homeScore} – {m.awayScore}
                           </span>
                         )}
@@ -386,13 +386,13 @@ export default function FixturesAdminPage() {
                               ? "bg-live/10 text-live"
                               : m.status === "FINISHED"
                                 ? "bg-pitch/10 text-pitch-dark"
-                                : "bg-line text-muted")
+                                : "bg-line text-muted-foreground")
                           }
                         >
                           {m.status}
                         </span>
                         {m.homeScore === m.awayScore && m.winnerTeamId && (
-                          <span className="ml-3 text-xs font-medium text-muted">
+                          <span className="ml-3 text-xs font-medium text-muted-foreground">
                             {m.winnerTeamId === m.homeTeam?.id ? m.homeTeam?.name : m.awayTeam?.name} advances
                             {m.penaltyHomeScore !== null && m.penaltyAwayScore !== null ? (
                               <> ({m.penaltyHomeScore}–{m.penaltyAwayScore} pens)</>
@@ -402,10 +402,10 @@ export default function FixturesAdminPage() {
                           </span>
                         )}
                         {m.homeScore !== m.awayScore && m.extraTimePlayed && m.winnerTeamId && (
-                          <span className="ml-3 text-xs font-medium text-muted">won after extra time</span>
+                          <span className="ml-3 text-xs font-medium text-muted-foreground">won after extra time</span>
                         )}
                         {(m.mainReferee || m.assistantReferee) && (
-                          <div className="mt-1 text-xs text-muted">
+                          <div className="mt-1 text-xs text-muted-foreground">
                             {m.mainReferee && (
                               <span>
                                 Ref: <span className="font-medium text-foreground">{m.mainReferee}</span>
@@ -426,7 +426,7 @@ export default function FixturesAdminPage() {
                             Live console →
                           </Link>
                         ) : (
-                          <Link href={`/admin/fixtures/${m.id}`} className="text-muted hover:text-foreground">
+                          <Link href={`/admin/fixtures/${m.id}`} className="text-muted-foreground hover:text-foreground">
                             Edit
                           </Link>
                         )}
@@ -437,7 +437,7 @@ export default function FixturesAdminPage() {
               </section>
             );
           })}
-          {matches.length === 0 && <p className="text-muted">No fixtures yet.</p>}
+          {matches.length === 0 && <p className="text-muted-foreground">No fixtures yet.</p>}
         </div>
       )}
     </div>

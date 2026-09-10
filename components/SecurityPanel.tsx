@@ -103,7 +103,7 @@ export function SecurityPanel({ teams: initialTeams }: { teams: Team[] }) {
     <div>
       {modal}
       <h1 className="mb-6 heading-display text-2xl">Security</h1>
-      <p className="mb-6 text-sm text-muted">
+      <p className="mb-6 text-sm text-muted-foreground">
         ADMIN and SCORER account passwords are managed from{" "}
         <a href="/admin/users" className="underline">
           Users
@@ -111,7 +111,7 @@ export function SecurityPanel({ teams: initialTeams }: { teams: Team[] }) {
         . This page is for team manager logins only.
       </p>
 
-      <section className="rounded-block-lg border-2 border-line-strong bg-surface p-6 shadow-block">
+      <section className="rounded-block-lg border border-line bg-surface p-6 shadow-block">
         <div className="mb-1 flex flex-wrap items-center justify-between gap-3">
           <h2 className="font-black uppercase tracking-wide">Team manager logins</h2>
           <div className="flex shrink-0 gap-2">
@@ -131,7 +131,7 @@ export function SecurityPanel({ teams: initialTeams }: { teams: Team[] }) {
             </button>
           </div>
         </div>
-        <p className="mb-4 text-sm text-muted">
+        <p className="mb-4 text-sm text-muted-foreground">
           Set a password for a team so its manager/captain can log in at{" "}
           <code className="rounded bg-background px-1 py-0.5">/manager/login</code> and upload
           player photos. Blocking keeps the password saved but stops them logging in until
@@ -147,7 +147,7 @@ export function SecurityPanel({ teams: initialTeams }: { teams: Team[] }) {
                 <span
                   className={
                     "rounded-block px-2 py-0.5 text-xs font-bold uppercase tracking-wide " +
-                    (t.hasManagerPassword ? "bg-pitch/10 text-pitch-dark" : "bg-line text-muted")
+                    (t.hasManagerPassword ? "bg-pitch/10 text-pitch-dark" : "bg-line text-muted-foreground")
                   }
                 >
                   {t.hasManagerPassword ? "Login set" : "No login"}
@@ -190,7 +190,7 @@ export function SecurityPanel({ teams: initialTeams }: { teams: Team[] }) {
                     <button
                       onClick={() => handleClearTeamPassword(t.id)}
                       disabled={savingTeamId === t.id}
-                      className="rounded-block border-2 border-line px-4 py-1.5 text-xs font-medium text-muted disabled:opacity-40"
+                      className="rounded-block border-2 border-line px-4 py-1.5 text-xs font-medium text-muted-foreground disabled:opacity-40"
                     >
                       Clear
                     </button>

@@ -41,7 +41,7 @@ export function ManagerLoginForm({ teams }: { teams: Team[] }) {
         className="w-full max-w-sm rounded-2xl border border-line bg-surface p-8 shadow-sm"
       >
         <h1 className="text-xl font-extrabold">Manager Login</h1>
-        <p className="mt-1 text-sm text-muted">Pick your team and enter the team password.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Pick your team and enter the team password.</p>
 
         <label className="mt-6 block text-sm font-medium">Team</label>
         <select
