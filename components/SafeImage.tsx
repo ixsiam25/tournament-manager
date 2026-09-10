@@ -1,7 +1,35 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+
+const API_PREFIX = "/api/photos/";
+
+/**
+ * Photos live in a Netlify Blobs store behind `/api/photos/[key]`, and every
+ * historical one has also been checked into `public/photos/<key>.jpg`.
+ *
+ * The static copy is tried *first*: it is served straight off the CDN with no
+ * function invocation, and these images never change — a replaced photo gets a
+ * fresh key, never a mutated one. The API route stays as the second candidate
+ * so photos uploaded after the export (which have no static copy) still work.
+ */
+function usePhotoCandidates(initial: string) {
+  const candidates = useMemo(() => {
+    if (!initial.startsWith(API_PREFIX)) return [initial];
+    const key = initial.slice(API_PREFIX.length);
+    return [`/photos/${key}.jpg`, initial];
+  }, [initial]);
+
+  const [index, setIndex] = useState(0);
+  return {
+    src: candidates[index] ?? null,
+    // `key` forces a remount so the browser actually re-requests rather than
+    // reusing the failed image element.
+    attempt: index,
+    next: () => setIndex((i) => i + 1),
+  };
+}
 
 function initials(name: string) {
   return name
@@ -13,11 +41,8 @@ function initials(name: string) {
 }
 
 /**
- * A player photo that degrades to the player's initials instead of a broken
- * image icon. Drop-in for the `<Image fill>` calls that render uploaded
- * photos: those come from `/api/photos/[key]`, which can legitimately fail
- * (blob store unreachable, photo deleted, stale key in an archived season),
- * and every one of those cases used to leave a torn placeholder on the card.
+ * A player photo that degrades to the player's initials once every source has
+ * failed, instead of leaving a broken image icon on the card.
  */
 export function PlayerPhoto({
   src,
@@ -30,9 +55,9 @@ export function PlayerPhoto({
   sizes: string;
   className?: string;
 }) {
-  const [failed, setFailed] = useState(false);
+  const photo = usePhotoCandidates(src);
 
-  if (failed) {
+  if (!photo.src) {
     return (
       <span className="flex h-full w-full items-center justify-center bg-muted text-[0.7em] font-black uppercase tracking-wide text-muted-foreground">
         {initials(alt)}
@@ -42,20 +67,21 @@ export function PlayerPhoto({
 
   return (
     <Image
-      src={src}
+      key={photo.attempt}
+      src={photo.src}
       alt={alt}
       fill
       sizes={sizes}
       className={className}
-      onError={() => setFailed(true)}
+      onError={photo.next}
     />
   );
 }
 
 /**
  * A media-asset photo (season heroes, galleries) that simply removes itself if
- * the source fails, letting whatever the container already paints — the stripe
- * texture, a caption — show through instead of a torn image icon.
+ * every source fails, letting whatever the container already paints — the
+ * stripe texture, a caption — show through instead of a torn image icon.
  */
 export function MediaPhoto({
   src,
@@ -68,17 +94,18 @@ export function MediaPhoto({
   sizes: string;
   className?: string;
 }) {
-  const [failed, setFailed] = useState(false);
-  if (failed) return null;
+  const photo = usePhotoCandidates(src);
+  if (!photo.src) return null;
 
   return (
     <Image
-      src={src}
+      key={photo.attempt}
+      src={photo.src}
       alt={alt}
       fill
       sizes={sizes}
       className={className}
-      onError={() => setFailed(true)}
+      onError={photo.next}
     />
   );
 }
@@ -98,19 +125,20 @@ export function MediaFigure({
   sizes: string;
   className?: string;
 }) {
-  const [failed, setFailed] = useState(false);
-  if (failed) return null;
+  const photo = usePhotoCandidates(src);
+  if (!photo.src) return null;
 
   return (
     <figure className={className}>
       <div className="relative aspect-[16/7] w-full overflow-hidden rounded-block-lg border border-line bg-muted">
         <Image
-          src={src}
+          key={photo.attempt}
+          src={photo.src}
           alt={caption ?? ""}
           fill
           sizes={sizes}
           className="object-cover"
-          onError={() => setFailed(true)}
+          onError={photo.next}
         />
       </div>
       {caption && (
