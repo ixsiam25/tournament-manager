@@ -6,6 +6,7 @@ import { RegistrationOpenBanner } from "@/components/RegistrationOpenBanner";
 import { Crest } from "@/components/Crest";
 import { Reveal } from "@/components/motion/Reveal";
 import { LeagueBento } from "@/components/LeagueBento";
+import { JerseyTeaser } from "@/components/JerseyTeaser";
 import { getLiveStatus } from "@/lib/liveStatus";
 import { getTopScorers } from "@/lib/playerStats";
 import { getLeagueStats } from "@/lib/leagueStats";
@@ -142,6 +143,8 @@ export default async function HomePage() {
           </div>
         </>
       )}
+
+      <JerseyTeaser />
 
       <LeagueBento stats={leagueStats} />
     </div>

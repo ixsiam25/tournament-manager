@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { href: "/players", label: "Player Standings" },
   { href: "/roster", label: "Players" },
   { href: "/teams", label: "Teams" },
+  { href: "/jersey", label: "Jersey" },
   { href: "/predictions", label: "Champions Prediction" },
   { href: "/register", label: "Register" },
   { href: "/auction", label: "Auction" },
