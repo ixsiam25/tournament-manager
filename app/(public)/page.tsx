@@ -41,6 +41,8 @@ export default async function HomePage() {
 
   return (
     <div>
+      <JerseyTeaser />
+
       <div
         className={
           "stripe-texture relative mb-8 overflow-hidden rounded-block-lg border border-line bg-surface px-6 py-10 shadow-block sm:px-10 sm:py-14"
@@ -143,8 +145,6 @@ export default async function HomePage() {
           </div>
         </>
       )}
-
-      <JerseyTeaser />
 
       <LeagueBento stats={leagueStats} />
     </div>

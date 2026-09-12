@@ -1,5 +1,6 @@
 import { Reveal } from "@/components/motion/Reveal";
 import { JerseyShowcase } from "@/components/JerseyShowcase";
+import { JerseyVoteWidget } from "@/components/JerseyVoteWidget";
 
 export const metadata = { title: "The Kit — BFL" };
 
@@ -12,13 +13,18 @@ export default function JerseyPage() {
         <hr className="my-5 h-px border-0 bg-line" />
         <p className="lede max-w-prose">
           Maroon and gold, built around a crowned tiger crest and a tonal wave print. Hover the kit below
-          to zoom, and check the marked details for the story behind each one.
+          to zoom (tap ⤢ to view it bigger), and check the marked details for the story behind each one.
         </p>
       </Reveal>
 
-      <Reveal index={1} className="mx-auto mt-8 max-w-md">
-        <JerseyShowcase />
-      </Reveal>
+      <div className="mt-8 flex flex-col items-center gap-6">
+        <Reveal index={1} className="w-full max-w-md">
+          <JerseyShowcase />
+        </Reveal>
+        <Reveal index={2} className="w-full max-w-md">
+          <JerseyVoteWidget />
+        </Reveal>
+      </div>
     </div>
   );
 }

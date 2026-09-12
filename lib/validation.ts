@@ -90,6 +90,11 @@ export const championPredictionSchema = z.object({
   voterSemester: z.string().trim().max(30).optional().nullable(),
 });
 
+export const jerseyVoteSchema = z.object({
+  voterId: z.string().trim().min(1, "Voter id is required").max(100),
+  like: z.boolean(),
+});
+
 export const registrationSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(60),
   affiliation: z.string().trim().min(1, "Affiliation is required").max(80),

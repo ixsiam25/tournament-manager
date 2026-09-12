@@ -1,21 +1,24 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useSyncExternalStore } from "react";
-import { motion, useMotionValue, useSpring, useTransform } from "motion/react";
+import { useEffect, useState, useSyncExternalStore } from "react";
+import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from "motion/react";
 
 type Hotspot = { x: number; y: number; label: string; copy: string };
 
+// Coordinates are fractions of each cropped image, measured directly off the
+// pixel art (crest/text centroids) rather than eyeballed — see the football-
+// tournament-state memory note for how these were derived.
 const VIEWS = {
   front: {
     src: "/jersey/jersey-front.webp",
     alt: "BFL home kit, front",
     aspect: "aspect-[3567/4402]",
     hotspots: [
-      { x: 0.62, y: 0.24, label: "Crowned Tiger Crest", copy: "The BFL badge — a tiger under a crown, built fresh for this kit rather than reused from anywhere else." },
-      { x: 0.42, y: 0.55, label: "Tonal Wave Print", copy: "A subtle wave texture runs across the body — a nod to Hokusai's Great Wave, printed into the fabric, not just a flat colour block." },
-      { x: 0.86, y: 0.42, label: "Sponsor Patch", copy: "Right sleeve carries the kit's backer patch." },
-      { x: 0.22, y: 0.14, label: "Gold Trim", copy: "Gold shoulder stripes, collar piping and cuffs finish the maroon base — the same maroon/gold identity as the rest of BFL." },
+      { x: 0.654, y: 0.258, label: "Crowned Tiger Crest", copy: "The BFL badge — a tiger under a crown, built fresh for this kit rather than reused from anywhere else." },
+      { x: 0.35, y: 0.62, label: "Tonal Wave Print", copy: "A subtle wave texture runs across the body — a nod to Hokusai's Great Wave, printed into the fabric, not just a flat colour block." },
+      { x: 0.904, y: 0.309, label: "Sponsor Patch", copy: "Right sleeve carries the kit's backer patch." },
+      { x: 0.284, y: 0.088, label: "Gold Trim", copy: "Gold shoulder stripes, collar piping and cuffs finish the maroon base — the same maroon/gold identity as the rest of BFL." },
     ] as Hotspot[],
   },
   back: {
@@ -23,8 +26,8 @@ const VIEWS = {
     alt: "BFL home kit, back",
     aspect: "aspect-[3586/4310]",
     hotspots: [
-      { x: 0.5, y: 0.28, label: "Nameset", copy: "Player surname arcs above the number in gold serif — every squad member gets their own." },
-      { x: 0.5, y: 0.55, label: "Squad Number", copy: "Large gold squad number, sized to read from the far touchline." },
+      { x: 0.488, y: 0.172, label: "Nameset", copy: "Player surname arcs above the number in gold serif — every squad member gets their own." },
+      { x: 0.476, y: 0.378, label: "Squad Number", copy: "Large gold squad number, sized to read from the far touchline." },
     ] as Hotspot[],
   },
 } as const;
@@ -60,7 +63,15 @@ function useSupportsHoverZoom() {
   return useSyncExternalStore(subscribeHoverCapability, getHoverCapability, getHoverCapabilityServer);
 }
 
-export function JerseyShowcase() {
+function JerseyViewer({
+  large = false,
+  onExpand,
+  onClose,
+}: {
+  large?: boolean;
+  onExpand?: () => void;
+  onClose?: () => void;
+}) {
   const [view, setView] = useState<ViewKey>("front");
   const [activeHotspot, setActiveHotspot] = useState<number | null>(null);
   const current = VIEWS[view];
@@ -92,12 +103,17 @@ export function JerseyShowcase() {
   }
 
   return (
-    <div className="rounded-block-lg border border-line bg-surface shadow-block">
+    <div
+      className={
+        "rounded-block-lg border border-line bg-surface shadow-block " +
+        (large ? "w-[min(92vw,420px)] sm:w-[min(80vw,520px)]" : "")
+      }
+    >
       <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
         <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground">
           {canHoverZoom ? "Hover to inspect · tap a dot for detail" : "Tap a dot for detail"}
         </span>
-        <div className="flex gap-1.5">
+        <div className="flex items-center gap-1.5">
           {(Object.keys(VIEWS) as ViewKey[]).map((key) => (
             <button
               key={key}
@@ -113,6 +129,28 @@ export function JerseyShowcase() {
               {key}
             </button>
           ))}
+          {onExpand && (
+            <button
+              type="button"
+              onClick={onExpand}
+              aria-label="View bigger"
+              title="View bigger"
+              className="rounded-block border border-line-strong px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-background"
+            >
+              ⤢
+            </button>
+          )}
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close"
+              title="Close"
+              className="rounded-block border border-line-strong px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-background"
+            >
+              ✕
+            </button>
+          )}
         </div>
       </div>
 
@@ -135,7 +173,7 @@ export function JerseyShowcase() {
               src={current.src}
               alt={current.alt}
               fill
-              sizes="(min-width: 1024px) 480px, 90vw"
+              sizes={large ? "(min-width: 640px) 520px, 92vw" : "(min-width: 1024px) 480px, 90vw"}
               className="object-contain"
               priority
             />
@@ -184,5 +222,52 @@ export function JerseyShowcase() {
         </div>
       </div>
     </div>
+  );
+}
+
+export function JerseyShowcase() {
+  const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    if (!expanded) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setExpanded(false);
+    }
+    window.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [expanded]);
+
+  return (
+    <>
+      <JerseyViewer onExpand={() => setExpanded(true)} />
+      <AnimatePresence>
+        {expanded && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 p-4 backdrop-blur-sm"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setExpanded(false);
+            }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+            >
+              <JerseyViewer large onClose={() => setExpanded(false)} />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
