@@ -10,7 +10,9 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:migrate": "prisma migrate dev",
     "test:smoke": "playwright test",
-    "test:scoping": "tsx tests/integration/season-scoping.ts"
+    "test:scoping": "tsx tests/integration/season-scoping.ts",
+    "test:stats": "tsx tests/integration/league-stats.ts",
+    "test:identity": "tsx tests/integration/identity.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

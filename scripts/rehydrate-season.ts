@@ -43,6 +43,11 @@ async function main() {
 
   const teamIdByName = new Map(archive.teams.map((t) => [t.name, t.id]));
   const playerIdByTeamAndName = new Map(archive.players.map((p) => [`${p.teamName}\u0000${p.name}`, p.id]));
+  const { findOrCreateFranchise } = await import("../lib/franchise");
+  const franchiseIdByTeam = new Map<string, string>();
+  for (const t of archive.teams) {
+    franchiseIdByTeam.set(t.id, (await findOrCreateFranchise(season.tournamentId, t.name, t.shortName)).id);
+  }
   const knownPersonIds = new Set(
     (await prisma.person.findMany({ where: { id: { in: archive.players.map((p) => p.personId).filter((x): x is string => !!x) } }, select: { id: true } })).map((p) => p.id),
   );
@@ -55,6 +60,7 @@ async function main() {
         data: archive.teams.map((t) => ({
           id: t.id,
           seasonId: season.id,
+          franchiseId: franchiseIdByTeam.get(t.id)!,
           name: t.name,
           shortName: t.shortName,
           semester: t.semester,
@@ -64,6 +70,14 @@ async function main() {
           createdAt: new Date(t.createdAt),
         })),
       });
+
+      // Players archived without a (surviving) Person get one now: a roster
+      // slot is always a Person in an edition.
+      const personIdByPlayer = new Map<string, string>();
+      for (const p of archive.players) {
+        if (p.personId && knownPersonIds.has(p.personId)) personIdByPlayer.set(p.id, p.personId);
+        else personIdByPlayer.set(p.id, (await tx.person.create({ data: { name: p.name } })).id);
+      }
 
       await tx.player.createMany({
         data: archive.players.map((p) => ({
@@ -75,7 +89,7 @@ async function main() {
           position: (p.position as "GK" | "DEF" | "MID" | "FWD" | null) ?? null,
           isCaptain: p.isCaptain,
           photoUrl: modernUrl(p.photoUrl),
-          personId: p.personId && knownPersonIds.has(p.personId) ? p.personId : null,
+          personId: personIdByPlayer.get(p.id)!,
           createdAt: new Date(p.createdAt),
         })),
       });

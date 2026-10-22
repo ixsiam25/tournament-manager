@@ -14,6 +14,7 @@ export function RegistrationForm() {
   const [affiliation, setAffiliation] = useState("");
   const [position, setPosition] = useState<Position>("");
   const [contact, setContact] = useState("");
+  const [studentId, setStudentId] = useState("");
   const [photo, setPhoto] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,6 +46,7 @@ export function RegistrationForm() {
       formData.append("affiliation", affiliation);
       if (position) formData.append("position", position);
       formData.append("contact", contact);
+      formData.append("studentId", studentId);
       if (photo) {
         const jpeg = await downscaleToJpeg(photo, "avatar");
         formData.append("photo", jpeg, "photo.jpg");
@@ -116,6 +118,14 @@ export function RegistrationForm() {
         <input
           value={contact}
           onChange={(e) => setContact(e.target.value)}
+          required
+          className="w-full rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-pitch"
+        />
+      </Field>
+      <Field label="Student ID" hint="Used to recognise you across seasons — it is never shown publicly">
+        <input
+          value={studentId}
+          onChange={(e) => setStudentId(e.target.value)}
           required
           className="w-full rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-pitch"
         />

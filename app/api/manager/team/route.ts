@@ -4,6 +4,7 @@ import { requireUser } from "@/lib/userAuth";
 import { logAudit } from "@/lib/audit";
 import { teamSchema } from "@/lib/validation";
 import { frozenSeasonResponse } from "@/lib/seasonGuard";
+import { recordTeamRename } from "@/lib/franchise";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +30,7 @@ export async function PATCH(request: NextRequest) {
       where: { id: teamId },
       data: { name: parsed.data.name },
     });
+    if (before && before.name !== team.name) await recordTeamRename(before.franchiseId, before.name, team.name);
     await logAudit({
       actor,
       action: "team.rename",

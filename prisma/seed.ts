@@ -333,11 +333,17 @@ async function main() {
   await prisma.team.deleteMany({ where: { seasonId } });
 
   console.log("Seeding teams and players...");
+  const { findOrCreateFranchise } = await import("../lib/franchise");
+  const { findOrCreatePerson } = await import("../lib/identity");
   const teamBySlot = new Map<Slot, { id: string }>();
   for (const t of TEAMS) {
+    const franchise = await findOrCreateFranchise(season.tournamentId, t.name, t.shortName);
+    // Roster players need a Person; reuse by exact name when unambiguous.
+    const personIds = await Promise.all(t.players.map(async (p) => (await findOrCreatePerson({ name: p.name })).personId));
     const team = await prisma.team.create({
       data: {
         seasonId,
+        franchiseId: franchise.id,
         name: t.name,
         shortName: t.shortName,
         // t.semester is an ordinal like "5th" — parseInt reads the leading
@@ -347,6 +353,7 @@ async function main() {
         players: {
           create: t.players.map((p, i) => ({
             seasonId,
+            personId: personIds[i],
             name: p.name,
             jerseyNumber: i + 1,
             position: p.position ?? null,

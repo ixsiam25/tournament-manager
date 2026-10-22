@@ -39,9 +39,13 @@ async function main() {
   });
 
   try {
-    const team = await prisma.team.create({ data: { seasonId: other.id, name: "ZZ Ghost FC" } });
-    const rival = await prisma.team.create({ data: { seasonId: other.id, name: "ZZ Rival FC" } });
-    const player = await prisma.player.create({ data: { seasonId: other.id, teamId: team.id, name: "ZZ Ghost Striker", jerseyNumber: 9 } });
+    const { findOrCreateFranchise } = await import("../../lib/franchise");
+    const ghostFr = await findOrCreateFranchise(tournament.id, "ZZ Ghost FC");
+    const rivalFr = await findOrCreateFranchise(tournament.id, "ZZ Rival FC");
+    const ghostPerson = await prisma.person.create({ data: { name: "ZZ Ghost Striker" } });
+    const team = await prisma.team.create({ data: { seasonId: other.id, franchiseId: ghostFr.id, name: "ZZ Ghost FC" } });
+    const rival = await prisma.team.create({ data: { seasonId: other.id, franchiseId: rivalFr.id, name: "ZZ Rival FC" } });
+    const player = await prisma.player.create({ data: { seasonId: other.id, personId: ghostPerson.id, teamId: team.id, name: "ZZ Ghost Striker", jerseyNumber: 9 } });
     const match = await prisma.match.create({
       data: { seasonId: other.id, round: "LEAGUE", homeTeamId: team.id, awayTeamId: rival.id, homeScore: 7, awayScore: 0, status: "FINISHED", finishedAt: new Date() },
     });
@@ -71,6 +75,8 @@ async function main() {
     // deleting a team that has history), so remove events before the season.
     await prisma.matchEvent.deleteMany({ where: { match: { seasonId: other.id } } });
     await prisma.season.delete({ where: { id: other.id } }); // cascades to every other scoped row
+    await prisma.person.deleteMany({ where: { name: { startsWith: "ZZ " } } });
+    await prisma.franchise.deleteMany({ where: { name: { startsWith: "ZZ " } } });
     const leftovers = await prisma.team.count({ where: { name: { startsWith: "ZZ " } } });
     assert.equal(leftovers, 0, "cleanup left rows behind");
   }

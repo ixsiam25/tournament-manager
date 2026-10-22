@@ -4,6 +4,7 @@ import { requireUser } from "@/lib/userAuth";
 import { logAudit } from "@/lib/audit";
 import { registrationSchema } from "@/lib/validation";
 import { approveRegistration } from "@/lib/registrationApproval";
+import { normalizeStudentId } from "@/lib/identity";
 import { getActiveSeason } from "@/lib/currentSeason";
 
 export const dynamic = "force-dynamic";
@@ -47,6 +48,7 @@ export async function POST(request: NextRequest) {
       affiliation: parsed.data.affiliation,
       position: parsed.data.position,
       contact: parsed.data.contact,
+      studentId: normalizeStudentId(parsed.data.studentId),
       source: "ADMIN_MANUAL",
       status: "APPROVED",
       reviewedByUserId: actor.id,

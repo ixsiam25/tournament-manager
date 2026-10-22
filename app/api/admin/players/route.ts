@@ -4,6 +4,7 @@ import { playerSchema } from "@/lib/validation";
 import { requireUser } from "@/lib/userAuth";
 import { logAudit } from "@/lib/audit";
 import { getActiveSeason, getCurrentSeason } from "@/lib/currentSeason";
+import { findOrCreatePerson } from "@/lib/identity";
 
 export const dynamic = "force-dynamic";
 
@@ -42,8 +43,15 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  const { studentId, ...playerData } = parsed.data;
+  const { personId } = await findOrCreatePerson({ name: playerData.name, studentId });
+  const alreadyOnRoster = await prisma.player.findUnique({ where: { seasonId_personId: { seasonId: season.id, personId } } });
+  if (alreadyOnRoster) {
+    return NextResponse.json({ error: "That person is already on this season's roster" }, { status: 409 });
+  }
+
   try {
-    const player = await prisma.player.create({ data: { ...parsed.data, seasonId: season.id } });
+    const player = await prisma.player.create({ data: { ...playerData, seasonId: season.id, personId } });
     await logAudit({
       actor,
       action: "player.create",

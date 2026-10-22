@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-const ADMIN_PAGES = ["/admin", "/admin/fixtures", "/admin/registrations", "/admin/auction", "/admin/season/rollover", "/admin/users"];
+const ADMIN_PAGES = ["/admin", "/admin/fixtures", "/admin/registrations", "/admin/auction", "/admin/season/rollover", "/admin/users", "/admin/people"];
 
 for (const path of ADMIN_PAGES) {
   test(`unauthenticated ${path} is sent to login`, async ({ page }) => {
@@ -14,6 +14,8 @@ const ADMIN_APIS: Array<[string, string]> = [
   ["POST", "/api/admin/auction"],
   ["POST", "/api/admin/seasons"],
   ["POST", "/api/admin/users"],
+  ["POST", "/api/admin/people/merge"],
+  ["PATCH", "/api/admin/people/does-not-exist"],
 ];
 
 for (const [method, path] of ADMIN_APIS) {

@@ -14,6 +14,8 @@ export const playerSchema = z.object({
   position: z.enum(["GK", "DEF", "MID", "FWD"]).optional().nullable(),
   isCaptain: z.coerce.boolean().optional(),
   photoUrl: z.string().trim().max(500).optional().nullable(),
+  /** Pins the Person across editions; optional for manual adds. */
+  studentId: z.string().trim().max(40).optional().nullable(),
 });
 
 /** Scoped down from playerSchema — a manager may only move their own
@@ -100,6 +102,7 @@ export const registrationSchema = z.object({
   affiliation: z.string().trim().min(1, "Affiliation is required").max(80),
   position: z.enum(["GK", "DEF", "MID", "FWD"]).optional().nullable(),
   contact: z.string().trim().min(1, "Contact is required").max(120),
+  studentId: z.string().trim().max(40).optional().nullable(),
 });
 
 export const registrationReviewSchema = z.object({

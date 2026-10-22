@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { findOrCreatePerson } from "@/lib/identity";
 import type { Registration, Season } from "@/lib/generated/prisma/client";
 
 /**
@@ -9,16 +10,23 @@ import type { Registration, Season } from "@/lib/generated/prisma/client";
  * manual-add (auto-approved) routes so the branching logic only lives in
  * one place.
  */
-export async function approveRegistration(registration: Registration, season: Season): Promise<void> {
+export type ApprovalResult = { personId: string; createdPlayer: boolean; alreadyOnRoster: boolean };
+
+export async function approveRegistration(registration: Registration, season: Season): Promise<ApprovalResult> {
+  // A student ID pins the Person exactly; without one we only reuse a Person
+  // when exactly one shares the name (see lib/identity.ts).
   let personId = registration.personId;
   if (!personId) {
-    const existing = await prisma.person.findFirst({
-      where: { name: { equals: registration.name, mode: "insensitive" } },
-    });
-    personId = existing ? existing.id : (await prisma.person.create({ data: { name: registration.name } })).id;
+    personId = (await findOrCreatePerson({ name: registration.name, studentId: registration.studentId })).personId;
   }
 
-  if (season.teamFormation === "AUCTION") {
+  let createdPlayer = false;
+  const alreadyOnRoster = !!(await prisma.player.findUnique({
+    where: { seasonId_personId: { seasonId: season.id, personId } },
+    select: { id: true },
+  }));
+
+  if (season.teamFormation === "AUCTION" && !alreadyOnRoster) {
     const player = await prisma.player.create({
       data: {
         seasonId: season.id,
@@ -42,6 +50,7 @@ export async function approveRegistration(registration: Registration, season: Se
         status: "QUEUED",
       },
     });
+    createdPlayer = true;
   }
   // BATCH-formation seasons don't have a well-defined "which team" without
   // further admin input (affiliation is free text, not a team id) — the
@@ -53,4 +62,5 @@ export async function approveRegistration(registration: Registration, season: Se
     where: { id: registration.id },
     data: { personId },
   });
+  return { personId, createdPlayer, alreadyOnRoster };
 }

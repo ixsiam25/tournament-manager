@@ -4,6 +4,7 @@ import { teamSchema } from "@/lib/validation";
 import { requireUser } from "@/lib/userAuth";
 import { logAudit } from "@/lib/audit";
 import { frozenSeasonResponse } from "@/lib/seasonGuard";
+import { recordTeamRename } from "@/lib/franchise";
 
 export const dynamic = "force-dynamic";
 
@@ -33,6 +34,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   const frozen = await frozenSeasonResponse(before?.seasonId);
   if (frozen) return frozen;
   const team = await prisma.team.update({ where: { id }, data: parsed.data });
+  if (before && before.name !== team.name) await recordTeamRename(before.franchiseId, before.name, team.name);
   await logAudit({
     actor,
     action: "team.update",

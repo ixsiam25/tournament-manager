@@ -4,7 +4,7 @@ import { requireUser } from "@/lib/userAuth";
 
 export const dynamic = "force-dynamic";
 
-const HEADERS = ["Name", "Affiliation", "Position", "Contact"];
+const HEADERS = ["Name", "Affiliation", "Position", "Contact", "Student ID"];
 
 /** Downloads the fixed-shape import template — see
  * `app/api/admin/registrations/import/route.ts` for the matching parser.
@@ -15,8 +15,8 @@ export async function GET() {
   if (result instanceof NextResponse) return result;
 
   const wb = XLSX.utils.book_new();
-  const ws = XLSX.utils.aoa_to_sheet([HEADERS, ["Jane Doe", "5th Semester", "MID", "090-1234-5678"]]);
-  ws["!cols"] = [{ wch: 24 }, { wch: 20 }, { wch: 12 }, { wch: 20 }];
+  const ws = XLSX.utils.aoa_to_sheet([HEADERS, ["Jane Doe", "5th Semester", "MID", "090-1234-5678", "12345678"]]);
+  ws["!cols"] = [{ wch: 24 }, { wch: 20 }, { wch: 12 }, { wch: 20 }, { wch: 16 }];
   XLSX.utils.book_append_sheet(wb, ws, "Registrations");
   const buffer = XLSX.write(wb, { type: "buffer", bookType: "xlsx" }) as Buffer;
 

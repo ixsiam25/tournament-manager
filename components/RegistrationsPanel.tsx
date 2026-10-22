@@ -12,6 +12,7 @@ type Registration = {
   affiliation: string;
   position: Position | null;
   contact: string;
+  studentId: string | null;
   source: Source;
   status: Status;
   createdAt: string;
@@ -44,6 +45,7 @@ export function RegistrationsPanel() {
   const [affiliation, setAffiliation] = useState("");
   const [position, setPosition] = useState<Position>("");
   const [contact, setContact] = useState("");
+  const [studentId, setStudentId] = useState("");
   const [addingManual, setAddingManual] = useState(false);
 
   async function load() {
@@ -130,7 +132,7 @@ export function RegistrationsPanel() {
     const res = await fetch("/api/admin/registrations", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, affiliation, position: position || null, contact }),
+      body: JSON.stringify({ name, affiliation, position: position || null, contact, studentId: studentId || null }),
     });
     setAddingManual(false);
     if (!res.ok) {
@@ -142,6 +144,7 @@ export function RegistrationsPanel() {
     setAffiliation("");
     setPosition("");
     setContact("");
+    setStudentId("");
     load();
   }
 
@@ -211,6 +214,12 @@ export function RegistrationsPanel() {
               onChange={(e) => setAffiliation(e.target.value)}
               placeholder="Affiliation"
               required
+              className="w-full rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-pitch"
+            />
+            <input
+              value={studentId}
+              onChange={(e) => setStudentId(e.target.value)}
+              placeholder="Student ID (optional)"
               className="w-full rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-pitch"
             />
             <div className="flex gap-2">
@@ -313,6 +322,7 @@ export function RegistrationsPanel() {
               <span className="font-bold">{r.name}</span>
               <span className="ml-2 text-sm text-muted-foreground">{r.affiliation}</span>
               {r.position && <span className="ml-2 text-xs text-muted-foreground">{r.position}</span>}
+              {r.studentId && <span className="ml-2 font-mono text-xs text-muted-foreground">ID {r.studentId}</span>}
               <span className="ml-2 rounded-full bg-line px-2 py-0.5 text-[10px] font-bold uppercase text-muted-foreground">
                 {SOURCE_LABELS[r.source]}
               </span>

@@ -390,3 +390,31 @@ The app is no longer "one live season". Every live row belongs to a `Season`
 - Deploy note: `npm run build` runs `prisma migrate deploy`, so the
   `edition_scoping` migration applies to production on the next deploy; run
   `rehydrate-season.ts` against prod afterwards (`ENV_FILE=.env.prod.local`).
+
+## Identity & franchises (Phase 2, 2026-10-22)
+
+- **`Person`** is the human, across every edition. `PersonIdentifier`
+  (`STUDENT_ID`, unique per value) pins one — normalised trim/upper-case,
+  organiser-only, never rendered publicly. `lib/identity.ts`:
+  `findOrCreatePerson` (student ID wins; names are only reused when exactly one
+  person shares the name), `setStudentId` (refuses an ID owned by someone
+  else), `mergePersons` (moves roster slots/registrations/identifiers; refuses
+  if both have a slot in one season).
+- **`Player` = a roster slot**: a Person on a Team in one edition.
+  `personId` is required and `(seasonId, personId)` is unique, so nobody is on
+  two rosters in one edition.
+- **`Franchise`** is the persistent team identity per tournament. Each
+  per-edition `Team` row points at one (`franchiseId`, unique per season).
+  Renaming a team keeps the franchise and records the old name in
+  `Franchise.names` (`lib/franchise.ts`); a team returning under its name
+  reuses the franchise. (`Team` was deliberately not renamed to `Entry`.)
+- **Applications** collect a student ID (required on the public form, optional
+  for admin-manual and Excel import via a trailing "Student ID" column).
+  Approval resolves the Person through it.
+- **`/admin/people`**: search by name/ID, add a student ID (the manual link step
+  for Season IX), rename, merge duplicates (password re-confirmed).
+- **All-time stats are SQL** (`getLeagueStats` in `lib/leagueStats.ts`:
+  seasons, matches, goals, players capped, golden boot by Person, titles by
+  Franchise); it falls back to the frozen snapshots while an archived season
+  has no rows. `/legacy/hall-of-fame` still reads snapshots (follow-up).
+- Tests: `npm run test:identity` and `npm run test:stats` (dev branch).

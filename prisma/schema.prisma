@@ -56,6 +56,10 @@ enum MediaTag {
   CROWD
 }
 
+enum IdentifierType {
+  STUDENT_ID
+}
+
 enum RegistrationSource {
   SELF_SERVE
   ADMIN_MANUAL
@@ -89,7 +93,29 @@ model Tournament {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  seasons Season[]
+  seasons    Season[]
+  franchises Franchise[]
+}
+
+/// A team's persistent identity across editions of one tournament. The
+/// per-edition `Team` row (its participation + roster) points here, so a team
+/// that returns next season — or is renamed mid-season — stays one entity and
+/// its history (titles, all-time record) can be computed. `names` keeps the
+/// earlier names, newest last.
+model Franchise {
+  id           String     @id @default(cuid())
+  tournamentId String
+  tournament   Tournament @relation(fields: [tournamentId], references: [id])
+  name         String
+  shortName    String?
+  names        String[]   @default([])
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  teams Team[]
+
+  @@unique([tournamentId, name])
+  @@index([tournamentId])
 }
 
 /// One row per tournament season. `ACTIVE` seasons drive the live
@@ -176,6 +202,22 @@ model Person {
 
   players       Player[]
   registrations Registration[]
+  identifiers   PersonIdentifier[]
+}
+
+/// A real-world identifier that pins a Person across editions — today the
+/// student ID. Organizer-only data: never rendered on a public page. The
+/// value is stored normalised (trimmed, upper-case) so lookups are exact.
+model PersonIdentifier {
+  id        String         @id @default(cuid())
+  personId  String
+  person    Person         @relation(fields: [personId], references: [id], onDelete: Cascade)
+  type      IdentifierType
+  value     String
+  createdAt DateTime       @default(now())
+
+  @@unique([type, value])
+  @@index([personId])
 }
 
 /// An uploaded photo (or future video) attached to a season — trophy shots,
@@ -199,9 +241,11 @@ model MediaAsset {
 }
 
 model Team {
-  id                  String   @id @default(cuid())
+  id                  String    @id @default(cuid())
   seasonId            String
-  season              Season   @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  season              Season    @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  franchiseId         String
+  franchise           Franchise @relation(fields: [franchiseId], references: [id])
   name                String
   shortName           String?
   /// Which APU semester/batch this team represents (1-7+). Nullable because
@@ -210,9 +254,9 @@ model Team {
   managerName         String?
   logoUrl             String?
   managerPasswordHash String?
-  managerLoginBlocked Boolean  @default(false)
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  managerLoginBlocked Boolean   @default(false)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 
   players             Player[]
   homeMatches         Match[]              @relation("HomeTeam")
@@ -225,7 +269,9 @@ model Team {
   auctionLots         AuctionLot[]
 
   @@unique([seasonId, name])
+  @@unique([seasonId, franchiseId])
   @@index([seasonId])
+  @@index([franchiseId])
 }
 
 /// A named account, replacing the old shared ADMIN_PASSWORD and per-team
@@ -301,11 +347,10 @@ model Player {
   /// unsold players to coexist.
   teamId       String?
   team         Team?     @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  /// Links to the stable cross-season identity, once backfilled/assigned.
-  /// Nullable so this stays additive for existing rows until Stage 1's
-  /// backfill script runs.
-  personId     String?
-  person       Person?   @relation(fields: [personId], references: [id])
+  /// The stable cross-season identity of the human on this roster slot.
+  /// Required: a Player row is "a Person on a Team in one edition".
+  personId     String
+  person       Person    @relation(fields: [personId], references: [id])
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
@@ -313,6 +358,7 @@ model Player {
   auctionLot AuctionLot?
 
   @@unique([teamId, jerseyNumber])
+  @@unique([seasonId, personId])
   @@index([seasonId])
 }
 
@@ -442,6 +488,9 @@ model Registration {
   affiliation      String
   position         Position?
   contact          String
+  /// Raw (normalised) student ID as typed on the form; becomes a
+  /// PersonIdentifier when the registration is approved.
+  studentId        String?
   photoKey         String?
   source           RegistrationSource
   status           RegistrationStatus @default(PENDING)
@@ -453,6 +502,7 @@ model Registration {
 
   @@index([seasonId])
   @@index([status])
+  @@index([studentId])
 }
 
 /// One per AUCTION season — the budget/pricing rules the console and

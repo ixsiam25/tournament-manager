@@ -4,6 +4,7 @@ import { teamSchema } from "@/lib/validation";
 import { requireUser } from "@/lib/userAuth";
 import { logAudit } from "@/lib/audit";
 import { getActiveSeason, getCurrentSeason } from "@/lib/currentSeason";
+import { findOrCreateFranchise } from "@/lib/franchise";
 
 export const dynamic = "force-dynamic";
 
@@ -34,7 +35,10 @@ export async function POST(request: NextRequest) {
   const season = await getActiveSeason();
   if (!season) return NextResponse.json({ error: "No active season — open one first" }, { status: 409 });
 
-  const team = await prisma.team.create({ data: { ...parsed.data, seasonId: season.id } });
+  const franchise = await findOrCreateFranchise(season.tournamentId, parsed.data.name, parsed.data.shortName);
+  const duplicate = await prisma.team.findUnique({ where: { seasonId_franchiseId: { seasonId: season.id, franchiseId: franchise.id } } });
+  if (duplicate) return NextResponse.json({ error: "That team is already in this season" }, { status: 409 });
+  const team = await prisma.team.create({ data: { ...parsed.data, seasonId: season.id, franchiseId: franchise.id } });
   const teamForAudit: Record<string, unknown> = { ...team };
   delete teamForAudit.managerPasswordHash;
   await logAudit({

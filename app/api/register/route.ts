@@ -4,6 +4,7 @@ import { registrationSchema } from "@/lib/validation";
 import { putObject } from "@/lib/mediaStore";
 import { isRateLimited, clientIp } from "@/lib/rateLimit";
 import { randomUUID } from "node:crypto";
+import { normalizeStudentId } from "@/lib/identity";
 import { getActiveSeason } from "@/lib/currentSeason";
 
 export const dynamic = "force-dynamic";
@@ -37,9 +38,22 @@ export async function POST(request: NextRequest) {
     affiliation: formData?.get("affiliation"),
     position: formData?.get("position") || null,
     contact: formData?.get("contact"),
+    studentId: formData?.get("studentId") || null,
   });
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Invalid data" }, { status: 400 });
+  }
+
+  const studentId = normalizeStudentId(parsed.data.studentId);
+  if (!studentId) {
+    return NextResponse.json({ error: "Student ID is required" }, { status: 400 });
+  }
+  const alreadyApplied = await prisma.registration.findFirst({
+    where: { seasonId: season.id, studentId, status: { not: "REJECTED" } },
+    select: { id: true },
+  });
+  if (alreadyApplied) {
+    return NextResponse.json({ error: "An application with this student ID already exists for this season" }, { status: 409 });
   }
 
   let photoKey: string | null = null;
@@ -73,6 +87,7 @@ export async function POST(request: NextRequest) {
       affiliation: parsed.data.affiliation,
       position: parsed.data.position,
       contact: parsed.data.contact,
+      studentId,
       photoKey,
       source: "SELF_SERVE",
       status: "PENDING",

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/userAuth";
 import { logAudit } from "@/lib/audit";
 import { getActiveSeason } from "@/lib/currentSeason";
+import { normalizeStudentId } from "@/lib/identity";
 
 export const dynamic = "force-dynamic";
 
@@ -60,7 +61,7 @@ export async function POST(request: NextRequest) {
   }
 
   const toCreate = dataRows.map((r) => {
-    const [name, affiliation, positionRaw, contact] = r.map((c) => String(c ?? "").trim());
+    const [name, affiliation, positionRaw, contact, studentIdRaw] = r.map((c) => String(c ?? "").trim());
     const positionUpper = positionRaw.toUpperCase();
     return {
       seasonId: season.id,
@@ -68,6 +69,7 @@ export async function POST(request: NextRequest) {
       affiliation,
       position: VALID_POSITIONS.has(positionUpper) ? (positionUpper as "GK" | "DEF" | "MID" | "FWD") : null,
       contact,
+      studentId: normalizeStudentId(studentIdRaw),
       source: "EXCEL_IMPORT" as const,
       status: "PENDING" as const,
     };
