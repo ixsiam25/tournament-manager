@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tournament Platform Architecture</title>
+<style>
+:root{--bg:#faf8f5;--card:#fff;--ink:#1a1512;--mute:#6b625b;--line:#e4ddd4;--brand:#7a1128;--brand-soft:#f6e9ec;--ok:#2f6b4a;--warn:#a5600a;--code:#f3eee8;--t1:#e9eef7;--t2:#efe9f7;--t3:#e8f3ec;--t4:#f7f0e2;--t5:#f7e9e9;--t6:#e6f1f3}
+@media (prefers-color-scheme:dark){:root{--bg:#15100f;--card:#1e1816;--ink:#f2ede6;--mute:#a39a91;--line:#3a312d;--brand:#d4647d;--brand-soft:#2e1a20;--ok:#6fbf94;--warn:#e0a24d;--code:#251e1b;--t1:#1d2433;--t2:#2a2036;--t3:#1b2d24;--t4:#33291a;--t5:#341e1e;--t6:#1a2c30}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 -apple-system,"Hiragino Sans",system-ui,sans-serif}
+.wrap{max-width:1040px;margin:0 auto;padding:24px 16px 80px}
+h1{font:700 30px/1.15 Georgia,serif;margin:0 0 6px}
+h2{font:700 20px Georgia,serif;margin:28px 0 10px}
+h3{font-size:15px;margin:0 0 4px}
+p{margin:6px 0}
+.sub{color:var(--mute);margin-bottom:18px}
+nav{display:flex;gap:6px;flex-wrap:wrap;position:sticky;top:0;background:var(--bg);padding:10px 0;z-index:5;border-bottom:1px solid var(--line);margin-bottom:18px}
+nav button{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:7px 12px;border-radius:2px;font:inherit;font-size:13px;cursor:pointer}
+nav button.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+section{display:none}section.on{display:block}
+.card{background:var(--card);border:1px solid var(--line);padding:14px 16px;border-radius:2px}
+.grid{display:grid;gap:12px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.verdict{border-left:4px solid var(--brand);background:var(--brand-soft);padding:12px 16px;margin:14px 0}
+.tag{display:inline-block;font-size:11px;padding:1px 7px;border:1px solid var(--line);border-radius:10px;color:var(--mute);margin-right:4px}
+.bad{color:var(--warn)}.good{color:var(--ok)}
+code,pre{font-family:ui-monospace,Menlo,monospace;font-size:12.5px}
+code{background:var(--code);padding:1px 5px;border-radius:2px}
+pre{background:var(--code);padding:12px;overflow:auto;border-radius:2px;margin:8px 0;border:1px solid var(--line)}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{border-bottom:1px solid var(--line);padding:7px 8px;text-align:left;vertical-align:top}
+th{font-size:12px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em}
+.tiers{display:flex;flex-direction:column;gap:10px}
+.tier{border:1px solid var(--line);padding:10px 12px;border-radius:2px}
+.tier .tl{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);margin-bottom:6px}
+.ents{display:flex;flex-wrap:wrap;gap:8px}
+.ent{border:1px solid var(--line);background:var(--card);padding:6px 12px;cursor:pointer;font-weight:600;font-size:13.5px;border-radius:2px}
+.ent:hover{border-color:var(--brand)}.ent.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+.arrow{text-align:center;color:var(--mute);font-size:12px;margin:-4px 0}
+#detail{margin-top:14px;min-height:150px}
+.pill{display:inline-block;padding:2px 9px;border-radius:2px;font-size:12px;margin:2px 4px 2px 0;background:var(--code)}
+.stage{display:inline-block;border:1.5px solid var(--brand);background:var(--card);padding:8px 12px;border-radius:2px;min-width:130px;vertical-align:top}
+.stage b{display:block;color:var(--brand);font-size:13px}.stage span{font-size:12px;color:var(--mute)}
+.flow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:10px 0}
+.flow .ar{color:var(--mute)}
+.opts button{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:6px 11px;margin:0 6px 6px 0;cursor:pointer;font:inherit;font-size:13px;border-radius:2px}
+.opts button.on{background:var(--ink);color:var(--bg)}
+.phase{display:grid;grid-template-columns:70px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.phase .n{font:700 22px Georgia,serif;color:var(--brand)}
+.risk{font-size:12.5px;color:var(--warn)}
+label.chk{display:flex;gap:8px;align-items:flex-start;cursor:pointer}
+svg text{fill:var(--ink);font-family:-apple-system,system-ui,sans-serif}
+.yes{color:var(--ok);font-weight:700}.no{color:var(--mute)}
+.pc{width:230px;height:330px;position:relative;margin:0 auto;clip-path:polygon(50% 0,92% 6%,100% 14%,100% 88%,50% 100%,0 88%,0 14%,8% 6%);color:#2a1d05;transition:background .3s}
+.pc.bronze{background:linear-gradient(160deg,#e3b58a,#9a6238 70%);color:#2b1608}
+.pc.silver{background:linear-gradient(160deg,#eef0f3,#9aa3ad 70%);color:#1c2229}
+.pc.gold{background:linear-gradient(160deg,#fbe9a4,#c79a2b 70%);color:#2a1d05}
+.pc.special{background:linear-gradient(160deg,#7a1128,#2a0710 75%);color:#f6dfa8}
+.pc .ovr{position:absolute;left:30px;top:44px;font:800 38px/1 Georgia,serif}
+.pc .pos{position:absolute;left:32px;top:86px;font:700 14px sans-serif}
+.pc .badge{position:absolute;left:30px;top:108px;width:30px;height:20px;border:1.5px solid currentColor;border-radius:2px;font:700 9px/18px sans-serif;text-align:center}
+.pc .crest{position:absolute;left:34px;top:134px;width:22px;height:22px;border:1.5px solid currentColor;border-radius:50%;font:700 9px/19px sans-serif;text-align:center}
+.pc .ph{position:absolute;right:20px;top:34px;width:130px;height:150px;opacity:.85}
+.pc .nm{position:absolute;left:0;right:0;top:188px;text-align:center;font:800 17px sans-serif;text-transform:uppercase;letter-spacing:.03em}
+.pc .ln{position:absolute;left:30px;right:30px;top:213px;border-top:1.5px solid currentColor;opacity:.4}
+.pc .st{position:absolute;left:34px;right:34px;top:222px;display:grid;grid-template-columns:1fr 1fr;gap:1px 14px;font:700 13px/1.35 sans-serif}
+.pc .st b{font-weight:800;margin-right:5px}
+.pc .sub2{position:absolute;bottom:34px;left:0;right:0;text-align:center;font:600 9px sans-serif;opacity:.7}
+.sl{display:grid;grid-template-columns:50px 1fr 30px;gap:8px;align-items:center;font-size:13px}
+.sl input{width:100%}
+@media(max-width:560px){.phase{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Tournament Platform — Architecture</h1>
+<div class="sub">From "BFL app" to a reusable system for any tournament. Draft v1 · 2026-10-22 · based on the current schema (<code>prisma/schema.prisma</code>, 457 lines) and ARCHITECTURE.md.</div>
+
+<nav id="tabs"></nav>
+
+<!-- ============ 1 OVERVIEW ============ -->
+<section id="s-overview">
+<div class="verdict"><b>Verdict.</b> The current app is a good <i>football-league-with-one-live-season</i> app. It is not yet a tournament platform, and the gap is structural, not cosmetic. Three hard-coded assumptions block everything else — fix those three and every future tournament becomes configuration instead of code.</div>
+
+<h2>The three blockers in today's schema</h2>
+<div class="grid g3">
+  <div class="card"><h3>1 · One live season, wiped at rollover</h3>
+  <p><code>Team</code>, <code>Player</code>, <code>Match</code> have no <code>seasonId</code>. They describe "whatever is active", and the rollover wizard freezes them into <code>resultsJson</code> and deletes them. Two tournaments at once is impossible; history is a JSON blob, not queryable.</p></div>
+  <div class="card"><h3>2 · Format is an enum</h3>
+  <p><code>RoundType = LEAGUE | SEMIFINAL | FINAL</code>. Groups, double-elimination, Swiss, brackets of 16, third-place playoffs — none can be expressed. <code>formatConfig Json</code> exists but nothing consumes it generically.</p></div>
+  <div class="card"><h3>3 · Football is baked in</h3>
+  <p><code>MatchEventType</code> = GOAL/ASSIST/CARDS, <code>Position</code> = GK/DEF/MID/FWD, standings = 3-1-0, the pitch view = 6-a-side. A basketball, esports or 1v1 tournament cannot reuse any of it.</p></div>
+</div>
+
+<h2>Design principles</h2>
+<div class="grid g2">
+  <div class="card"><b>Everything is scoped to an Edition.</b> No "active season" global. Many editions can be live at once; archiving is a status flag, never a delete.</div>
+  <div class="card"><b>Format and sport are data, not code.</b> Stages, tiebreakers, event types, positions live in config rows that ship with presets. Code only knows the <i>engines</i> (round-robin, knockout, groups…).</div>
+  <div class="card"><b>Identity ≠ participation.</b> <code>Person</code> and <code>Team</code> persist across editions. <code>Entry</code> and <code>RosterSlot</code> are the per-edition facts. Fixes name changes ("Big Banana → Dilly Dally") and gives real all-time stats via SQL.</div>
+  <div class="card"><b>Modules are opt-in per edition.</b> Registration, auction, predictions, media, kit reveal, Sheets backup, share graphics — each a toggle. A chess open doesn't need an auction.</div>
+  <div class="card"><b>Derive, don't store.</b> Standings, stats, brackets are computed from fixtures + events + ruleset (as you already do). Snapshot only when an edition is archived.</div>
+  <div class="card"><b>Evolve, don't rewrite.</b> Same stack (Next 16 · Prisma · Neon · Netlify). Additive migrations, BFL stays live at every step.</div>
+</div>
+
+<h2>What stays exactly as is</h2>
+<p>Next.js + Prisma + Neon, derive-on-read standings/stats, polling live updates, audit log, voterId-based anonymous voting, the Kokonut/Motion UI layer, Netlify scheduled functions, round-robin + schedule generators (<code>lib/roundRobin.ts</code>, <code>lib/scheduleRandomizer.ts</code> become the first format engines).</p>
+</section>
+
+
+<!-- ============ ASKS ============ -->
+<section id="s-asks">
+<div class="verdict"><b>All five fit the architecture.</b> Two need real new modules (player cards, auction stage view); three are configuration of things already in the model. Details below, with the card prototype you can play with.</div>
+
+<h2>1 · Players apply themselves</h2>
+<ul>
+<li><b>Public application page per edition</b> (<code>/{tournament}/{edition}/apply</code>) — no account needed. Organizer chooses which fields appear (core: name, contact, affiliation/semester, position, photo; plus custom questions stored as JSON <code>answers</code>).</li>
+<li><b>Edit link:</b> after applying, the player gets a private token link to fix their details/photo until the deadline (same idea as your <code>voterId</code>, but signed).</li>
+<li><b>Photo step is guided:</b> upload → in-browser background removal → crop preview as a card. Tips shown ("plain wall, face centred") because photo quality decides card quality.</li>
+<li><b>Identity = student ID (from now on).</b> The apply form asks for the student ID (label configurable per tournament). It is stored as a <code>PersonIdentifier(type=STUDENT_ID, value)</code>, unique per organization: same ID → same <code>Person</code>, automatically, so all-time stats follow the player across editions and name changes. Visible to organizers only, never on public pages.</li>
+<li><b>Past seasons (Season IX and earlier):</b> no IDs exist, so a one-off <b>manual link tool</b>: list of old players on the left, search/create <code>Person</code> on the right, type the student ID once. Unlinked players keep working; they just don't count toward all-time stats until linked.</li>
+<li><b>Safety net:</b> if an ID is missing or mistyped, the organizer sees "possible duplicate" suggestions by name and can merge two Persons (audited, reversible).</li>
+<li>Reviewer queue stays (approve / reject / needs-info). Excel import stays for bulk.</li>
+</ul>
+
+<h2>2 · Organizer picks how teams are formed</h2>
+<p><code>Edition.formation</code> becomes a strategy (today's two-value <code>TeamFormation</code> enum grows). It's changeable until the edition's rosters are locked.</p>
+<table>
+<tr><th>Strategy</th><th>What happens</th></tr>
+<tr><td><b>BATCH / AFFILIATION</b></td><td>Applications auto-group into teams by semester/batch/club tag (Season IX style).</td></tr>
+<tr><td><b>MANUAL</b></td><td>Drag-and-drop board: unassigned pool on the left, team columns on the right.</td></tr>
+<tr><td><b>AUCTION</b></td><td>Budgeted bidding (ask 4 below).</td></tr>
+<tr><td><b>DRAFT</b> <span class="tag">add</span></td><td>Snake draft by captains — the cheap alternative when money isn't wanted.</td></tr>
+<tr><td><b>BALANCED RANDOM</b> <span class="tag">add</span></td><td>Uses card ratings to deal even teams; organizer can re-roll or swap.</td></tr>
+<tr><td><b>TEAM-SUBMITTED</b> <span class="tag">add</span></td><td>Teams register with their own roster (club tournaments, no player pool).</td></tr>
+</table>
+<p><b>Hybrid is allowed:</b> pre-assign captains/retained players, then run any strategy on the remaining pool. That covers real cases like "each team keeps 1 core player, auction the rest".</p>
+
+<h2>3 · Player cards (FIFA-style) — the plan</h2>
+<div class="grid g2">
+<div class="card">
+<div id="pcard"></div>
+<p class="sub" style="text-align:center;margin-top:8px">Prototype — silhouette stands in for the cut-out photo</p>
+</div>
+<div class="card">
+<div class="opts" id="tierOpts"></div>
+<div class="opts" id="posOpts"></div>
+<div id="sliders" style="display:grid;gap:4px"></div>
+<p class="sub" style="margin-top:10px">Overall = position-weighted average of the six stats. Tier is set by overall (&lt;60 bronze · 60–74 silver · 75+ gold); <b>special</b> is organizer-awarded (champion, team of the tournament).</p>
+</div>
+</div>
+
+
+<h3 style="margin-top:18px">Yes — automated, and built into the apply page</h3>
+<p>The card is generated <b>while the player fills in the form</b>, and they must review it before submitting. Try the prototype below (your photo never leaves this page).</p>
+<div class="grid g2">
+<div class="card" id="applyForm">
+  <h3>Apply — Season X</h3>
+  <p class="sub" style="margin:0 0 8px"><b>Step 1.</b> Your photo</p>
+  <div id="guide"></div>
+  <label style="display:block;margin:8px 0"><input type="file" id="aFile" accept="image/*"></label>
+  <div id="aStatus" class="sub" style="margin:0 0 8px"></div>
+  <div style="height:6px;background:var(--code);border-radius:3px;overflow:hidden;margin-bottom:10px"><div id="aBar" style="height:100%;width:0;background:var(--brand);transition:width .3s"></div></div>
+  <p class="sub" style="margin:0 0 6px"><b>Step 2.</b> Your details <span class="tag">card updates live</span></p>
+  <div style="display:grid;gap:6px">
+    <input id="aName" placeholder="Full name" style="padding:7px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit">
+    <input id="aSid" placeholder="Student ID" style="padding:7px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit">
+    <select id="aPos" style="padding:7px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit"><option>FWD</option><option>MID</option><option>DEF</option><option>GK</option></select>
+  </div>
+  <p class="sub" style="margin:10px 0 6px"><b>Step 3.</b> Review your card <span class="tag">required before submit</span></p>
+  <div class="sl"><span>Zoom</span><input type="range" id="aZ" min="60" max="220" value="100"><b id="aZv">100</b></div>
+  <div class="sl"><span>Left/right</span><input type="range" id="aX" min="-60" max="60" value="0"><b id="aXv">0</b></div>
+  <div class="sl"><span>Up/down</span><input type="range" id="aY" min="-60" max="60" value="0"><b id="aYv">0</b></div>
+  <p class="sub" style="margin:4px 0">Or drag the photo on the card. <a href="#" id="aReset">reset</a> · <a href="#" id="aChange">change photo</a></p>
+  <label class="chk" style="margin:8px 0"><input type="checkbox" id="aOk"> I've checked my card and I'm happy with it</label>
+  <button id="aSubmit" disabled style="padding:8px 14px;border:0;background:var(--brand);color:#fff;font:inherit;cursor:pointer;opacity:.5">Submit application</button>
+  <div id="aDone" class="good" style="margin-top:6px"></div>
+</div>
+<div class="card"><div id="acard"></div>
+<p class="sub" style="text-align:center;margin-top:8px">Live preview. In the real build the photo here would be the background-removed cut-out; the prototype shows your raw photo.</p></div>
+</div>
+
+<h3 style="margin-top:14px">What runs behind that page</h3>
+<table>
+<tr><th>Moment</th><th>What the system does</th></tr>
+<tr><td>Photo chosen</td><td>Instant quality check: resolution, face found, face roughly centred, not too dark/blurry. Warnings are friendly ("Try facing a window"), blocking only for unusable photos.</td></tr>
+<tr><td>While they type</td><td>Background removal runs in a <b>Web Worker</b> (page stays responsive). First visit downloads the ~40 MB model once, then it's cached; ~5–15 s per photo on a phone. Progress bar above. The card shows the raw photo in a placeholder frame until the cut-out is ready, then swaps in.</td></tr>
+<tr><td>Name / position / ID typed</td><td>Card re-renders live. Position change also swaps the stat labels (GK has its own set) and the default framing.</td></tr>
+<tr><td>Before submit</td><td>Review step is mandatory: zoom, nudge or drag, or change the photo. Checkbox must be ticked. Submit stays disabled until the cut-out finishes (or the player chooses "use my photo as is").</td></tr>
+<tr><td>On submit</td><td>Stores <b>original photo + cut-out + framing numbers</b> (zoom, x, y), not a baked image. The organizer can re-frame later without asking the player for a new photo. Ratings are blank until the organizer sets them; the card shows "—" or the tier default until then.</td></tr>
+<tr><td>If cut-out fails</td><td>Falls back to the original photo in the card's photo window over the tier background. Organizer sees a "needs better photo" flag and can upload a cut-out manually or ask the player.</td></tr>
+</table>
+
+<h3 style="margin-top:14px">How the pipeline works</h3>
+<div class="flow">
+<div class="stage"><b>1 Photo in</b><span>player uploads at application</span></div><span class="ar">→</span>
+<div class="stage"><b>2 Cut-out</b><span>background removed in browser</span></div><span class="ar">→</span>
+<div class="stage"><b>3 Ratings</b><span>base by organizer + form from stats</span></div><span class="ar">→</span>
+<div class="stage"><b>4 Render</b><span>HTML/CSS card component</span></div><span class="ar">→</span>
+<div class="stage"><b>5 Use</b><span>auction slide · squad page · download PNG</span></div>
+</div>
+<table>
+<tr><th>Decision</th><th>Recommendation</th><th>Why / alternative</th></tr>
+<tr><td>Background removal</td><td>In-browser (open-source <code>@imgly/background-removal</code>, WASM), run at upload; organizer can re-run or upload a manual cut-out</td><td>Free, no per-image cost, photos never leave the device. Fallback: Canva/remove.bg API for stubborn photos. Expect ~10–15% needing manual fix.</td></tr>
+<tr><td>Rendering</td><td>One React component (HTML/CSS/SVG), themed per tournament</td><td>Looks sharp at any size, animates (tilt/shine with your existing <code>TiltCard</code>), crest + flag + colours swap by data.</td></tr>
+<tr><td>PNG export / share</td><td>v1: client-side <code>html-to-image</code> download button. Later: server render (<code>next/og</code>) for auto-posted graphics</td><td>Server route has the Bengali-glyph font risk already noted in Stage 5; don't block cards on it.</td></tr>
+<tr><td>Where ratings come from</td><td><b>Organizer sets base ratings</b> (optionally with captain input). Players do <b>not</b> self-rate.</td><td>Self-ratings inflate to 90 across the board and the cards become meaningless. Players <i>do</i> give position + strength tags (pace, passing, finishing) as a starting hint.</td></tr>
+<tr><td>Live "form" upgrades</td><td>During the tournament, OVR gets a capped bonus (e.g. up to +5) from goals/assists/clean sheets/MOTM via ruleset formula</td><td>Gives cards a reason to change weekly and fuels social posts. Formula lives in the ruleset, not code.</td></tr>
+<tr><td>Stat labels</td><td>Per sport/position: outfield PAC·SHO·PAS·DRI·DEF·PHY; GK DIV·HAN·KIC·REF·SPE·POS</td><td>Configurable via the ruleset so futsal/other sports can relabel.</td></tr>
+<tr><td>IP safety</td><td>Own design language: no EA logos, fonts, or exact FUT frames. "FIFA-like" shape and information layout only</td><td>Layout conventions are free to use; their artwork and trademarks are not. Matters if cards go on public social posts.</td></tr>
+<tr><td>Versioning</td><td>Every rating/photo change creates a new <code>PlayerCard</code> version; old versions kept</td><td>Lets you show "was 68 → now 72" and undo a mistake.</td></tr>
+</table>
+<p>New table: <code>PlayerCard(id, personId, editionId, rosterSlotId?, cutoutKey, ratings JSON, tierOverride?, version, createdBy)</code>. The card belongs to the Person-in-an-edition so it follows them across teams in that edition (auction → team change), and a new edition makes a new card.</p>
+<p class="bad"><b>Biggest risk:</b> photo quality, not code. A tiny contest-style "send a plain-background photo" instruction on the apply page does more than any algorithm.</p>
+
+<h2>4 · Auction inside the system</h2>
+<p>Already built as a console; the change is making it a first-class module with an auto-generated <b>stage view</b> for the projector.</p>
+<div class="flow">
+<div class="stage"><b>Setup</b><span>budget, base price, increment, lot order (random / by rating / manual)</span></div><span class="ar">→</span>
+<div class="stage"><b>Run</b><span>organizer console drives it</span></div><span class="ar">→</span>
+<div class="stage"><b>Per lot</b><span>Sold · Unsold · <b>Hold</b></span></div><span class="ar">→</span>
+<div class="stage"><b>Close</b><span>resolve held + unsold, check min squads</span></div>
+</div>
+<ul>
+<li><b>Stage view</b> (<code>/auction/stage</code>, fullscreen, no controls): auto-generated slides from the data — opening slide, then per lot the full player card + base price + live current bid + who's leading, a SOLD stamp with team crest, interstitial team-budget bars, closing squads reveal. Organizer's console advances it; no one builds slides by hand.</li>
+<li><b>Three outcomes per lot</b> (suggested): <b>Sold</b> to a team at a price · <b>Unsold</b> (returns for round 2) · <b>Held</b> (parked in a pool, decided at the end). Today you have QUEUED / IN_PROGRESS / SOLD / UNSOLD — add <code>HELD</code>.</li>
+<li><b>End-of-auction resolution</b> for held/unsold players: organizer picks per player — assign to a team (free or base price), random fair draw to teams below minimum squad, or leave out of the edition. A "can't close until every team reaches min squad" check prevents illegal rosters.</li>
+<li><b>Bidding mode:</b> v1 = <b>organizer-entered</b> (live room, auctioneer types the winner and price — what you built). v2 = team owners bid on their phones with a realtime leader. Recommend shipping v1 first; online bidding adds fairness/latency/dispute problems.</li>
+<li>Undo any sale (exists), full audit trail, public read-only view for people not in the room.</li>
+</ul>
+
+<h2>5 · Manual edit everywhere</h2>
+<ul>
+<li><b>Every roster fact is editable by organizer at any time:</b> name, photo, position, jersey, team, captain, ratings, tier, even merging two duplicate <code>Person</code>s. Edits write to <code>AuditLog</code> with before/after, so any change can be reverted.</li>
+<li><b>Lifecycle-aware rules</b> instead of blocking: before the tournament = free edit; after kickoff = allowed but marked as a <b>transfer/replacement</b> (visible in the log and optionally on the team page); archived = locked, requires an explicit "unlock edition" action.</li>
+<li><b>Replacement keeps history:</b> swapping an injured player creates a new <code>RosterSlot</code> linked to the same Person-in-edition rules; goals already scored stay with the original slot, so past stats never get rewritten by an edit.</li>
+<li><b>Team managers</b> can edit their own roster (positions, jersey, photo) but not ratings or team membership unless the organizer opens a window.</li>
+<li><b>Bulk tools:</b> spreadsheet-style table edit, multi-select move-to-team, undo last bulk change.</li>
+</ul>
+
+<h2>What this adds to the roadmap</h2>
+<table>
+<tr><th>New phase</th><th>Scope</th><th>Needs</th><th>Effort (rough)</th></tr>
+<tr><td><b>2b · Applications &amp; formation</b></td><td>Configurable apply form + edit links + dedupe; formation strategies (manual board, draft, balanced random); roster edit + audit</td><td>Phase 2 (Person/Entry/Roster)</td><td>~4 d</td></tr>
+<tr><td><b>2c · Player cards</b></td><td>Cut-out pipeline, ratings model, card component, tiers, versions, PNG download</td><td>2b</td><td>~3 d</td></tr>
+<tr><td><b>2d · Auction module upgrade</b></td><td>Stage view slides, HELD status, end-of-auction resolver, min-squad close check</td><td>2c (cards in slides)</td><td>~2.5 d</td></tr>
+</table>
+<p class="sub">These slot in right after Phase 2, before the format engines, because Season X's real flow (apply → card → auction → rosters) depends on them. Format engines (Phase 3) can follow — Season X can still use the existing league + semis + final in the meantime.</p>
+</section>
+
+<!-- ============ 2 DOMAIN MODEL ============ -->
+<section id="s-model">
+<p class="sub">Click any entity. Grey "today" text shows what it replaces in the current schema.</p>
+<div class="tiers" id="tiers"></div>
+<div class="card" id="detail"></div>
+<h2>Relationship spine</h2>
+<pre>Organization ─┬─ Tournament (series: "BFL", "Futsal Cup")  ── Sport ruleset (preset + overrides)
+              │      └─ Edition (a season/year; status; modules; timezone)
+              │            ├─ Stage[] (ordered; format + config + advancement rules)
+              │            │     └─ Group[] (optional) → Fixture[] → FixtureSide[] → Event[]
+              │            ├─ Entry[] (a Team taking part)  ── RosterSlot[] ── Person
+              │            ├─ Registration[] → (approve) → RosterSlot
+              │            └─ Module data: AuctionLot, Prediction, Poll, MediaAsset, Announcement
+              └─ RoleGrant[] (User × scope: org | tournament | edition | entry)</pre>
+</section>
+
+<!-- ============ 3 FORMAT ENGINE ============ -->
+<section id="s-format">
+<p class="sub">A tournament = ordered <b>Stages</b>. Each stage has a <b>format engine</b>, and an <b>advancement rule</b> that says who moves to the next stage. Pick a preset to see it as data.</p>
+<div class="opts" id="fmtOpts"></div>
+<div class="card"><div class="flow" id="fmtFlow"></div><p id="fmtNote" class="sub"></p></div>
+<h3 style="margin-top:14px">Stored as</h3>
+<pre id="fmtJson"></pre>
+
+<h2>Engines to build (in this order)</h2>
+<table>
+<tr><th>Engine</th><th>Covers</th><th>Status</th></tr>
+<tr><td><code>ROUND_ROBIN</code></td><td>single / double league, group stage</td><td class="good">exists (<code>roundRobin.ts</code>)</td></tr>
+<tr><td><code>KNOCKOUT</code></td><td>semis+final, bracket of 4/8/16, 3rd-place, byes, seeded</td><td class="bad">hard-coded SEMIFINAL/FINAL; generalise</td></tr>
+<tr><td><code>GROUPS</code></td><td>N groups of round-robin → feed knockout</td><td class="bad">new (thin wrapper over ROUND_ROBIN)</td></tr>
+<tr><td><code>SWISS</code> / <code>LADDER</code></td><td>chess, esports, 1v1 ladders</td><td class="no">later — only when a real tournament needs it</td></tr>
+<tr><td><code>DOUBLE_ELIM</code></td><td>esports brackets</td><td class="no">later</td></tr>
+</table>
+<p><b>Bracket placeholders.</b> Knockout fixtures are created up-front with <code>FixtureSide.source</code> = <code>{type:"stagePosition",stage:"league",pos:1}</code> or <code>{type:"winnerOf",fixture:"SF1"}</code>. When the source resolves, the side fills in automatically — this replaces the manual "populate semis from standings" button.</p>
+</section>
+
+<!-- ============ 4 SYSTEM ============ -->
+<section id="s-system">
+<h2>Layers</h2>
+<svg viewBox="0 0 900 330" width="100%" role="img" aria-label="Layered architecture">
+  <g stroke="var(--line)" stroke-width="1.2">
+    <rect x="10"  y="10"  width="880" height="52" fill="var(--t1)"/>
+    <rect x="10"  y="72"  width="880" height="52" fill="var(--t2)"/>
+    <rect x="10"  y="134" width="880" height="52" fill="var(--t3)"/>
+    <rect x="10"  y="196" width="880" height="52" fill="var(--t4)"/>
+    <rect x="10"  y="258" width="880" height="52" fill="var(--t5)"/>
+  </g>
+  <g font-size="13" font-weight="700">
+    <text x="22" y="32">Surfaces</text><text x="22" y="94">Modules</text><text x="22" y="156">Engines</text><text x="22" y="218">Core domain</text><text x="22" y="280">Platform</text>
+  </g>
+  <g font-size="12">
+    <text x="22" y="50">Public site · Admin console · Scorer (live) · Team-manager portal · Embeds/OG share images</text>
+    <text x="22" y="112">Registration · Auction · Predictions &amp; polls · Media · Kit reveal · Announcements · Sheets backup</text>
+    <text x="22" y="174">Format engines (RR · Knockout · Groups) · Standings + tiebreakers · Stats · Schedule generator</text>
+    <text x="22" y="236">Org · Tournament · Edition · Stage · Entry · Roster · Fixture · Event  (+ Ruleset config)</text>
+    <text x="22" y="298">Next.js · Prisma · Neon (separate dev/prod) · Auth+RoleGrants · Audit · R2 storage · Netlify cron</text>
+  </g>
+  <g stroke="var(--mute)" stroke-width="1"><path d="M450 62v10M450 124v10M450 186v10M450 248v10"/></g>
+</svg>
+<p class="sub">Rule: a layer only depends on layers below it. Modules read the core domain; the core never imports a module.</p>
+
+<h2>Routing &amp; tenancy</h2>
+<pre>/{tournament}/{edition}/standings        e.g. /bfl/x/standings
+/{tournament}/{edition}/fixtures | teams | players | auction | register
+/{tournament}                            → series landing + Hall of Fame (all editions)
+/admin/{tournament}/{edition}/…          → organiser console
+custom domain → tournament           bfl.online.zahan.jp → "bfl" (current domain keeps working)</pre>
+<p>Theme tokens (colour, logo, display font) live on <code>Tournament</code>, so a new tournament gets its own look without a code change. BFL keeps maroon/gold.</p>
+
+<h2>Roles &amp; permissions</h2>
+<p class="sub">Replaces the global <code>UserRole</code> enum with <code>RoleGrant(user, role, scopeType, scopeId)</code>. One person can be OWNER of a team in Edition X and SCORER in Edition Y.</p>
+<table>
+<tr><th>Capability</th><th>Org admin</th><th>Organiser</th><th>Scorer</th><th>Team manager</th><th>Public</th></tr>
+<tr><td>Create tournament / edition</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td></tr>
+<tr><td>Configure stages, rules, modules</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td><td class="no">—</td></tr>
+<tr><td>Approve registrations, run auction</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td><td class="no">—</td></tr>
+<tr><td>Score live matches</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td></tr>
+<tr><td>Edit own roster / positions / logo</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">—</td><td class="yes">own entry</td><td class="no">—</td></tr>
+<tr><td>View, predict, vote, self-register</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+</table>
+
+<h2>Sport ruleset (config, not code)</h2>
+<pre>{
+  "sport": "football",
+  "scoring":  { "unit": "goal", "win": 3, "draw": 1, "loss": 0 },
+  "events":   [ {"type":"GOAL","scores":true,"stat":"goals"},
+                {"type":"ASSIST","stat":"assists"},
+                {"type":"YELLOW_CARD"},{"type":"RED_CARD"} ],
+  "positions":["GK","DEF","MID","FWD"],
+  "squad":    { "onField": 6, "min": 7, "max": 10 },
+  "tiebreakers": ["points","goalDifference","goalsFor","headToHead","drawLots"],
+  "knockoutTie": ["extraTime","penalties"],
+  "matchMinutes": 7
+}</pre>
+<p>Presets shipped: <code>football</code>, <code>futsal</code>, <code>basketball</code>, <code>generic-score</code> (any sport with a final score and no player stats), <code>1v1</code> (esports/chess/table tennis — participants are Persons, not Teams).</p>
+
+<h2>Module toggles per edition</h2>
+<div class="grid g3" id="mods"></div>
+
+<h2>Infrastructure decisions</h2>
+<table>
+<tr><th>Concern</th><th>Decision</th><th>Why</th></tr>
+<tr><td>Dev vs prod DB</td><td>Neon <b>branches</b>: <code>main</code> = prod, <code>dev</code> = local</td><td class="bad">Today local dev writes to the live DB. Fix before any schema work.</td></tr>
+<tr><td>File storage</td><td>One store: Cloudflare R2 (<code>mediaStore.ts</code>); retire Netlify Blobs</td><td>Blobs read-back is broken in prod; two stores doubles failure modes.</td></tr>
+<tr><td>Realtime</td><td>Keep 7s polling; add SSE only if a tournament needs sub-second</td><td>Works today, zero infra.</td></tr>
+<tr><td>Archiving</td><td><code>Edition.status = ARCHIVED</code> + immutable snapshot for fast Hall-of-Fame; rows stay</td><td>Queryable history, no wipe.</td></tr>
+<tr><td>Jobs</td><td>Netlify scheduled functions (Sheets sync, auto-close registration/predictions)</td><td>Already in use.</td></tr>
+<tr><td>Deploys</td><td>Keep manual-on-request; add Git-linked previews only if you ask</td><td>Your standing rule.</td></tr>
+</table>
+</section>
+
+<!-- ============ 5 ROADMAP ============ -->
+<section id="s-road">
+<div class="verdict"><b>Timing matters.</b> Season X has no real teams or registrations seeded yet. The data-model migration (phases 1–2) is cheapest <i>right now</i> — after real Season X data lands, every change needs a careful backfill. Do phases 0–2 before opening Season X registration.</div>
+<p class="sub">Effort figures are rough guesses in focused build days, not commitments. Each phase ships on its own and BFL stays live.</p>
+<div id="phases"></div>
+<h2>Progress</h2>
+<div id="prog" class="card"></div>
+</section>
+
+<!-- ============ 6 DECISIONS ============ -->
+<section id="s-decide">
+<h2>Decisions I need from you</h2>
+<div class="grid">
+<div class="card"><h3>1 · Who is this for?</h3>
+<p><b>Recommend: B.</b></p>
+<p>A) BFL only, many editions &nbsp; <b>B)</b> your own tournaments (BFL + others you run) under one login &nbsp; C) multi-customer SaaS others sign up to.</p>
+<p>B costs almost nothing extra (the <code>Organization</code> layer exists in schema, only one is exposed). C adds billing, tenant isolation, onboarding, support — a different business; decide it later, the schema won't block it.</p></div>
+<div class="card"><h3>2 · Which sports first?</h3>
+<p><b>Recommend:</b> football + futsal presets now, plus <code>generic-score</code> and <code>1v1</code> as the proof that it's not football-only. Don't model basketball/cricket stats until a real tournament needs them.</p></div>
+<div class="card"><h3>3 · Prove it with what?</h3>
+<p><b>Recommend:</b> Phase 6 = run one small non-BFL event on it (e.g. an eFootball 1v1 knockout or a 3-group futsal cup). If setting that up needs code changes, the abstraction failed — better to learn that on a small event.</p></div>
+<div class="card"><h3>4 · Season X timing</h3>
+<p><b>Recommend:</b> hold Season X registration until phases 0–2 ship. If Season X date is fixed and close, tell me — we can reorder so the registration/auction features run on the old tables and migrate after.</p></div>
+</div>
+<h2>Blunt risks</h2>
+<ul>
+<li><b>Over-engineering is the real enemy.</b> A fully generic engine with no second tournament to test against will be wrong. Build engines only for formats a real event needs; keep the rest as enum values that throw "not supported yet".</li>
+<li><b>Single developer.</b> Every module you add is something you maintain. The module-toggle design lets you ship small and add later.</li>
+<li><b>Unexercised flows.</b> Registration, rollover wizard, Excel import and the Season X auction were never click-tested. Building the platform on top of untested flows compounds risk — add a Playwright smoke suite in Phase 0.</li>
+<li><b>Shared prod DB.</b> One bad migration or local test run currently hits the live site. Phase 0 fixes this first for a reason.</li>
+</ul>
+</section>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+const TABS=[["overview","Overview"],["asks","Your 5 asks"],["model","Domain model"],["format","Format engine"],["system","System & access"],["road","Roadmap"],["decide","Decisions"]];
+function show(id){TABS.forEach(([k])=>$("#s-"+k).classList.toggle("on",k===id));[...$("#tabs").children].forEach((b,i)=>b.classList.toggle("on",TABS[i][0]===id));try{localStorage.setItem("tabArch",id)}catch(e){}}
+TABS.forEach(([k,l])=>{const b=document.createElement("button");b.textContent=l;b.onclick=()=>show(k);$("#tabs").appendChild(b)});
+
+/* ---- domain model ---- */
+const E={
+Organization:{t:"Owner of everything (e.g. Zahan / BFL committee). Holds branding defaults, billing later, custom domains.",today:"— (no equivalent)",f:["name","slug","domains[]","defaultTheme"]},
+User:{t:"A login. Permissions come from RoleGrants, not a single role column.",today:"User.role (ADMIN/SCORER/OWNER) + User.teamId",f:["username","passwordHash","name","isActive"]},
+RoleGrant:{t:"User × role × scope. Scope is org, tournament, edition or entry.",today:"User.role / User.teamId",f:["userId","role","scopeType","scopeId"]},
+Tournament:{t:"A recurring series with its own identity: BFL, Futsal Cup. Owns sport, theme and default ruleset.",today:"— (implicit: the whole app is BFL)",f:["orgId","name","slug","sport","ruleset (JSON, preset+overrides)","theme (JSON tokens)","domain?"]},
+Edition:{t:"One running of a tournament — a season, year or event. Many can be live at once. Carries lifecycle and module toggles.",today:"Season (+ 'exactly one ACTIVE' rule, + wipe at rollover)",f:["tournamentId","number","name","slug","status: DRAFT·REGISTRATION·LIVE·COMPLETED·ARCHIVED","startsOn/endsOn","timezone","modules (JSON)","snapshotJson (frozen on archive)"]},
+Stage:{t:"An ordered phase of an edition with a format engine and an advancement rule.",today:"Match.round enum + Season.formatConfig JSON",f:["editionId","order","name","format: ROUND_ROBIN·KNOCKOUT·GROUPS·…","config (JSON: legs, seeding, tiebreakers, 3rd-place)","advancement (JSON: who moves on)"]},
+Group:{t:"Optional bucket inside a stage (Group A/B/C…). Standings are per group.",today:"—",f:["stageId","name","entryIds via GroupEntry"]},
+Venue:{t:"Pitch/court/table with an optional availability window — feeds the schedule generator.",today:"Match.venue (free text) + formatConfig.pitches",f:["editionId","name","availableFrom","availableTo"]},
+Person:{t:"A human, persistent across all editions and tournaments. Enables all-time stats.",today:"Person (already exists, optional on Player)",f:["name","contact?","photoKey","identifiers[] (STUDENT_ID …, organizer-only)","mergedIntoId? (dedupe)"]},
+Team:{t:"A persistent team identity within a tournament. Name/logo changes are history, not new teams.",today:"Team.name @unique — recreated each season",f:["tournamentId","currentName","shortName","logoKey","aliases[]"]},
+Entry:{t:"A Team (or a single Person, for 1v1) taking part in one Edition. All fixtures point at Entries.",today:"Team (as per-season row)",f:["editionId","teamId? | personId?","displayName (name at the time)","seed","semester/affiliation tag","managerUserId"]},
+RosterSlot:{t:"A Person on an Entry's roster for that edition: jersey, position, captain.",today:"Player",f:["entryId","personId","jersey","position","isCaptain","photoKey"]},
+Registration:{t:"Signup for an edition, reviewed, then converted to a RosterSlot (or a pool member for auction).",today:"Registration (keep, add editionId rename)",f:["editionId","personId?","answers (JSON, form fields per edition)","status","source"]},
+Fixture:{t:"One scheduled contest in a stage/group. Sport-agnostic: sides, time, venue, status, result.",today:"Match",f:["stageId","groupId?","round / label","scheduledAt","venueId","status","officials[]","resultJson (derived + manual override)","tiebreak: ET/pens/winnerEntryId"]},
+FixtureSide:{t:"Slot in a fixture (1,2,… not 'home/away'). Either a resolved Entry or a source expression for brackets.",today:"Match.homeTeamId / awayTeamId",f:["fixtureId","slot","entryId?","source (JSON: stagePosition | winnerOf | loserOf)","score"]},
+Event:{t:"Something that happened in a fixture. Type is validated against the ruleset's event list.",today:"MatchEvent (GOAL/ASSIST/CARDS enum)",f:["fixtureId","type (string, ruleset-checked)","entryId","rosterSlotId?","minute?","groupId (linked events, e.g. goal+assist)"]},
+StandingSnapshot:{t:"Optional cache of derived table per stage/group; rebuilt on any result change. Source of truth stays fixtures.",today:"derived on read (lib/standings.ts)",f:["stageId","groupId?","rowsJson","computedAt"]},
+AuctionSettings:{t:"Module: auction budget and increment rules.",today:"AuctionSettings (keep)",f:["editionId","budget","basePrice","bidIncrement"]},
+AuctionLot:{t:"Module: one lot per player; sold to an Entry.",today:"AuctionLot (keep)",f:["editionId","rosterSlotId","status","soldToEntryId","price"]},
+Prediction:{t:"Module: one audience pick. Polymorphic target so it covers match winner, champion, top scorer.",today:"Prediction + ChampionPrediction",f:["editionId","kind: MATCH·CHAMPION·…","targetId","voterId","pickEntryId"]},
+Poll:{t:"Module: generic poll with votes (the kit like/dislike becomes one poll).",today:"JerseyVote",f:["editionId?","key","options","PollVote(voterId, option)"]},
+MediaAsset:{t:"Module: photo/video attached to an edition or fixture.",today:"MediaAsset (keep, add fixtureId?)",f:["editionId","key","tag","caption","credit"]},
+Announcement:{t:"Module: banner/notice with schedule.",today:"AppSetting keys",f:["scope","text","showFrom","showUntil"]},
+AuditLog:{t:"Who changed what. Unchanged, gains editionId for filtering.",today:"AuditLog (keep)",f:["actor","action","entity","before/after","editionId?"]}
+};
+const TIERS=[
+["Identity & tenancy",["Organization","User","RoleGrant"]],
+["Series & edition",["Tournament","Edition"]],
+["Structure",["Stage","Group","Venue"]],
+["Participants",["Person","Team","Entry","RosterSlot","Registration"]],
+["Play",["Fixture","FixtureSide","Event","StandingSnapshot"]],
+["Modules (opt-in per edition)",["AuctionSettings","AuctionLot","Prediction","Poll","MediaAsset","Announcement"]],
+["Platform",["AuditLog"]]];
+const tiers=$("#tiers");
+TIERS.forEach(([l,es],i)=>{const d=document.createElement("div");d.className="tier";d.innerHTML=`<div class="tl">${l}</div><div class="ents"></div>`;es.forEach(n=>{const b=document.createElement("button");b.className="ent";b.textContent=n;b.onclick=()=>pick(n);d.querySelector(".ents").appendChild(b)});tiers.appendChild(d)});
+function pick(n){const e=E[n];[...document.querySelectorAll(".ent")].forEach(b=>b.classList.toggle("on",b.textContent===n));
+$("#detail").innerHTML=`<h3 style="font-size:18px">${n}</h3><p>${e.t}</p><p><span class="tag">today</span><span class="bad">${e.today}</span></p><p>${e.f.map(x=>`<span class="pill"><code style="background:none;padding:0">${x}</code></span>`).join("")}</p>`}
+pick("Edition");
+
+/* ---- format presets ---- */
+const F={
+"BFL Season IX (today)":{note:"Exactly what you ran on 4 Aug 2026, expressed as data. Note it needs no new code once the engines exist.",stages:[
+{n:"League",f:"ROUND_ROBIN",d:"8 teams · single · 28 games"},{n:"Semifinals",f:"KNOCKOUT",d:"1v3 · 2v4"},{n:"Final",f:"KNOCKOUT",d:"SF winners"}],
+json:[{order:1,name:"League",format:"ROUND_ROBIN",config:{legs:1,tiebreakers:["points","gd","gf","h2h"]},advancement:{to:"semis",take:{top:4}}},
+{order:2,name:"Semifinals",format:"KNOCKOUT",config:{seeding:"fixed",pairs:[[1,3],[2,4]]},advancement:{to:"final",take:"winners"}},
+{order:3,name:"Final",format:"KNOCKOUT",config:{ties:["extraTime","penalties"]}}]},
+"Groups + knockout (16 teams)":{note:"World-Cup style. Four groups; top two cross over into a quarter-final bracket. All pure config.",stages:[
+{n:"Groups A–D",f:"GROUPS",d:"4×4 · single RR"},{n:"Quarterfinals",f:"KNOCKOUT",d:"A1–B2 · C1–D2 …"},{n:"Semifinals",f:"KNOCKOUT",d:""},{n:"Final + 3rd",f:"KNOCKOUT",d:"with 3rd-place"}],
+json:[{order:1,name:"Groups",format:"GROUPS",config:{groups:4,perGroup:4,legs:1},advancement:{to:"qf",take:{topPerGroup:2},crossover:"A1-B2,B1-A2,C1-D2,D1-C2"}},
+{order:2,name:"Quarterfinals",format:"KNOCKOUT",config:{}},{order:3,name:"Semifinals",format:"KNOCKOUT",config:{}},
+{order:4,name:"Final",format:"KNOCKOUT",config:{thirdPlace:true}}]},
+"Single elimination (1v1 esports)":{note:"Entries are Persons, not Teams. Byes auto-fill when the field isn't a power of two. Uses the generic-score or 1v1 ruleset.",stages:[
+{n:"Bracket",f:"KNOCKOUT",d:"seeded · byes · bo3 per tie"}],
+json:[{order:1,name:"Bracket",format:"KNOCKOUT",config:{participants:"PERSON",seeding:"byRanking",byes:"auto",bestOf:3,thirdPlace:false}}]},
+"Double round-robin league":{note:"Home-and-away season, no playoff. Champion is the table leader.",stages:[
+{n:"League",f:"ROUND_ROBIN",d:"home & away"}],
+json:[{order:1,name:"League",format:"ROUND_ROBIN",config:{legs:2,tiebreakers:["points","gd","gf","h2h"]}}]},
+"Swiss → top-cut (later)":{note:"Not built in v1. Shown to prove the model has room for it: just a new engine, no schema change.",stages:[
+{n:"Swiss",f:"SWISS",d:"5 rounds"},{n:"Top 8",f:"KNOCKOUT",d:"cut"}],
+json:[{order:1,name:"Swiss",format:"SWISS",config:{rounds:5},advancement:{to:"top8",take:{top:8}}},{order:2,name:"Top 8",format:"KNOCKOUT",config:{}}]}
+};
+const fo=$("#fmtOpts");
+Object.keys(F).forEach((k,i)=>{const b=document.createElement("button");b.textContent=k;b.onclick=()=>fmt(k);fo.appendChild(b)});
+function fmt(k){[...fo.children].forEach(b=>b.classList.toggle("on",b.textContent===k));const p=F[k];
+$("#fmtFlow").innerHTML=p.stages.map((s,i)=>(i?'<span class="ar">→</span>':'')+`<div class="stage"><b>${s.n}</b><span>${s.f}${s.d?'<br>'+s.d:''}</span></div>`).join("");
+$("#fmtNote").textContent=p.note;$("#fmtJson").textContent=JSON.stringify(p.json,null,2)}
+fmt("BFL Season IX (today)");
+
+/* ---- modules ---- */
+const M=[["Registration","self-serve, admin-manual, Excel import",1],["Auction","budgets, lots, live console",1],["Predictions & polls","match, champion, kit vote",1],["Live scoring","scorer console + public live widget",1],["Media gallery","photos per edition",1],["Kit reveal","jersey showcase + vote",0],["Sheets backup","3-min sync of standings/stats",1],["Share graphics","OG images, result cards (Stage 5)",0],["Referees","assign officials per fixture",1]];
+$("#mods").innerHTML=M.map(([n,d,on],i)=>`<label class="card chk"><input type="checkbox" ${on?"checked":""}><span><b>${n}</b><br><span class="sub" style="margin:0">${d}</span></span></label>`).join("");
+
+/* ---- roadmap ---- */
+const P=[
+["0","Safety net","Neon dev branch so local ≠ prod; Playwright smoke suite over public pages + the never-tested flows (/register, rollover wizard, import); fix Blobs → R2 photo path.","~1.5 d","Low. Nothing user-visible changes.","Prerequisite for everything below."],
+["1","Edition scoping","Add Tournament + Edition (rename Season). Add <code>editionId</code> to Team/Match/Player/etc. Backfill: BFL tournament, Season IX archived edition, Season X draft. Remove 'exactly one ACTIVE' and the wipe-at-rollover — rollover becomes 'create next edition'.","~2 d","Medium: migration touches every table. Rehearse on the Neon dev branch with a copy of prod first.","Two editions can coexist; TEST Season row disappears as a problem (it's just a deletable edition)."],
+["2","Team / Entry / Roster split","Team becomes persistent; Entry = team-in-edition; Player → RosterSlot linked to Person. Backfill from Season IX archive so all-time stats become SQL, not JSON parsing.","~2.5 d","Medium: rename-aware (Big Banana → Dilly Dally). Keep old routes working through a compat layer.","Hall of Fame / all-time scorers computed live; team name history works."],
+["2b","Applications & formation","Configurable apply form with live card preview + student-ID identity (manual link tool for past seasons), edit links; formation strategies (batch, manual board, draft, balanced random, team-submitted); organizer roster edit with audit + lifecycle rules.","~4 d","Medium: form builder scope creep — ship fixed core fields + custom questions only.","Players apply themselves; organizer picks the team-building method per edition."],
+["2c","Player cards","Background-removal worker (runs during the form), photo quality checks, ideal-photo guide, framing controls, ratings model + versions, themed card component, tiers, PNG download, form upgrades from stats.","~3 d","Medium: photo quality; in-browser cut-out fails on some photos — manual override path needed.","Every approved player has a card; cards appear on squad pages."],
+["2d","Auction upgrade","Auto-generated stage view slides using cards, HELD lot status, end-of-auction resolver, min-squad close check.","~2.5 d","Low-medium: builds on the existing console.","Auction runs end-to-end on a projector with no manual slide-making."],
+["3","Stage + format engines","Stage/Group/FixtureSide tables. Port league → semis → final into Stage config. Generalise knockout (byes, 3rd place, placeholder sources). Add GROUPS engine. Auto-fill bracket from standings.","~4 d","High: this is the heart. Season IX (read-only) is the regression test — its result must re-derive identically.","Any of the format presets above works from an admin form."],
+["4","Ruleset","Move event types, positions, points, tiebreakers, squad sizes to the Tournament ruleset. Standings/stats read from it. Ship football, futsal, generic-score, 1v1 presets.","~2 d","Medium: standings/stat code touches many pages.","A non-football tournament can be created without code."],
+["5","Multi-tournament surface","Routing <code>/{tournament}/{edition}/…</code>, per-tournament theme tokens, admin edition switcher, RoleGrants replace the role enum, module toggles in UI.","~3 d","Medium: URL changes — keep old BFL URLs as redirects.","BFL and a second tournament live side by side."],
+["6","Prove it","Run one real non-BFL event end-to-end on the platform. Fix whatever needed code. Write the 'create a tournament' runbook.","~2 d + the event","Tells you whether phases 3–5 were right.","Platform is real, not theoretical."]];
+$("#phases").innerHTML=P.map(p=>`<div class="phase"><div class="n">${p[0]}</div><div><h3>${p[1]} <span class="tag">${p[3]}</span></h3><p>${p[2]}</p><p class="risk">Risk: ${p[4]}</p><p class="good">Done when: ${p[5]}</p></div></div>`).join("");
+let st={};try{st=JSON.parse(localStorage.getItem("archProg")||"{}")}catch(e){}
+function renderProg(){$("#prog").innerHTML=P.map(p=>`<label class="chk"><input type="checkbox" data-p="${p[0]}" ${st[p[0]]?"checked":""}> Phase ${p[0]} — ${p[1]}</label>`).join("");
+document.querySelectorAll("#prog input").forEach(i=>i.onchange=()=>{st[i.dataset.p]=i.checked;try{localStorage.setItem("archProg",JSON.stringify(st))}catch(e){}})}
+renderProg();
+
+
+/* ---- player card ---- */
+const W={FWD:[.2,.3,.1,.25,0,.15],MID:[.1,.15,.3,.25,.1,.1],DEF:[.1,0,.15,.1,.45,.2],GK:[.2,.15,.1,.25,.1,.2]};
+const LB={FWD:["PAC","SHO","PAS","DRI","DEF","PHY"],MID:["PAC","SHO","PAS","DRI","DEF","PHY"],DEF:["PAC","SHO","PAS","DRI","DEF","PHY"],GK:["DIV","HAN","KIC","REF","SPE","POS"]};
+let cp={pos:"FWD",tier:"auto",v:[78,80,70,76,40,68]};
+function ovr(){return Math.round(cp.v.reduce((a,x,i)=>a+x*W[cp.pos][i],0))}
+function tierOf(o){return cp.tier!=="auto"?cp.tier:o>=75?"gold":o>=60?"silver":"bronze"}
+function drawCard(){const o=ovr(),t=tierOf(o),L=LB[cp.pos];
+$("#pcard").innerHTML=`<div class="pc ${t}"><div class="ovr">${o}</div><div class="pos">${cp.pos}</div><div class="badge">BD</div><div class="crest">GJ</div>
+<svg class="ph" viewBox="0 0 100 120"><circle cx="50" cy="38" r="22" fill="currentColor" opacity=".55"/><path d="M8 120c2-34 20-48 42-48s40 14 42 48z" fill="currentColor" opacity=".55"/></svg>
+<div class="nm">I. ZAHAN</div><div class="ln"></div>
+<div class="st">${cp.v.map((x,i)=>`<span><b>${x}</b>${L[i]}</span>`).join("")}</div><div class="sub2">SEM 7 · SEASON X</div></div>`}
+function ctl(){["auto","bronze","silver","gold","special"].forEach(t=>{const b=document.createElement("button");b.textContent=t==="auto"?"tier: auto":t;b.dataset.k=t;b.onclick=()=>{cp.tier=t;ctl2();drawCard()};$("#tierOpts").appendChild(b)});
+["FWD","MID","DEF","GK"].forEach(p=>{const b=document.createElement("button");b.textContent=p;b.dataset.k=p;b.onclick=()=>{cp.pos=p;ctl2();sliders();drawCard()};$("#posOpts").appendChild(b)});ctl2();sliders()}
+function ctl2(){[...$("#tierOpts").children].forEach(b=>b.classList.toggle("on",b.dataset.k===cp.tier));[...$("#posOpts").children].forEach(b=>b.classList.toggle("on",b.dataset.k===cp.pos))}
+function sliders(){$("#sliders").innerHTML=LB[cp.pos].map((l,i)=>`<div class="sl"><span>${l}</span><input type="range" min="30" max="99" value="${cp.v[i]}" data-i="${i}"><b>${cp.v[i]}</b></div>`).join("");
+document.querySelectorAll("#sliders input").forEach(r=>r.oninput=()=>{cp.v[+r.dataset.i]=+r.value;r.nextElementSibling.textContent=r.value;drawCard()})}
+ctl();drawCard();
+
+/* ---- apply prototype ---- */
+(function(){
+const G=$("#guide");
+const box=(t,ok,svg)=>`<div style="text-align:center;font-size:11px"><svg viewBox="0 0 100 120" width="74" style="border:2px solid ${ok?'var(--ok)':'var(--warn)'};background:${ok?'#e8e4de':'#7a6a55'}">${svg}</svg><div class="${ok?'good':'bad'}">${ok?'✓':'✗'} ${t}</div></div>`;
+const head='<circle cx="50" cy="42" r="18" fill="#b98c6b"/><path d="M12 120c2-30 18-44 38-44s36 14 38 44z" fill="#2a3a55"/>';
+G.innerHTML=`<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+${box("Ideal: plain wall, face centred, shoulders visible",1,head)}
+${box("Too far away",0,'<circle cx="50" cy="70" r="7" fill="#b98c6b"/><path d="M38 100c1-10 6-14 12-14s11 4 12 14z" fill="#2a3a55"/>')}
+${box("Busy background / hat",0,'<rect width="100" height="120" fill="#7a6a55"/><path d="M0 0l30 40-30 30zM100 20L70 60l30 20z" fill="#3b5d3f" opacity=".7"/><circle cx="50" cy="44" r="18" fill="#b98c6b"/><path d="M30 34h40l-6-14H36z" fill="#222"/><path d="M12 120c2-30 18-44 38-44s36 14 38 44z" fill="#2a3a55"/>')}
+${box("Group photo / cropped",0,'<circle cx="30" cy="48" r="13" fill="#b98c6b"/><circle cx="72" cy="48" r="13" fill="#9a7457"/><path d="M0 120c2-26 12-38 30-38s28 12 30 38zM46 120c2-26 12-38 26-38s28 12 28 38z" fill="#2a3a55"/>')}
+</div><p class="sub" style="margin:6px 0 0">Tip: stand against a plain wall, face a window, hold the phone at chest height, shoulders and head in frame.</p>`;
+const st={url:null,z:100,x:0,y:0,ready:false,t:null};
+function draw(){const name=($("#aName").value||"YOUR NAME").toUpperCase().slice(0,16),pos=$("#aPos").value,L=LB[pos],o=70;
+const img=st.url?`<img src="${st.url}" draggable="false" style="position:absolute;left:50%;top:50%;width:100%;transform:translate(calc(-50% + ${st.x}px),calc(-50% + ${st.y}px)) scale(${st.z/100});max-width:none;object-fit:cover;height:100%;cursor:grab">`:`<svg viewBox="0 0 100 120" style="width:100%;height:100%"><circle cx="50" cy="38" r="22" fill="currentColor" opacity=".35"/><path d="M8 120c2-34 20-48 42-48s40 14 42 48z" fill="currentColor" opacity=".35"/></svg>`;
+$("#acard").innerHTML=`<div class="pc gold"><div class="ovr">—</div><div class="pos">${pos}</div><div class="badge">BD</div><div class="crest">??</div>
+<div class="ph" id="aph" style="overflow:hidden;opacity:1;touch-action:none">${img}</div>
+<div class="nm">${name.replace(/</g,"&lt;")}</div><div class="ln"></div>
+<div class="st">${L.map(l=>`<span><b>—</b>${l}</span>`).join("")}</div><div class="sub2">${($("#aSid").value?"ID ••••"+$("#aSid").value.slice(-3):"SEASON X")}</div></div>`;
+const ph=$("#aph");let d=null;
+ph.onpointerdown=e=>{if(!st.url)return;d={x:e.clientX-st.x,y:e.clientY-st.y};ph.setPointerCapture(e.pointerId)};
+ph.onpointermove=e=>{if(!d)return;st.x=Math.max(-60,Math.min(60,e.clientX-d.x));st.y=Math.max(-60,Math.min(60,e.clientY-d.y));sync();draw()};
+ph.onpointerup=()=>d=null;}
+function sync(){$("#aZ").value=st.z;$("#aX").value=st.x;$("#aY").value=st.y;$("#aZv").textContent=st.z;$("#aXv").textContent=Math.round(st.x);$("#aYv").textContent=Math.round(st.y)}
+function gate(){const ok=st.ready&&$("#aOk").checked&&$("#aName").value.trim();const b=$("#aSubmit");b.disabled=!ok;b.style.opacity=ok?1:.5}
+$("#aFile").onchange=e=>{const f=e.target.files[0];if(!f)return;if(st.url)URL.revokeObjectURL(st.url);st.url=URL.createObjectURL(f);st.ready=false;$("#aOk").checked=false;st.z=100;st.x=0;st.y=0;sync();draw();
+let p=0;$("#aStatus").textContent="Photo received. Creating your card in the background… (simulated in this prototype)";clearInterval(st.t);
+st.t=setInterval(()=>{p+=8;$("#aBar").style.width=Math.min(p,100)+"%";if(p>=100){clearInterval(st.t);st.ready=true;$("#aStatus").textContent="Your card is ready — check it below, then submit.";gate()}},300);gate()};
+["aZ","aX","aY"].forEach(id=>$("#"+id).oninput=()=>{st.z=+$("#aZ").value;st.x=+$("#aX").value;st.y=+$("#aY").value;sync();draw()});
+["aName","aSid","aPos"].forEach(id=>{$("#"+id).oninput=()=>{draw();gate()};$("#"+id).onchange=()=>{draw();gate()}});
+$("#aOk").onchange=gate;
+$("#aReset").onclick=e=>{e.preventDefault();st.z=100;st.x=0;st.y=0;sync();draw()};
+$("#aChange").onclick=e=>{e.preventDefault();$("#aFile").click()};
+$("#aSubmit").onclick=()=>{$("#aDone").textContent="✓ Submitted (prototype — nothing was sent or stored). Stored in the real build: original photo, cut-out, zoom "+st.z+", x "+Math.round(st.x)+", y "+Math.round(st.y)+"."};
+draw();})();
+
+let start="overview";try{start=localStorage.getItem("tabArch")||start}catch(e){}
+show(TABS.some(t=>t[0]===start)?start:"overview");
+</script>
+</body>
+</html>

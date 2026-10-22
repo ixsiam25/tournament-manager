@@ -1,0 +1,29 @@
+import { test, expect } from "@playwright/test";
+
+const ADMIN_PAGES = ["/admin", "/admin/fixtures", "/admin/registrations", "/admin/auction", "/admin/season/rollover", "/admin/users"];
+
+for (const path of ADMIN_PAGES) {
+  test(`unauthenticated ${path} is sent to login`, async ({ page }) => {
+    await page.goto(path);
+    await expect(page).toHaveURL(/\/(admin\/)?login/);
+  });
+}
+
+const ADMIN_APIS: Array<[string, string]> = [
+  ["POST", "/api/admin/fixtures"],
+  ["POST", "/api/admin/auction"],
+  ["POST", "/api/admin/seasons"],
+  ["POST", "/api/admin/users"],
+];
+
+for (const [method, path] of ADMIN_APIS) {
+  test(`unauthenticated ${method} ${path} is rejected`, async ({ request }) => {
+    const res = await request.fetch(path, { method, data: {} });
+    expect([401, 403, 404, 405]).toContain(res.status());
+  });
+}
+
+test("manager portal requires login", async ({ page }) => {
+  await page.goto("/manager");
+  await expect(page).toHaveURL(/login/);
+});
