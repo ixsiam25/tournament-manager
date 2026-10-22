@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/userAuth";
 import { logAudit } from "@/lib/audit";
+import { getActiveSeason } from "@/lib/currentSeason";
 import { getStandings } from "@/lib/standings";
 
 export const dynamic = "force-dynamic";
@@ -18,11 +19,14 @@ export async function POST() {
   if (result instanceof NextResponse) return result;
   const { user: actor } = result;
 
+  const season = await getActiveSeason();
+  if (!season) return NextResponse.json({ error: "No active season" }, { status: 409 });
+
   const [standings, teamCount, semis] = await Promise.all([
-    getStandings(),
-    prisma.team.count(),
+    getStandings(season.id),
+    prisma.team.count({ where: { seasonId: season.id } }),
     prisma.match.findMany({
-      where: { round: "SEMIFINAL" },
+      where: { seasonId: season.id, round: "SEMIFINAL" },
       orderBy: [{ scheduledAt: "asc" }, { createdAt: "asc" }],
     }),
   ]);

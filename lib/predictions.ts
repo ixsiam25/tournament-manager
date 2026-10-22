@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { getCurrentSeasonId } from "@/lib/currentSeason";
 
 export type PredictionTally = {
   matchId: string;
@@ -54,17 +55,21 @@ export type ChampionTally = {
   yourTeamId: string | null;
 };
 
-/** Aggregates every "who wins the season" pick across all teams. `voterId`
- * (if given) is used only to report the caller's own pick. */
-export async function getChampionTally(voterId?: string | null): Promise<ChampionTally> {
+/** Aggregates every "who wins the season" pick across all teams of one
+ * season (default: the current one). `voterId` (if given) is used only to
+ * report the caller's own pick. */
+export async function getChampionTally(voterId?: string | null, seasonId?: string | null): Promise<ChampionTally> {
+  const sid = seasonId ?? (await getCurrentSeasonId());
+  if (!sid) return { counts: {}, total: 0, yourTeamId: null };
   const [grouped, mine] = await Promise.all([
     prisma.championPrediction.groupBy({
       by: ["teamId"],
+      where: { seasonId: sid },
       _count: { _all: true },
     }),
     voterId
       ? prisma.championPrediction.findUnique({
-          where: { voterId },
+          where: { seasonId_voterId: { seasonId: sid, voterId } },
           select: { teamId: true },
         })
       : Promise.resolve(null),
@@ -99,9 +104,11 @@ export type ChampionResult = {
  * manual winner when finishing a drawn knockout match; a still-null
  * `winnerTeamId` on a level score means admin hasn't resolved it yet.
  */
-export async function getChampionResult(): Promise<ChampionResult | null> {
+export async function getChampionResult(seasonId?: string | null): Promise<ChampionResult | null> {
+  const sid = seasonId ?? (await getCurrentSeasonId());
+  if (!sid) return null;
   const final = await prisma.match.findFirst({
-    where: { round: "FINAL", status: "FINISHED" },
+    where: { seasonId: sid, round: "FINAL", status: "FINISHED" },
     include: { homeTeam: true, awayTeam: true },
   });
   if (!final || !final.homeTeam || !final.awayTeam) return null;
@@ -117,10 +124,10 @@ export async function getChampionResult(): Promise<ChampionResult | null> {
 
   const [correctPredictions, totalPredictions] = await Promise.all([
     prisma.championPrediction.findMany({
-      where: { teamId: champion.id },
+      where: { seasonId: sid, teamId: champion.id },
       select: { voterName: true },
     }),
-    prisma.championPrediction.count(),
+    prisma.championPrediction.count({ where: { seasonId: sid } }),
   ]);
 
   const correctVoterNames = correctPredictions

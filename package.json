@@ -9,7 +9,8 @@
     "lint": "eslint",
     "db:seed": "tsx prisma/seed.ts",
     "db:migrate": "prisma migrate dev",
-    "test:smoke": "playwright test"
+    "test:smoke": "playwright test",
+    "test:scoping": "tsx tests/integration/season-scoping.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

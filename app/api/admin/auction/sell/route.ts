@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/userAuth";
 import { logAudit } from "@/lib/audit";
 import { getTeamAuctionStatuses } from "@/lib/auction";
+import { getActiveSeason } from "@/lib/currentSeason";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +18,7 @@ export async function POST(request: NextRequest) {
   if (result instanceof NextResponse) return result;
   const { user: actor } = result;
 
-  const season = await prisma.season.findFirst({ where: { status: "ACTIVE" } });
+  const season = await getActiveSeason();
   if (!season) return NextResponse.json({ error: "No active season" }, { status: 409 });
   const settings = await prisma.auctionSettings.findUnique({ where: { seasonId: season.id } });
   if (!settings) return NextResponse.json({ error: "Auction settings not configured" }, { status: 409 });
@@ -36,7 +37,7 @@ export async function POST(request: NextRequest) {
   if (!lot) return NextResponse.json({ error: "No lot is currently up for auction" }, { status: 409 });
 
   const team = await prisma.team.findUnique({ where: { id: teamId } });
-  if (!team) return NextResponse.json({ error: "Team not found" }, { status: 404 });
+  if (!team || team.seasonId !== season.id) return NextResponse.json({ error: "Team not found" }, { status: 404 });
 
   if (price < settings.basePrice) {
     return NextResponse.json({ error: `Price must be at least the base price (${settings.basePrice})` }, { status: 400 });

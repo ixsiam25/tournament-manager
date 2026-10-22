@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/userAuth";
 import { logAudit } from "@/lib/audit";
 import { finishMatchSchema } from "@/lib/validation";
+import { frozenSeasonResponse } from "@/lib/seasonGuard";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,8 @@ export async function POST(request: NextRequest, { params }: Params) {
   const { id } = await params;
   const existing = await prisma.match.findUnique({ where: { id } });
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  const frozen = await frozenSeasonResponse(existing.seasonId);
+  if (frozen) return frozen;
   if (existing.status !== "LIVE") {
     return NextResponse.json({ error: "Match is not live" }, { status: 409 });
   }

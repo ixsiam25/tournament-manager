@@ -1,12 +1,15 @@
 import Image from "next/image";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
+import { getCurrentSeasonId } from "@/lib/currentSeason";
 import { Crest } from "@/components/Crest";
 
 export const revalidate = 20;
 
 export default async function TeamsPage() {
+  const seasonId = await getCurrentSeasonId();
   const teams = await prisma.team.findMany({
+    where: { seasonId: seasonId ?? "none" },
     orderBy: { name: "asc" },
     include: { _count: { select: { players: true } } },
   });

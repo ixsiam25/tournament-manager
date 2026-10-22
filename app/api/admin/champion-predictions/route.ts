@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/userAuth";
 import { logAudit } from "@/lib/audit";
+import { getCurrentSeason } from "@/lib/currentSeason";
 import { championPredictionSettingsSchema } from "@/lib/validation";
 import {
   getChampionPredictionSettings,
@@ -15,8 +16,10 @@ export async function GET() {
   const result = await requireUser(["ADMIN"]);
   if (result instanceof NextResponse) return result;
 
+  const current = await getCurrentSeason();
   const [predictions, settings] = await Promise.all([
     prisma.championPrediction.findMany({
+      where: { seasonId: current?.id ?? "none" },
       include: { team: { select: { id: true, name: true } } },
       orderBy: { createdAt: "desc" },
     }),

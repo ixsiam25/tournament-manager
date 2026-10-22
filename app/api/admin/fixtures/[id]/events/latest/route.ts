@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/userAuth";
 import { logAudit } from "@/lib/audit";
+import { frozenSeasonResponse } from "@/lib/seasonGuard";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,8 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
 
   const match = await prisma.match.findUnique({ where: { id } });
   if (!match) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  const frozen = await frozenSeasonResponse(match.seasonId);
+  if (frozen) return frozen;
 
   const latest = await prisma.matchEvent.findFirst({
     where: { matchId: id },

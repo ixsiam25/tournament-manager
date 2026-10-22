@@ -1,4 +1,5 @@
 import { prisma } from "./db";
+import { getCurrentSeasonId } from "./currentSeason";
 
 export type StandingRow = {
   teamId: string;
@@ -19,10 +20,12 @@ export type StandingRow = {
  * than stored, so a corrected score or an undone event can never leave the
  * table out of sync.
  */
-export async function getStandings(): Promise<StandingRow[]> {
-  const teams = await prisma.team.findMany({ orderBy: { name: "asc" } });
+export async function getStandings(seasonId?: string | null): Promise<StandingRow[]> {
+  const sid = seasonId ?? (await getCurrentSeasonId());
+  if (!sid) return [];
+  const teams = await prisma.team.findMany({ where: { seasonId: sid }, orderBy: { name: "asc" } });
   const matches = await prisma.match.findMany({
-    where: { round: "LEAGUE", status: "FINISHED" },
+    where: { seasonId: sid, round: "LEAGUE", status: "FINISHED" },
   });
 
   const rows = new Map<string, StandingRow>(

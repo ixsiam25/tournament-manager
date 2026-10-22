@@ -11,6 +11,7 @@ import { getLiveStatus } from "@/lib/liveStatus";
 import { getTopScorers } from "@/lib/playerStats";
 import { getLeagueStats } from "@/lib/leagueStats";
 import { prisma } from "@/lib/db";
+import { getActiveSeason } from "@/lib/currentSeason";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,7 @@ export default async function HomePage() {
   const [data, topScorers, activeSeason, leagueStats] = await Promise.all([
     getLiveStatus(),
     getTopScorers(),
-    prisma.season.findFirst({ where: { status: "ACTIVE" } }),
+    getActiveSeason(),
     getLeagueStats(),
   ]);
   // Serialize Dates to ISO strings so the initial payload matches the shape

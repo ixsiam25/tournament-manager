@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/userAuth";
 import { logAudit } from "@/lib/audit";
+import { getActiveSeason } from "@/lib/currentSeason";
 
 export const dynamic = "force-dynamic";
 
@@ -10,7 +11,7 @@ export async function GET() {
   const result = await requireUser(["ADMIN"]);
   if (result instanceof NextResponse) return result;
 
-  const season = await prisma.season.findFirst({ where: { status: "ACTIVE" } });
+  const season = await getActiveSeason();
   if (!season) return NextResponse.json({ error: "No active season" }, { status: 409 });
   if (season.teamFormation !== "AUCTION") {
     return NextResponse.json({ error: "The active season isn't an AUCTION season" }, { status: 409 });
@@ -31,7 +32,7 @@ export async function POST(request: NextRequest) {
   if (result instanceof NextResponse) return result;
   const { user: actor } = result;
 
-  const season = await prisma.season.findFirst({ where: { status: "ACTIVE" } });
+  const season = await getActiveSeason();
   if (!season) return NextResponse.json({ error: "No active season" }, { status: 409 });
   if (season.teamFormation !== "AUCTION") {
     return NextResponse.json({ error: "The active season isn't an AUCTION season" }, { status: 409 });

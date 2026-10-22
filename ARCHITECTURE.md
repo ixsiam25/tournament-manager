@@ -355,3 +355,38 @@ replaced the Season VIII seed data:
 - `npm run build` clean, then `opennextjs-cloudflare build` + local
   `wrangler` preview before a real deploy (tests the actual Workers runtime
   + `PrismaNeon` + cookie auth together).
+
+## Edition scoping (Phase 1, 2026-10-22)
+
+The app is no longer "one live season". Every live row belongs to a `Season`
+(the platform concept is an *edition*; the Prisma model keeps the name
+`Season` for now) and every `Season` belongs to a `Tournament` (`bfl`).
+
+- `Team`, `Player`, `Match`, `ChampionPrediction` carry `seasonId`.
+  `Team.name` is unique **per season**, `ChampionPrediction` per
+  `(seasonId, voterId)`. `Prediction`/`MatchEvent` are scoped through their
+  match.
+- `Tournament.currentSeasonId` is the edition the public site and admin show.
+  `lib/currentSeason.ts`: `getCurrentSeason()` (any status),
+  `getActiveSeason()` (only if still ACTIVE — used by every mutating flow),
+  `getCurrentSeasonId()`.
+- Read helpers (`getStandings`, `getTopScorers/Assists`, `getAllPlayers`,
+  `getLiveStatus`, `getChampionTally/Result`, `buildSeasonArchive`) take an
+  optional `seasonId` and default to the current season.
+- **Nothing is wiped at rollover.** `openNextSeason` creates the edition and
+  points the tournament at it. `freezeActiveSeason` snapshots results into
+  `resultsJson` + R2 and sets `ARCHIVED`.
+- Frozen editions are read-only: `lib/seasonGuard.ts` (`frozenSeasonResponse`)
+  gates every id-based team/player/match/event mutation.
+- `prisma/seed.ts` needs `SEED_SEASON_SLUG` and refuses ARCHIVED seasons.
+- `scripts/rehydrate-season.ts` rebuilds an archived season's rows from its
+  snapshot and checks derived standings/top scorers against it (Season IX:
+  exact match).
+- Tests: `npm run test:smoke` (read-only), `npm run test:scoping`
+  (`ALLOW_DB_WRITE_TESTS=1`, dev branch only — proves two seasons never leak
+  into each other).
+- Still global for now (Phase 5): `Season.number`/`slug` uniqueness, the
+  `champion_predictions_*` AppSettings, `JerseyVote`, single tournament slug.
+- Deploy note: `npm run build` runs `prisma migrate deploy`, so the
+  `edition_scoping` migration applies to production on the next deploy; run
+  `rehydrate-season.ts` against prod afterwards (`ENV_FILE=.env.prod.local`).

@@ -16,8 +16,9 @@ export type LeagueStats = {
 /**
  * All-time totals rolled up from every archived season's frozen
  * `resultsJson`. Reading the archives rather than the live tables is
- * deliberate: the live `Team`/`Match`/`Player` tables are wiped at each
- * rollover, so they only ever describe the season in progress.
+ * deliberate for now: the frozen snapshot is the immutable record of a past
+ * edition. Live rows are no longer wiped at rollover (they carry a seasonId),
+ * so a later phase can derive these totals with SQL instead.
  */
 export async function getLeagueStats(): Promise<LeagueStats> {
   const seasons = await prisma.season.findMany({

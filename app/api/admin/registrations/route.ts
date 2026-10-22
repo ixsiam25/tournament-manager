@@ -4,6 +4,7 @@ import { requireUser } from "@/lib/userAuth";
 import { logAudit } from "@/lib/audit";
 import { registrationSchema } from "@/lib/validation";
 import { approveRegistration } from "@/lib/registrationApproval";
+import { getActiveSeason } from "@/lib/currentSeason";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,7 @@ export async function GET(request: NextRequest) {
   const result = await requireUser(["ADMIN"]);
   if (result instanceof NextResponse) return result;
 
-  const season = await prisma.season.findFirst({ where: { status: "ACTIVE" } });
+  const season = await getActiveSeason();
   if (!season) return NextResponse.json({ registrations: [] });
 
   const status = request.nextUrl.searchParams.get("status");
@@ -30,7 +31,7 @@ export async function POST(request: NextRequest) {
   if (result instanceof NextResponse) return result;
   const { user: actor } = result;
 
-  const season = await prisma.season.findFirst({ where: { status: "ACTIVE" } });
+  const season = await getActiveSeason();
   if (!season) return NextResponse.json({ error: "No active season" }, { status: 409 });
 
   const body = await request.json().catch(() => null);

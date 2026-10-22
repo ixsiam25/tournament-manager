@@ -2,10 +2,10 @@ import Link from "next/link";
 import { BrandLogo } from "@/components/BrandLogo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { NavMenu } from "@/components/NavMenu";
-import { prisma } from "@/lib/db";
+import { getActiveSeason } from "@/lib/currentSeason";
 
 export async function PublicHeader() {
-  const activeSeason = await prisma.season.findFirst({ where: { status: "ACTIVE" } });
+  const activeSeason = await getActiveSeason();
   const showRegister = !!activeSeason?.registrationSelfServeEnabled && !!activeSeason?.registrationOpen;
   const showAuction = activeSeason?.teamFormation === "AUCTION";
 

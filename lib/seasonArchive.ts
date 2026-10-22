@@ -101,37 +101,41 @@ export type SeasonArchive = {
  * legitimate reason to persist a password hash into an archive record that
  * may end up rendered on a public legacy page.
  */
-export async function buildSeasonArchive(): Promise<SeasonArchive> {
+export async function buildSeasonArchive(seasonId: string): Promise<SeasonArchive> {
   const [teams, players, matches, matchEvents, predictions, championPredictions, standings, topScorers, topAssists, championResult] =
     await Promise.all([
-      prisma.team.findMany({ orderBy: { name: "asc" } }),
+      prisma.team.findMany({ where: { seasonId }, orderBy: { name: "asc" } }),
       prisma.player.findMany({
         // Excludes any never-sold AUCTION-season player -- the archive
         // represents who actually played, not raw registration leftovers.
-        where: { teamId: { not: null } },
+        where: { seasonId, teamId: { not: null } },
         include: { team: true },
         orderBy: [{ teamId: "asc" }, { jerseyNumber: "asc" }],
       }),
       prisma.match.findMany({
+        where: { seasonId },
         include: { homeTeam: true, awayTeam: true, winnerTeam: true },
         orderBy: MATCH_DISPLAY_ORDER_BY,
       }),
       prisma.matchEvent.findMany({
+        where: { match: { seasonId } },
         include: { match: true, team: true, player: true },
         orderBy: [{ matchId: "asc" }, { sequence: "asc" }],
       }),
       prisma.prediction.findMany({
+        where: { match: { seasonId } },
         include: { match: true, team: true },
         orderBy: { createdAt: "asc" },
       }),
       prisma.championPrediction.findMany({
+        where: { seasonId },
         include: { team: true },
         orderBy: { createdAt: "asc" },
       }),
-      getStandings(),
-      getTopScorers(),
-      getTopAssists(),
-      getChampionResult(),
+      getStandings(seasonId),
+      getTopScorers(seasonId),
+      getTopAssists(seasonId),
+      getChampionResult(seasonId),
     ]);
 
   const finishedMatches = matches.filter((m) => m.status === "FINISHED").length;

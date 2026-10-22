@@ -21,6 +21,7 @@ export async function approveRegistration(registration: Registration, season: Se
   if (season.teamFormation === "AUCTION") {
     const player = await prisma.player.create({
       data: {
+        seasonId: season.id,
         name: registration.name,
         // Jersey numbers are assigned once a player is actually on a
         // team's squad after the auction — 0 is a harmless placeholder

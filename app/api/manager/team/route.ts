@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/userAuth";
 import { logAudit } from "@/lib/audit";
 import { teamSchema } from "@/lib/validation";
+import { frozenSeasonResponse } from "@/lib/seasonGuard";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,8 @@ export async function PATCH(request: NextRequest) {
 
   try {
     const before = await prisma.team.findUnique({ where: { id: teamId } });
+    const frozen = await frozenSeasonResponse(before?.seasonId);
+    if (frozen) return frozen;
     const team = await prisma.team.update({
       where: { id: teamId },
       data: { name: parsed.data.name },

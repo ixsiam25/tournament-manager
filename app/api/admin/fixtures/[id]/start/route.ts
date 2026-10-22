@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/userAuth";
 import { logAudit } from "@/lib/audit";
+import { frozenSeasonResponse } from "@/lib/seasonGuard";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +16,8 @@ export async function POST(_request: NextRequest, { params }: Params) {
   const { id } = await params;
   const existing = await prisma.match.findUnique({ where: { id } });
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  const frozen = await frozenSeasonResponse(existing.seasonId);
+  if (frozen) return frozen;
   if (!existing.homeTeamId || !existing.awayTeamId) {
     return NextResponse.json({ error: "Both teams must be assigned before starting" }, { status: 400 });
   }

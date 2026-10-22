@@ -4,6 +4,7 @@ import { registrationSchema } from "@/lib/validation";
 import { putObject } from "@/lib/mediaStore";
 import { isRateLimited, clientIp } from "@/lib/rateLimit";
 import { randomUUID } from "node:crypto";
+import { getActiveSeason } from "@/lib/currentSeason";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +15,7 @@ const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
  * registrations right now — used both to gate submission and to tell the
  * public form whether to show itself at all. */
 export async function GET() {
-  const season = await prisma.season.findFirst({ where: { status: "ACTIVE" } });
+  const season = await getActiveSeason();
   const open = !!season?.registrationSelfServeEnabled && !!season?.registrationOpen;
   return NextResponse.json({ open, seasonName: season?.name ?? null });
 }
@@ -25,7 +26,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Too many submissions from this connection — try again later" }, { status: 429 });
   }
 
-  const season = await prisma.season.findFirst({ where: { status: "ACTIVE" } });
+  const season = await getActiveSeason();
   if (!season || !season.registrationSelfServeEnabled || !season.registrationOpen) {
     return NextResponse.json({ error: "Registration is not open right now" }, { status: 403 });
   }

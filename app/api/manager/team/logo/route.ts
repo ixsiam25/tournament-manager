@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/userAuth";
 import { logAudit } from "@/lib/audit";
 import { uploadMedia } from "@/lib/mediaStore";
+import { frozenSeasonResponse } from "@/lib/seasonGuard";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +32,10 @@ export async function POST(request: NextRequest) {
   // Fresh key per upload (not keyed by teamId) so the served URL changes
   // every time a logo is replaced — that's what makes the `immutable`
   // cache header on the serving route safe.
+  const owned = await prisma.team.findUnique({ where: { id: teamId }, select: { seasonId: true } });
+  const frozen = await frozenSeasonResponse(owned?.seasonId);
+  if (frozen) return frozen;
+
   const key = `team-${teamId}-${randomUUID()}`;
   const buffer = await file.arrayBuffer();
   const logoUrl = await uploadMedia(key, buffer, file.type);

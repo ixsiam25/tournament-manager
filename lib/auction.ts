@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import type { AuctionSettings, Season } from "@/lib/generated/prisma/client";
+import { getActiveSeason } from "./currentSeason";
 
 export type PublicAuctionStatus =
   | { active: false }
@@ -22,7 +23,7 @@ export type PublicAuctionStatus =
  * paint) and the `/api/public/auction` route it polls afterward, same
  * pattern as `lib/liveStatus.ts` / `/api/public/live`. */
 export async function getPublicAuctionStatus(): Promise<PublicAuctionStatus> {
-  const season = await prisma.season.findFirst({ where: { status: "ACTIVE" } });
+  const season = await getActiveSeason();
   if (!season || season.teamFormation !== "AUCTION") return { active: false };
 
   const settings = await prisma.auctionSettings.findUnique({ where: { seasonId: season.id } });
@@ -77,7 +78,7 @@ export async function getTeamAuctionStatuses(
   settings: AuctionSettings,
 ): Promise<TeamAuctionStatus[]> {
   const [teams, soldLots] = await Promise.all([
-    prisma.team.findMany({ orderBy: { name: "asc" } }),
+    prisma.team.findMany({ where: { seasonId: season.id }, orderBy: { name: "asc" } }),
     prisma.auctionLot.findMany({ where: { seasonId: season.id, status: "SOLD" } }),
   ]);
 

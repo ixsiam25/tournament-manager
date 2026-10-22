@@ -94,7 +94,7 @@ export function SeasonRolloverWizard() {
 
   async function handleFreeze() {
     const confirmed = await confirmWithPassword(
-      `Freeze "${status?.activeSeason?.name}"? This locks in the final results permanently — the next step (opening a new season) will then wipe live teams/players/fixtures.`,
+      `Freeze "${status?.activeSeason?.name}"? This locks in the final results permanently. Its teams, players and fixtures are kept and stay viewable.`,
     );
     if (!confirmed) return;
     setFreezing(true);
@@ -135,7 +135,7 @@ export function SeasonRolloverWizard() {
       return;
     }
     const confirmed = await confirmWithPassword(
-      `Open "${name}" as the new active season? This wipes every current team, player and fixture — only safe once the previous season is frozen.`,
+      `Open "${name}" as the new active season? Earlier seasons keep all their data; the new season becomes the one the site shows.`,
     );
     if (!confirmed) return;
 
@@ -425,7 +425,7 @@ export function SeasonRolloverWizard() {
             disabled={opening}
             className="rounded-full bg-live px-6 py-3 text-sm font-bold text-white disabled:opacity-40"
           >
-            {opening ? "Opening…" : "Open season (wipes live teams/players/fixtures)"}
+            {opening ? "Opening…" : "Open season"}
           </button>
         </form>
       )}

@@ -1,4 +1,5 @@
 import { prisma } from "./db";
+import { getCurrentSeasonId } from "./currentSeason";
 
 export type PlayerStatRow = {
   playerId: string;
@@ -13,10 +14,12 @@ export type PlayerStatRow = {
  * Includes events from LIVE matches (not just FINISHED) so scorer/assist
  * leaderboards update while a match is still in progress.
  */
-async function getPlayerEventCounts(type: "GOAL" | "ASSIST"): Promise<PlayerStatRow[]> {
+async function getPlayerEventCounts(type: "GOAL" | "ASSIST", seasonId?: string | null): Promise<PlayerStatRow[]> {
+  const sid = seasonId ?? (await getCurrentSeasonId());
+  if (!sid) return [];
   const grouped = await prisma.matchEvent.groupBy({
     by: ["playerId"],
-    where: { type, match: { status: { in: ["LIVE", "FINISHED"] } } },
+    where: { type, match: { seasonId: sid, status: { in: ["LIVE", "FINISHED"] } } },
     _count: { _all: true },
   });
 
@@ -43,10 +46,10 @@ async function getPlayerEventCounts(type: "GOAL" | "ASSIST"): Promise<PlayerStat
     .sort((a, b) => b.count - a.count || a.playerName.localeCompare(b.playerName));
 }
 
-export function getTopScorers(): Promise<PlayerStatRow[]> {
-  return getPlayerEventCounts("GOAL");
+export function getTopScorers(seasonId?: string | null): Promise<PlayerStatRow[]> {
+  return getPlayerEventCounts("GOAL", seasonId);
 }
 
-export function getTopAssists(): Promise<PlayerStatRow[]> {
-  return getPlayerEventCounts("ASSIST");
+export function getTopAssists(seasonId?: string | null): Promise<PlayerStatRow[]> {
+  return getPlayerEventCounts("ASSIST", seasonId);
 }

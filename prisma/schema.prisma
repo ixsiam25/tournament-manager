@@ -75,26 +75,45 @@ enum AuctionLotStatus {
   UNSOLD
 }
 
+/// A recurring series with its own identity ("BFL", a futsal cup, …). Owns its
+/// editions (`Season` rows — the Prisma model keeps the old name for now; the
+/// platform concept is "Edition"). `currentSeasonId` is the edition the public
+/// site and admin console show by default; it is a plain pointer, not a
+/// relation, because Season already points back at Tournament.
+model Tournament {
+  id              String   @id @default(cuid())
+  name            String
+  slug            String   @unique
+  sport           String   @default("football")
+  currentSeasonId String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  seasons Season[]
+}
+
 /// One row per tournament season. `ACTIVE` seasons drive the live
 /// Team/Player/Match tables (unscoped, as today); `ARCHIVED` seasons are
 /// frozen and read only from `resultsJson` — never re-derived from live
 /// rows, since a past season's table must never change again. Exactly one
 /// `ACTIVE` season is enforced in code (the rollover wizard), not by the DB.
 model Season {
-  id     String       @id @default(cuid())
-  number Int          @unique
-  name   String
-  slug   String       @unique
-  year   Int
-  status SeasonStatus @default(ACTIVE)
+  id           String       @id @default(cuid())
+  tournamentId String
+  tournament   Tournament   @relation(fields: [tournamentId], references: [id])
+  number       Int          @unique
+  name         String
+  slug         String       @unique
+  year         Int
+  status       SeasonStatus @default(ACTIVE)
 
   /// How this season's teams are built — semester batches (as Season IX) or
   /// a live auction. Gates which admin screens exist for the season.
   teamFormation TeamFormation @default(BATCH)
 
-  startsOn DateTime?
-  endsOn   DateTime?
-  recap    String?
+  startsOn    DateTime?
+  endsOn      DateTime?
+  recap       String?
   /// Points at a MediaAsset.id for this season's hero image. Not a Prisma
   /// relation (would need a second named relation back from MediaAsset) —
   /// just resolved by a lookup in app code when rendering.
@@ -133,10 +152,16 @@ model Season {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  mediaAssets     MediaAsset[]
-  registrations   Registration[]
-  auctionLots     AuctionLot[]
-  auctionSettings AuctionSettings?
+  mediaAssets         MediaAsset[]
+  registrations       Registration[]
+  auctionLots         AuctionLot[]
+  auctionSettings     AuctionSettings?
+  teams               Team[]
+  players             Player[]
+  matches             Match[]
+  championPredictions ChampionPrediction[]
+
+  @@index([tournamentId])
 }
 
 /// A stable human identity that persists across seasons, independent of
@@ -175,7 +200,9 @@ model MediaAsset {
 
 model Team {
   id                  String   @id @default(cuid())
-  name                String   @unique
+  seasonId            String
+  season              Season   @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  name                String
   shortName           String?
   /// Which APU semester/batch this team represents (1-7+). Nullable because
   /// a team created by hand in admin has no batch to attach.
@@ -196,6 +223,9 @@ model Team {
   championPredictions ChampionPrediction[]
   users               User[]
   auctionLots         AuctionLot[]
+
+  @@unique([seasonId, name])
+  @@index([seasonId])
 }
 
 /// A named account, replacing the old shared ADMIN_PASSWORD and per-team
@@ -258,6 +288,8 @@ model AppSetting {
 
 model Player {
   id           String    @id @default(cuid())
+  seasonId     String
+  season       Season    @relation(fields: [seasonId], references: [id], onDelete: Cascade)
   name         String
   jerseyNumber Int
   position     Position?
@@ -281,10 +313,13 @@ model Player {
   auctionLot AuctionLot?
 
   @@unique([teamId, jerseyNumber])
+  @@index([seasonId])
 }
 
 model Match {
   id               String      @id @default(cuid())
+  seasonId         String
+  season           Season      @relation(fields: [seasonId], references: [id], onDelete: Cascade)
   round            RoundType
   label            String?
   homeTeamId       String?
@@ -319,6 +354,7 @@ model Match {
   events      MatchEvent[]
   predictions Prediction[]
 
+  @@index([seasonId])
   @@index([status])
   @@index([round])
 }
@@ -348,13 +384,17 @@ model Prediction {
 /// unique, not scoped to a match); submitting again overwrites it.
 model ChampionPrediction {
   id            String   @id @default(cuid())
+  seasonId      String
+  season        Season   @relation(fields: [seasonId], references: [id], onDelete: Cascade)
   teamId        String
   team          Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  voterId       String   @unique
+  voterId       String
   voterName     String?
   voterSemester String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  @@unique([seasonId, voterId])
 }
 
 /// One thumbs up/down per browser on the new kit reveal — a lightweight

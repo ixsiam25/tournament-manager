@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { fixtureSchema } from "@/lib/validation";
 import { requireUser } from "@/lib/userAuth";
 import { logAudit } from "@/lib/audit";
+import { getActiveSeason, getCurrentSeason } from "@/lib/currentSeason";
 import { MATCH_DISPLAY_ORDER_BY } from "@/lib/matchOrder";
 
 export const dynamic = "force-dynamic";
@@ -11,7 +12,9 @@ export async function GET() {
   const result = await requireUser(["ADMIN"]);
   if (result instanceof NextResponse) return result;
 
+  const current = await getCurrentSeason();
   const matches = await prisma.match.findMany({
+    where: { seasonId: current?.id ?? "none" },
     include: { homeTeam: true, awayTeam: true },
     orderBy: MATCH_DISPLAY_ORDER_BY,
   });
@@ -29,9 +32,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Invalid data" }, { status: 400 });
   }
 
+  const season = await getActiveSeason();
+  if (!season) return NextResponse.json({ error: "No active season — open one first" }, { status: 409 });
+
   const { scheduledAt, ...rest } = parsed.data;
   const match = await prisma.match.create({
-    data: { ...rest, scheduledAt: scheduledAt ? new Date(scheduledAt) : null },
+    data: { ...rest, seasonId: season.id, scheduledAt: scheduledAt ? new Date(scheduledAt) : null },
   });
   await logAudit({
     actor,

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/userAuth";
 import { getTeamAuctionStatuses } from "@/lib/auction";
+import { getActiveSeason } from "@/lib/currentSeason";
 
 export const dynamic = "force-dynamic";
 
@@ -9,7 +10,7 @@ export async function GET() {
   const result = await requireUser(["ADMIN"]);
   if (result instanceof NextResponse) return result;
 
-  const season = await prisma.season.findFirst({ where: { status: "ACTIVE" } });
+  const season = await getActiveSeason();
   if (!season) return NextResponse.json({ error: "No active season" }, { status: 409 });
 
   const settings = await prisma.auctionSettings.findUnique({ where: { seasonId: season.id } });

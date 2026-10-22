@@ -313,20 +313,31 @@ async function main() {
   assertSingleRoundRobin();
   assertRestGuarantee();
 
-  console.log("Clearing previous season...");
+  // This seed writes the hard-coded Season IX roster + schedule into ONE
+  // explicit season and wipes only that season's rows. It refuses to touch a
+  // frozen (ARCHIVED) edition — those are permanent records.
+  const slug = process.env.SEED_SEASON_SLUG;
+  if (!slug) throw new Error("Set SEED_SEASON_SLUG to the ACTIVE season to (re)seed, e.g. SEED_SEASON_SLUG=test-season");
+  const season = await prisma.season.findUnique({ where: { slug } });
+  if (!season) throw new Error(`No season with slug "${slug}"`);
+  if (season.status === "ARCHIVED") throw new Error(`Season "${slug}" is ARCHIVED — refusing to modify a frozen season`);
+  const seasonId = season.id;
+
+  console.log(`Clearing season "${slug}"...`);
   // Order matters: events and predictions reference matches/teams/players.
-  await prisma.matchEvent.deleteMany();
-  await prisma.prediction.deleteMany();
-  await prisma.championPrediction.deleteMany();
-  await prisma.match.deleteMany();
-  await prisma.player.deleteMany();
-  await prisma.team.deleteMany();
+  await prisma.matchEvent.deleteMany({ where: { match: { seasonId } } });
+  await prisma.prediction.deleteMany({ where: { match: { seasonId } } });
+  await prisma.championPrediction.deleteMany({ where: { seasonId } });
+  await prisma.match.deleteMany({ where: { seasonId } });
+  await prisma.player.deleteMany({ where: { seasonId } });
+  await prisma.team.deleteMany({ where: { seasonId } });
 
   console.log("Seeding teams and players...");
   const teamBySlot = new Map<Slot, { id: string }>();
   for (const t of TEAMS) {
     const team = await prisma.team.create({
       data: {
+        seasonId,
         name: t.name,
         shortName: t.shortName,
         // t.semester is an ordinal like "5th" — parseInt reads the leading
@@ -335,6 +346,7 @@ async function main() {
         managerName: t.managerName,
         players: {
           create: t.players.map((p, i) => ({
+            seasonId,
             name: p.name,
             jerseyNumber: i + 1,
             position: p.position ?? null,
@@ -354,6 +366,7 @@ async function main() {
     if (!homeTeam || !awayTeam) throw new Error(`Unknown slot in fixture: ${g.home} vs ${g.away}`);
     await prisma.match.create({
       data: {
+        seasonId,
         round: "LEAGUE",
         label: `Match ${matchNumber}`,
         homeTeamId: homeTeam.id,
@@ -372,6 +385,7 @@ async function main() {
   for (const k of KNOCKOUT_SCHEDULE) {
     await prisma.match.create({
       data: {
+        seasonId,
         round: k.round,
         label: k.label,
         scheduledAt: jst(k.time),

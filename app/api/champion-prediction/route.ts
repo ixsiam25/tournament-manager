@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { getChampionTally } from "@/lib/predictions";
 import { championPredictionSchema } from "@/lib/validation";
 import { isChampionPredictionOpen } from "@/lib/settings";
+import { getActiveSeason } from "@/lib/currentSeason";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,10 @@ export async function POST(request: NextRequest) {
   if (!open) {
     return NextResponse.json({ error: "Champion predictions are closed." }, { status: 403 });
   }
+  const season = await getActiveSeason();
+  if (!season) {
+    return NextResponse.json({ error: "No season is running right now." }, { status: 409 });
+  }
 
   const body = await request.json().catch(() => null);
   const parsed = championPredictionSchema.safeParse(body);
@@ -25,14 +30,15 @@ export async function POST(request: NextRequest) {
   }
   const { teamId, voterId, voterName, voterSemester } = parsed.data;
 
-  const team = await prisma.team.findUnique({ where: { id: teamId }, select: { id: true } });
-  if (!team) {
+  const team = await prisma.team.findUnique({ where: { id: teamId }, select: { id: true, seasonId: true } });
+  if (!team || team.seasonId !== season.id) {
     return NextResponse.json({ error: "Team not found" }, { status: 404 });
   }
 
   await prisma.championPrediction.upsert({
-    where: { voterId },
+    where: { seasonId_voterId: { seasonId: season.id, voterId } },
     create: {
+      seasonId: season.id,
       teamId,
       voterId,
       voterName: voterName || null,
@@ -45,6 +51,6 @@ export async function POST(request: NextRequest) {
     },
   });
 
-  const tally = await getChampionTally(voterId);
+  const tally = await getChampionTally(voterId, season.id);
   return NextResponse.json({ ...tally, open: true });
 }

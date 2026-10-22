@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireUser } from "@/lib/userAuth";
 import { logAudit } from "@/lib/audit";
-import { openNextSeason, getRolloverStatus } from "@/lib/seasonRollover";
+import { openNextSeason } from "@/lib/seasonRollover";
 
 export const dynamic = "force-dynamic";
 
@@ -56,16 +56,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Squad max can't be less than squad min" }, { status: 400 });
   }
 
-  // If there's still an active season, it must be frozen (ARCHIVED) before
-  // wiping — refuse to silently discard an unfrozen season's live data.
-  const status = await getRolloverStatus();
-  if (status.activeSeason) {
-    return NextResponse.json(
-      { error: `"${status.activeSeason.name}" is still active — freeze it first.` },
-      { status: 409 },
-    );
-  }
-
+  // Opening an edition no longer deletes anything, so an edition that is
+  // still ACTIVE is allowed to coexist — the new one just becomes "current".
+  // (The wizard UI still suggests freezing the old one first.)
   try {
     const { seasonId } = await openNextSeason(parsed.data);
     await logAudit({
@@ -73,7 +66,7 @@ export async function POST(request: NextRequest) {
       action: "season.open",
       entityType: "Season",
       entityId: seasonId,
-      summary: `Opened season "${parsed.data.name}" (${parsed.data.teamFormation}), wiped live tables`,
+      summary: `Opened season "${parsed.data.name}" (${parsed.data.teamFormation}); earlier editions kept`,
     });
     return NextResponse.json({ seasonId }, { status: 201 });
   } catch (e) {

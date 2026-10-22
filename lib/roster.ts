@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { getCurrentSeasonId } from "@/lib/currentSeason";
 
 export type RosterPlayer = {
   id: string;
@@ -19,9 +20,11 @@ export type RosterPlayer = {
  * Ordering here is just a sane default (semester desc, then team, then
  * squad number) — the page itself re-sorts client-side when the sort
  * button is toggled. */
-export async function getAllPlayers(): Promise<RosterPlayer[]> {
+export async function getAllPlayers(seasonId?: string | null): Promise<RosterPlayer[]> {
+  const sid = seasonId ?? (await getCurrentSeasonId());
+  if (!sid) return [];
   const players = await prisma.player.findMany({
-    where: { teamId: { not: null } },
+    where: { seasonId: sid, teamId: { not: null } },
     include: { team: true },
     orderBy: [
       { team: { semester: "desc" } },

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { fixtureSchema } from "@/lib/validation";
 import { requireUser } from "@/lib/userAuth";
 import { logAudit } from "@/lib/audit";
+import { frozenSeasonResponse } from "@/lib/seasonGuard";
 
 export const dynamic = "force-dynamic";
 
@@ -42,6 +43,8 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   }
 
   const before = await prisma.match.findUnique({ where: { id } });
+  const frozen = await frozenSeasonResponse(before?.seasonId);
+  if (frozen) return frozen;
   const { scheduledAt, ...rest } = parsed.data;
   const match = await prisma.match.update({
     where: { id },
@@ -71,6 +74,8 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
 
   const { id } = await params;
   const before = await prisma.match.findUnique({ where: { id } });
+  const frozen = await frozenSeasonResponse(before?.seasonId);
+  if (frozen) return frozen;
   await prisma.match.delete({ where: { id } });
   await logAudit({
     actor,

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
+import { getCurrentSeasonId } from "@/lib/currentSeason";
 import { AutoRefresh } from "@/components/AutoRefresh";
 import { Crest } from "@/components/Crest";
 import { MATCH_DISPLAY_ORDER_BY } from "@/lib/matchOrder";
@@ -20,12 +21,14 @@ export default async function FixturesPage({
 }) {
   const { team: teamFilter } = await searchParams;
 
+  const seasonId = (await getCurrentSeasonId()) ?? "none";
   const [matches, teams] = await Promise.all([
     prisma.match.findMany({
+      where: { seasonId },
       include: { homeTeam: true, awayTeam: true },
       orderBy: MATCH_DISPLAY_ORDER_BY,
     }),
-    prisma.team.findMany({ orderBy: { name: "asc" } }),
+    prisma.team.findMany({ where: { seasonId }, orderBy: { name: "asc" } }),
   ]);
 
   // Number against the full set first so match numbers stay stable whether

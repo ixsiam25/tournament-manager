@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
+import { getCurrentSeasonId } from "@/lib/currentSeason";
 import { getSessionUser } from "@/lib/userAuth";
 import { SecurityPanel } from "@/components/SecurityPanel";
 
@@ -9,7 +10,9 @@ export default async function AdminSecurityPage() {
   const user = await getSessionUser(["ADMIN"]);
   if (!user) redirect("/admin");
 
+  const seasonId = await getCurrentSeasonId();
   const teams = await prisma.team.findMany({
+    where: { seasonId: seasonId ?? "none" },
     select: { id: true, name: true, users: { where: { role: "OWNER" }, select: { isActive: true } } },
     orderBy: { name: "asc" },
   });

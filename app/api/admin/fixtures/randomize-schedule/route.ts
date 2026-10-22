@@ -4,6 +4,7 @@ import { requireUser } from "@/lib/userAuth";
 import { logAudit } from "@/lib/audit";
 import { randomizeSchedule, computeMinRestGap, formatHHMM } from "@/lib/scheduleRandomizer";
 import type { SeasonFormatConfig } from "@/lib/seasonFormat";
+import { getActiveSeason } from "@/lib/currentSeason";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +20,7 @@ export async function POST(request: NextRequest) {
   if (result instanceof NextResponse) return result;
   const { user: actor } = result;
 
-  const season = await prisma.season.findFirst({ where: { status: "ACTIVE" } });
+  const season = await getActiveSeason();
   if (!season) return NextResponse.json({ error: "No active season" }, { status: 409 });
   if (!season.formatConfig) {
     return NextResponse.json(
@@ -30,7 +31,7 @@ export async function POST(request: NextRequest) {
   const config = season.formatConfig as unknown as SeasonFormatConfig;
 
   const unscheduled = await prisma.match.findMany({
-    where: { round: "LEAGUE", scheduledAt: null, homeTeamId: { not: null }, awayTeamId: { not: null } },
+    where: { seasonId: season.id, round: "LEAGUE", scheduledAt: null, homeTeamId: { not: null }, awayTeamId: { not: null } },
     include: { homeTeam: true, awayTeam: true },
   });
   if (unscheduled.length === 0) {

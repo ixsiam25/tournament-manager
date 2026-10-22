@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/userAuth";
 import { logAudit } from "@/lib/audit";
 import { managerPlayerPositionSchema } from "@/lib/validation";
+import { frozenSeasonResponse } from "@/lib/seasonGuard";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +19,8 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 
   const { id: playerId } = await params;
   const player = await prisma.player.findUnique({ where: { id: playerId } });
+  const frozen = await frozenSeasonResponse(player?.seasonId);
+  if (frozen) return frozen;
   if (!player) {
     return NextResponse.json({ error: "Player not found" }, { status: 404 });
   }

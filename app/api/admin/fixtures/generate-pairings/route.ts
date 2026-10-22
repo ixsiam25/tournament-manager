@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/userAuth";
 import { logAudit } from "@/lib/audit";
+import { getActiveSeason } from "@/lib/currentSeason";
 import { generateRoundRobinPairs, generateDoubleRoundRobinPairs } from "@/lib/roundRobin";
 
 export const dynamic = "force-dynamic";
@@ -27,7 +28,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Invalid data" }, { status: 400 });
   }
 
-  const existingLeagueCount = await prisma.match.count({ where: { round: "LEAGUE" } });
+  const season = await getActiveSeason();
+  if (!season) return NextResponse.json({ error: "No active season — open one first" }, { status: 409 });
+
+  const existingLeagueCount = await prisma.match.count({ where: { seasonId: season.id, round: "LEAGUE" } });
   if (existingLeagueCount > 0) {
     return NextResponse.json(
       { error: `${existingLeagueCount} league fixture(s) already exist — delete them first if you want to regenerate.` },
@@ -35,7 +39,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const teams = await prisma.team.findMany({ where: { id: { in: parsed.data.teamIds } } });
+  const teams = await prisma.team.findMany({ where: { seasonId: season.id, id: { in: parsed.data.teamIds } } });
   if (teams.length !== parsed.data.teamIds.length) {
     return NextResponse.json({ error: "One or more teams not found" }, { status: 400 });
   }
@@ -47,7 +51,7 @@ export async function POST(request: NextRequest) {
   const created = await prisma.$transaction(
     pairs.map(([homeTeamId, awayTeamId], i) =>
       prisma.match.create({
-        data: { round: "LEAGUE", homeTeamId, awayTeamId, label: `Match ${i + 1}` },
+        data: { seasonId: season.id, round: "LEAGUE", homeTeamId, awayTeamId, label: `Match ${i + 1}` },
       }),
     ),
   );

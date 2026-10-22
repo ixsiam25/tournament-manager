@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { teamSchema } from "@/lib/validation";
 import { requireUser } from "@/lib/userAuth";
 import { logAudit } from "@/lib/audit";
+import { getActiveSeason, getCurrentSeason } from "@/lib/currentSeason";
 
 export const dynamic = "force-dynamic";
 
@@ -10,7 +11,9 @@ export async function GET() {
   const result = await requireUser(["ADMIN"]);
   if (result instanceof NextResponse) return result;
 
+  const current = await getCurrentSeason();
   const teams = await prisma.team.findMany({
+    where: { seasonId: current?.id ?? "none" },
     orderBy: { name: "asc" },
     include: { _count: { select: { players: true } } },
   });
@@ -28,7 +31,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Invalid data" }, { status: 400 });
   }
 
-  const team = await prisma.team.create({ data: parsed.data });
+  const season = await getActiveSeason();
+  if (!season) return NextResponse.json({ error: "No active season — open one first" }, { status: 409 });
+
+  const team = await prisma.team.create({ data: { ...parsed.data, seasonId: season.id } });
   const teamForAudit: Record<string, unknown> = { ...team };
   delete teamForAudit.managerPasswordHash;
   await logAudit({

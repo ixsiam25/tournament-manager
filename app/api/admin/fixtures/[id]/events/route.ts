@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { eventSchema } from "@/lib/validation";
 import { requireUser } from "@/lib/userAuth";
 import { logAudit } from "@/lib/audit";
+import { frozenSeasonResponse } from "@/lib/seasonGuard";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,8 @@ export async function POST(request: NextRequest, { params }: Params) {
 
   const match = await prisma.match.findUnique({ where: { id } });
   if (!match) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  const frozen = await frozenSeasonResponse(match.seasonId);
+  if (frozen) return frozen;
   if (match.status !== "LIVE") {
     return NextResponse.json({ error: "Match is not live" }, { status: 409 });
   }
@@ -79,6 +82,8 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
   const { id } = await params;
   const match = await prisma.match.findUnique({ where: { id } });
   if (!match) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  const frozen = await frozenSeasonResponse(match.seasonId);
+  if (frozen) return frozen;
 
   const updated = await prisma.$transaction(async (tx) => {
     await tx.matchEvent.deleteMany({ where: { matchId: id } });

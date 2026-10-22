@@ -1,12 +1,13 @@
 import { prisma } from "@/lib/db";
+import { getCurrentSeasonId } from "@/lib/currentSeason";
 
 const matchWithTeams = {
   homeTeam: true,
   awayTeam: true,
 } as const;
 
-const recentResultsQuery = {
-  where: { status: "FINISHED" as const },
+const recentResultsQuery = (seasonId: string) => ({
+  where: { seasonId, status: "FINISHED" as const },
   include: {
     ...matchWithTeams,
     events: {
@@ -16,12 +17,14 @@ const recentResultsQuery = {
   },
   orderBy: { finishedAt: "desc" as const },
   take: 5,
-};
+});
 
-export async function getLiveStatus() {
+export async function getLiveStatus(seasonId?: string | null) {
+  const sid = seasonId ?? (await getCurrentSeasonId());
+  if (!sid) return { status: "IDLE" as const, nextFixture: null, recentResults: [] };
   const [live, recentResults] = await Promise.all([
     prisma.match.findFirst({
-      where: { status: "LIVE" },
+      where: { seasonId: sid, status: "LIVE" },
       include: {
         ...matchWithTeams,
         events: {
@@ -32,7 +35,7 @@ export async function getLiveStatus() {
       },
       orderBy: { startedAt: "asc" },
     }),
-    prisma.match.findMany(recentResultsQuery),
+    prisma.match.findMany(recentResultsQuery(sid)),
   ]);
 
   if (live) {
@@ -42,7 +45,7 @@ export async function getLiveStatus() {
   }
 
   const nextFixture = await prisma.match.findFirst({
-    where: { status: "SCHEDULED", homeTeamId: { not: null }, awayTeamId: { not: null } },
+    where: { seasonId: sid, status: "SCHEDULED", homeTeamId: { not: null }, awayTeamId: { not: null } },
     include: matchWithTeams,
     orderBy: [{ scheduledAt: "asc" }, { createdAt: "asc" }],
   });

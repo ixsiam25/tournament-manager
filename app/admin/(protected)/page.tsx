@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
+import { getCurrentSeasonId } from "@/lib/currentSeason";
 import { StartMatchButton } from "@/components/StartMatchButton";
 import { Crest } from "@/components/Crest";
 import { getSessionUser } from "@/lib/userAuth";
@@ -12,16 +13,17 @@ export default async function AdminDashboardPage() {
   // whether to show the management quick-links below (SCORER shouldn't).
   const user = await getSessionUser(["ADMIN", "SCORER"]);
   const isAdmin = user?.role === "ADMIN";
+  const seasonId = (await getCurrentSeasonId()) ?? "none";
   const [teamCount, playerCount, matchCount, liveMatch, upcoming] = await Promise.all([
-    prisma.team.count(),
-    prisma.player.count(),
-    prisma.match.count(),
+    prisma.team.count({ where: { seasonId } }),
+    prisma.player.count({ where: { seasonId } }),
+    prisma.match.count({ where: { seasonId } }),
     prisma.match.findFirst({
-      where: { status: "LIVE" },
+      where: { seasonId, status: "LIVE" },
       include: { homeTeam: true, awayTeam: true },
     }),
     prisma.match.findMany({
-      where: { status: "SCHEDULED" },
+      where: { seasonId, status: "SCHEDULED" },
       include: { homeTeam: true, awayTeam: true },
       orderBy: [{ scheduledAt: "asc" }, { createdAt: "asc" }],
       take: 3,
