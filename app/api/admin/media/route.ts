@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/userAuth";
 import { logAudit } from "@/lib/audit";
-import { getPhotoStore } from "@/lib/blobStore";
+import { putObject } from "@/lib/mediaStore";
 
 export const dynamic = "force-dynamic";
 
@@ -58,8 +58,7 @@ export async function POST(request: NextRequest) {
 
   const key = `season-media-${seasonId}-${randomUUID()}`;
   const buffer = await file.arrayBuffer();
-  const store = getPhotoStore();
-  await store.set(key, buffer, { metadata: { contentType: file.type } });
+  await putObject(key, buffer, file.type);
 
   const maxSort = await prisma.mediaAsset.aggregate({ where: { seasonId }, _max: { sortOrder: true } });
   const asset = await prisma.mediaAsset.create({

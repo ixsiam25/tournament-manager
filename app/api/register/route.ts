@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { registrationSchema } from "@/lib/validation";
-import { getPhotoStore } from "@/lib/blobStore";
+import { putObject } from "@/lib/mediaStore";
 import { isRateLimited, clientIp } from "@/lib/rateLimit";
 import { randomUUID } from "node:crypto";
 
@@ -52,7 +52,17 @@ export async function POST(request: NextRequest) {
     }
     photoKey = `registration-${randomUUID()}`;
     const buffer = await file.arrayBuffer();
-    await getPhotoStore().set(photoKey, buffer, { metadata: { contentType: file.type } });
+    try {
+      await putObject(photoKey, buffer, file.type);
+    } catch (error) {
+      // Fail the whole submission rather than silently dropping the photo —
+      // the applicant can retry (or submit without one).
+      console.error("[register] photo upload to R2 failed:", error);
+      return NextResponse.json(
+        { error: "Photo upload is temporarily unavailable — please try again, or submit without a photo" },
+        { status: 503 },
+      );
+    }
   }
 
   const registration = await prisma.registration.create({

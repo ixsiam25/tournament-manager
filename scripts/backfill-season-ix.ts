@@ -13,7 +13,7 @@ dotenv.config({ path: ".env.local" });
 async function main() {
   const { prisma } = await import("../lib/db");
   const { buildSeasonArchive } = await import("../lib/seasonArchive");
-  const { getSeasonArchiveStore } = await import("../lib/blobStore");
+  const { putObject } = await import("../lib/mediaStore");
 
   const existing = await prisma.season.findUnique({ where: { number: 9 } });
   if (existing) {
@@ -58,11 +58,8 @@ async function main() {
   });
   console.log(`Created Season row ${season.id} for Season IX.`);
 
-  const store = getSeasonArchiveStore();
-  await store.set(`season-${season.slug}.json`, JSON.stringify(archive, null, 2), {
-    metadata: { contentType: "application/json" },
-  });
-  console.log(`Wrote season-${season.slug}.json to the season-archives Blobs store.`);
+  await putObject(`archives/season-${season.slug}.json`, JSON.stringify(archive, null, 2), "application/json");
+  console.log(`Wrote season-${season.slug}.json to R2 (archives/).`);
 
   const players = await prisma.player.findMany({ where: { personId: null } });
   let linked = 0;

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/userAuth";
 import { logAudit } from "@/lib/audit";
-import { getPhotoStore } from "@/lib/blobStore";
+import { deleteObject } from "@/lib/mediaStore";
 
 export const dynamic = "force-dynamic";
 
@@ -85,11 +85,11 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
   if (!asset) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   await prisma.mediaAsset.delete({ where: { id } });
-  // Best-effort — an orphaned blob is a minor storage cost, not worth
+  // Best-effort — an orphaned object is a minor storage cost, not worth
   // failing the delete over if this errors.
-  await getPhotoStore()
-    .delete(asset.key)
-    .catch((error) => console.error("Failed to delete media blob:", error));
+  await deleteObject(asset.key).catch((error) =>
+    console.error("Failed to delete media object:", error),
+  );
 
   await logAudit({
     actor,

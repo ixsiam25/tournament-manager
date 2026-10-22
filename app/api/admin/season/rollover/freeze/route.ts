@@ -11,7 +11,7 @@ export async function POST() {
   const { user: actor } = result;
 
   try {
-    const { seasonId, archive } = await freezeActiveSeason();
+    const { seasonId, archive, backupStored } = await freezeActiveSeason();
     await logAudit({
       actor,
       action: "season.freeze",
@@ -19,7 +19,7 @@ export async function POST() {
       entityId: seasonId,
       summary: `Froze season — champion: ${archive.championResult?.championTeamName ?? "unresolved"}`,
     });
-    return NextResponse.json({ seasonId, archive });
+    return NextResponse.json({ seasonId, archive, backupStored });
   } catch (e) {
     return NextResponse.json({ error: e instanceof Error ? e.message : "Failed to freeze season" }, { status: 409 });
   }

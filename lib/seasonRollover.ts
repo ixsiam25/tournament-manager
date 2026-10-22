@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import { buildSeasonArchive } from "@/lib/seasonArchive";
-import { getSeasonArchiveStore } from "@/lib/blobStore";
+import { putObject } from "@/lib/mediaStore";
 import type { SeasonFormatConfig } from "@/lib/seasonFormat";
 
 export type PreflightResult = {
@@ -55,7 +55,7 @@ export async function getRolloverStatus(): Promise<RolloverStatus> {
 /** Freezes the current active season — builds the archive, writes it to
  * `Season.resultsJson` and a Blobs copy. Does not touch live tables; that
  * only happens in `openNextSeason`. */
-export async function freezeActiveSeason(): Promise<{ seasonId: string; archive: Awaited<ReturnType<typeof buildSeasonArchive>> }> {
+export async function freezeActiveSeason(): Promise<{ seasonId: string; archive: Awaited<ReturnType<typeof buildSeasonArchive>>; backupStored: boolean }> {
   const season = await prisma.season.findFirst({ where: { status: "ACTIVE" } });
   if (!season) throw new Error("No active season to freeze");
 
@@ -84,12 +84,18 @@ export async function freezeActiveSeason(): Promise<{ seasonId: string; archive:
     },
   });
 
-  const store = getSeasonArchiveStore();
-  await store.set(`season-${season.slug}.json`, JSON.stringify(archive, null, 2), {
-    metadata: { contentType: "application/json" },
-  });
+  // The DB row above is the source of truth; this R2 copy is an independent
+  // backup. By now the season is already ARCHIVED, so a store failure must
+  // not turn the freeze into an error — report it instead of throwing.
+  let backupStored = true;
+  try {
+    await putObject(`archives/season-${season.slug}.json`, JSON.stringify(archive, null, 2), "application/json");
+  } catch (error) {
+    backupStored = false;
+    console.error(`[rollover] archive backup to R2 failed for ${season.slug}:`, error);
+  }
 
-  return { seasonId: season.id, archive };
+  return { seasonId: season.id, archive, backupStored };
 }
 
 export type OpenSeasonInput = {

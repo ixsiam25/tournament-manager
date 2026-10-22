@@ -106,7 +106,11 @@ export function SeasonRolloverWizard() {
       setError(body.error ?? "Failed to freeze season");
       return;
     }
+    const frozen = await res.json().catch(() => ({}));
     loadStatus();
+    if (frozen.backupStored === false) {
+      setError("Season frozen and saved in the database, but the off-site backup copy could not be written. Check the R2 settings.");
+    }
   }
 
   function addPitch() {
