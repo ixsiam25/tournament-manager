@@ -24,7 +24,7 @@ export async function getAllPlayers(seasonId?: string | null): Promise<RosterPla
   const sid = seasonId ?? (await getCurrentSeasonId());
   if (!sid) return [];
   const players = await prisma.player.findMany({
-    where: { seasonId: sid, teamId: { not: null } },
+    where: { seasonId: sid, teamId: { not: null }, status: "ACTIVE" },
     include: { team: true },
     orderBy: [
       { team: { semester: "desc" } },

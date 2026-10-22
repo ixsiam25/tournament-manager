@@ -10,7 +10,8 @@ export const teamSchema = z.object({
 export const playerSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(60),
   jerseyNumber: z.coerce.number().int().min(0).max(999),
-  teamId: z.string().trim().min(1, "Team is required"),
+  /** Null/omitted = unassigned (in the season pool). */
+  teamId: z.string().trim().min(1).nullable().optional(),
   position: z.enum(["GK", "DEF", "MID", "FWD"]).optional().nullable(),
   isCaptain: z.coerce.boolean().optional(),
   photoUrl: z.string().trim().max(500).optional().nullable(),

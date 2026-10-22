@@ -33,7 +33,7 @@ const openSeasonSchema = z.object({
     .max(60)
     .regex(/^[a-z0-9-]+$/, "Slug can only contain lowercase letters, numbers and dashes"),
   year: z.coerce.number().int(),
-  teamFormation: z.enum(["BATCH", "AUCTION"]),
+  teamFormation: z.enum(["BATCH", "AUCTION", "MANUAL", "DRAFT", "BALANCED_RANDOM"]),
   targetTeamCount: z.coerce.number().int().positive().optional().nullable(),
   squadSizeMin: z.coerce.number().int().positive(),
   squadSizeMax: z.coerce.number().int().positive(),

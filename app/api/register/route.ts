@@ -1,24 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { registrationSchema } from "@/lib/validation";
-import { putObject } from "@/lib/mediaStore";
 import { isRateLimited, clientIp } from "@/lib/rateLimit";
-import { randomUUID } from "node:crypto";
-import { normalizeStudentId } from "@/lib/identity";
 import { getActiveSeason } from "@/lib/currentSeason";
+import { resolveApplicationConfig } from "@/lib/applicationConfig";
+import { isApplicationOpen, parseApplicationForm, storeApplicantPhoto } from "@/lib/applicationForm";
+import { generateEditToken } from "@/lib/applicationToken";
 
 export const dynamic = "force-dynamic";
 
-const MAX_BYTES = 4 * 1024 * 1024;
-const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
-
-/** Whether the currently-ACTIVE season is accepting self-serve
- * registrations right now — used both to gate submission and to tell the
- * public form whether to show itself at all. */
+/** Tells the public form whether applications are open and exactly what to
+ * ask for (the season's configured fields and custom questions). */
 export async function GET() {
   const season = await getActiveSeason();
-  const open = !!season?.registrationSelfServeEnabled && !!season?.registrationOpen;
-  return NextResponse.json({ open, seasonName: season?.name ?? null });
+  const open = !!season && isApplicationOpen(season);
+  return NextResponse.json({
+    open,
+    seasonName: season?.name ?? null,
+    deadline: season?.applicationDeadline?.toISOString() ?? null,
+    config: resolveApplicationConfig(season?.applicationConfig),
+  });
 }
 
 export async function POST(request: NextRequest) {
@@ -28,47 +28,31 @@ export async function POST(request: NextRequest) {
   }
 
   const season = await getActiveSeason();
-  if (!season || !season.registrationSelfServeEnabled || !season.registrationOpen) {
-    return NextResponse.json({ error: "Registration is not open right now" }, { status: 403 });
+  if (!season || !isApplicationOpen(season)) {
+    return NextResponse.json({ error: "Applications are not open right now" }, { status: 403 });
   }
+  const config = resolveApplicationConfig(season.applicationConfig);
 
   const formData = await request.formData().catch(() => null);
-  const parsed = registrationSchema.safeParse({
-    name: formData?.get("name"),
-    affiliation: formData?.get("affiliation"),
-    position: formData?.get("position") || null,
-    contact: formData?.get("contact"),
-    studentId: formData?.get("studentId") || null,
-  });
-  if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Invalid data" }, { status: 400 });
-  }
+  if (!formData) return NextResponse.json({ error: "Invalid form" }, { status: 400 });
+  const parsed = parseApplicationForm(formData, config);
+  if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
+  const app = parsed.value;
 
-  const studentId = normalizeStudentId(parsed.data.studentId);
-  if (!studentId) {
-    return NextResponse.json({ error: "Student ID is required" }, { status: 400 });
-  }
-  const alreadyApplied = await prisma.registration.findFirst({
-    where: { seasonId: season.id, studentId, status: { not: "REJECTED" } },
-    select: { id: true },
-  });
-  if (alreadyApplied) {
-    return NextResponse.json({ error: "An application with this student ID already exists for this season" }, { status: 409 });
+  if (app.studentId) {
+    const alreadyApplied = await prisma.registration.findFirst({
+      where: { seasonId: season.id, studentId: app.studentId, status: { not: "REJECTED" } },
+      select: { id: true },
+    });
+    if (alreadyApplied) {
+      return NextResponse.json({ error: "An application with this student ID already exists for this season" }, { status: 409 });
+    }
   }
 
   let photoKey: string | null = null;
-  const file = formData?.get("photo");
-  if (file instanceof File && file.size > 0) {
-    if (!ALLOWED_TYPES.has(file.type)) {
-      return NextResponse.json({ error: "Photo must be JPEG, PNG, or WebP" }, { status: 400 });
-    }
-    if (file.size > MAX_BYTES) {
-      return NextResponse.json({ error: "Photo is too large" }, { status: 400 });
-    }
-    photoKey = `registration-${randomUUID()}`;
-    const buffer = await file.arrayBuffer();
+  if (app.photo) {
     try {
-      await putObject(photoKey, buffer, file.type);
+      photoKey = await storeApplicantPhoto(app.photo);
     } catch (error) {
       // Fail the whole submission rather than silently dropping the photo —
       // the applicant can retry (or submit without one).
@@ -80,19 +64,26 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  const registration = await prisma.registration.create({
+  const { token, hash } = generateEditToken();
+  await prisma.registration.create({
     data: {
       seasonId: season.id,
-      name: parsed.data.name,
-      affiliation: parsed.data.affiliation,
-      position: parsed.data.position,
-      contact: parsed.data.contact,
-      studentId,
+      name: app.name,
+      affiliation: app.affiliation,
+      position: app.position,
+      contact: app.contact,
+      studentId: app.studentId,
+      answers: Object.keys(app.answers).length ? app.answers : undefined,
       photoKey,
+      photoZoom: app.framing.photoZoom,
+      photoX: app.framing.photoX,
+      photoY: app.framing.photoY,
+      editTokenHash: hash,
       source: "SELF_SERVE",
       status: "PENDING",
     },
   });
 
-  return NextResponse.json({ id: registration.id }, { status: 201 });
+  // The token is returned exactly once; only its hash is stored.
+  return NextResponse.json({ ok: true, editToken: token, seasonName: season.name }, { status: 201 });
 }

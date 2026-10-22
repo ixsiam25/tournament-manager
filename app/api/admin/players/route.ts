@@ -13,11 +13,14 @@ export async function GET(request: NextRequest) {
   if (result instanceof NextResponse) return result;
 
   const teamId = request.nextUrl.searchParams.get("teamId");
+  // Released players are hidden unless asked for (the live console must only
+  // offer current squad members).
+  const includeReleased = request.nextUrl.searchParams.get("includeReleased") === "1";
   const current = await getCurrentSeason();
   const players = await prisma.player.findMany({
-    where: { seasonId: current?.id ?? "none", ...(teamId ? { teamId } : {}) },
-    include: { team: true },
-    orderBy: [{ team: { name: "asc" } }, { jerseyNumber: "asc" }],
+    where: { seasonId: current?.id ?? "none", ...(teamId ? { teamId } : {}), ...(includeReleased ? {} : { status: "ACTIVE" }) },
+    include: { team: true, person: { select: { identifiers: { select: { value: true } } } } },
+    orderBy: [{ status: "asc" }, { team: { name: "asc" } }, { name: "asc" }],
   });
   return NextResponse.json({ players });
 }
@@ -44,14 +47,30 @@ export async function POST(request: NextRequest) {
   }
 
   const { studentId, ...playerData } = parsed.data;
+  const teamId = playerData.teamId ?? null;
   const { personId } = await findOrCreatePerson({ name: playerData.name, studentId });
   const alreadyOnRoster = await prisma.player.findUnique({ where: { seasonId_personId: { seasonId: season.id, personId } } });
   if (alreadyOnRoster) {
     return NextResponse.json({ error: "That person is already on this season's roster" }, { status: 409 });
   }
 
+  if (teamId && season.squadSizeMax) {
+    const size = await prisma.player.count({ where: { teamId, status: "ACTIVE" } });
+    if (size >= season.squadSizeMax) {
+      return NextResponse.json({ error: `That team already has the maximum of ${season.squadSizeMax} players` }, { status: 409 });
+    }
+  }
+  if (teamId) {
+    const holder = await prisma.player.findFirst({ where: { teamId, jerseyNumber: playerData.jerseyNumber, status: "ACTIVE" }, select: { name: true } });
+    if (holder) {
+      return NextResponse.json({ error: `Jersey #${playerData.jerseyNumber} is already worn by ${holder.name}` }, { status: 409 });
+    }
+  }
+
   try {
-    const player = await prisma.player.create({ data: { ...playerData, seasonId: season.id, personId } });
+    const player = await prisma.player.create({
+      data: { ...playerData, teamId, jerseyNumber: teamId ? playerData.jerseyNumber : 0, seasonId: season.id, personId },
+    });
     await logAudit({
       actor,
       action: "player.create",

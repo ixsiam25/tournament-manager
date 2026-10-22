@@ -16,7 +16,7 @@ export default async function TeamSquadPage({
   const { id } = await params;
   const team = await prisma.team.findUnique({
     where: { id },
-    include: { players: { orderBy: { jerseyNumber: "asc" } } },
+    include: { players: { where: { status: "ACTIVE" }, orderBy: { jerseyNumber: "asc" } } },
   });
 
   if (!team) notFound();

@@ -13,6 +13,8 @@ type Registration = {
   position: Position | null;
   contact: string;
   studentId: string | null;
+  photoKey: string | null;
+  answers: Record<string, string> | null;
   source: Source;
   status: Status;
   createdAt: string;
@@ -318,11 +320,22 @@ export function RegistrationsPanel() {
                 }
               />
             )}
+            {r.photoKey ? (
+              // eslint-disable-next-line @next/next/no-img-element -- small admin thumbnail via the photo proxy
+              <img src={`/api/photos/${r.photoKey}`} alt="" className="h-9 w-9 rounded-full object-cover" />
+            ) : (
+              <span className="h-9 w-9 rounded-full bg-line" />
+            )}
             <div className="min-w-0 flex-1">
               <span className="font-bold">{r.name}</span>
               <span className="ml-2 text-sm text-muted-foreground">{r.affiliation}</span>
               {r.position && <span className="ml-2 text-xs text-muted-foreground">{r.position}</span>}
               {r.studentId && <span className="ml-2 font-mono text-xs text-muted-foreground">ID {r.studentId}</span>}
+              {r.answers && Object.keys(r.answers).length > 0 && (
+                <div className="mt-0.5 text-xs text-muted-foreground">
+                  {Object.entries(r.answers).map(([k, a]) => `${k}: ${a}`).join(" · ")}
+                </div>
+              )}
               <span className="ml-2 rounded-full bg-line px-2 py-0.5 text-[10px] font-bold uppercase text-muted-foreground">
                 {SOURCE_LABELS[r.source]}
               </span>

@@ -418,3 +418,39 @@ The app is no longer "one live season". Every live row belongs to a `Season`
   Franchise); it falls back to the frozen snapshots while an archived season
   has no rows. `/legacy/hall-of-fame` still reads snapshots (follow-up).
 - Tests: `npm run test:identity` and `npm run test:stats` (dev branch).
+
+## Applications & team formation (Phase 2b, 2026-10-22)
+
+- **Application form is data.** `Season.applicationConfig` (+ `applicationDeadline`)
+  decides which fields the public form asks and requires, plus up to six custom
+  questions (`lib/applicationConfig.ts` — shared by the form, the API and the
+  admin editor in Settings). Name is always asked. Disabled fields are stored as
+  empty strings; answers live in `Registration.answers`.
+- **Card-building apply page** (`/register`): the player card previews live
+  (`components/PlayerCardPreview.tsx`), photo guide + client-side quality
+  warnings (`lib/photoCheck.ts`), framing stored as numbers
+  (`photoZoom/X/Y`, never baked into the image), and a mandatory "I checked my
+  card" step before submit. Ratings stay blank until an organiser sets them.
+  The background cut-out worker is Phase 2c — the card shows the raw photo until then.
+- **Edit link**: submitting returns a private `/register/edit/<token>` once; only
+  its SHA-256 is stored (`lib/applicationToken.ts`). The applicant can edit while
+  the application is PENDING and the form is open; after review the page is read-only.
+- **Approval puts everyone in the pool** (a `Player` with no team, jersey 0) for
+  every strategy; an AUCTION season also queues a lot. Switching a season to
+  AUCTION backfills lots for pool players.
+- **Formation strategies** (`Season.teamFormation`: BATCH, MANUAL, DRAFT,
+  BALANCED_RANDOM, AUCTION) run from `/admin/formation`: drag/select board,
+  group-by-affiliation, balanced random deal (seeded: preview == apply), snake
+  draft with undo (`Season.formationState`), auction link. Pure logic in
+  `lib/formation.ts`, server side in `lib/formationService.ts`. Pre-assigning
+  some players first and running a strategy on the rest works because every
+  strategy only acts on the pool. TEAM_SUBMITTED rosters are not built yet.
+- **Roster manager** (`/admin/players`): inline edit of name, number, team,
+  position, captain, photo. Jersey clashes and squad limits are refused with a
+  message; one captain per team. **Release** (not delete) a player who has match
+  history: status `RELEASED`, number parked as a negative so it can be reused,
+  goals/assists stay. After kickoff, moves and releases are audited as
+  `roster.transfer`. Released players are hidden from squads/rosters/live console
+  but kept in stats.
+- Tests: `npm run test:formation` (pure), and — dev branch only — `test:formationdb`,
+  `test:apply` (browser), `test:adminui` (browser, minted admin session); `npm run test:dev` runs them all.

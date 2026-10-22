@@ -17,7 +17,7 @@ export default async function ManagerPortalPage() {
 
   const [team, players] = await Promise.all([
     prisma.team.findUnique({ where: { id: teamId }, select: { name: true, logoUrl: true } }),
-    prisma.player.findMany({ where: { teamId }, orderBy: { jerseyNumber: "asc" } }),
+    prisma.player.findMany({ where: { teamId, status: "ACTIVE" }, orderBy: { jerseyNumber: "asc" } }),
   ]);
   if (!team) redirect("/manager/login");
 

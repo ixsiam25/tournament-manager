@@ -12,7 +12,12 @@
     "test:smoke": "playwright test",
     "test:scoping": "tsx tests/integration/season-scoping.ts",
     "test:stats": "tsx tests/integration/league-stats.ts",
-    "test:identity": "tsx tests/integration/identity.ts"
+    "test:identity": "tsx tests/integration/identity.ts",
+    "test:apply": "tsx tests/integration/apply-flow.ts",
+    "test:formation": "tsx tests/unit/formation.ts",
+    "test:formationdb": "tsx tests/integration/formation.ts",
+    "test:adminui": "tsx tests/integration/admin-ui.ts",
+    "test:dev": "ALLOW_DB_WRITE_TESTS=1 sh -c \"npm run test:formation && npm run test:stats && npm run test:scoping && npm run test:identity && npm run test:formationdb && npm run test:apply && npm run test:adminui\""
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

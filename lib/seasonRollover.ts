@@ -106,7 +106,7 @@ export type OpenSeasonInput = {
   name: string;
   slug: string;
   year: number;
-  teamFormation: "BATCH" | "AUCTION";
+  teamFormation: "BATCH" | "AUCTION" | "MANUAL" | "DRAFT" | "BALANCED_RANDOM";
   targetTeamCount?: number | null;
   squadSizeMin: number;
   squadSizeMax: number;

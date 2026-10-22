@@ -1,24 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { downscaleToJpeg } from "@/lib/downscaleImage";
+import { ApplicationForm } from "@/components/ApplicationForm";
+import { DEFAULT_APPLICATION_CONFIG, type ApplicationConfig } from "@/lib/applicationConfig";
 
-type Position = "GK" | "DEF" | "MID" | "FWD" | "";
-
+/** Public "apply to play" experience: loads the season's form configuration,
+ * shows the card-building form, and on success hands the applicant their
+ * private edit link. */
 export function RegistrationForm() {
   const [checking, setChecking] = useState(true);
   const [open, setOpen] = useState(false);
   const [seasonName, setSeasonName] = useState<string | null>(null);
-
-  const [name, setName] = useState("");
-  const [affiliation, setAffiliation] = useState("");
-  const [position, setPosition] = useState<Position>("");
-  const [contact, setContact] = useState("");
-  const [studentId, setStudentId] = useState("");
-  const [photo, setPhoto] = useState<File | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [done, setDone] = useState(false);
+  const [deadline, setDeadline] = useState<string | null>(null);
+  const [config, setConfig] = useState<ApplicationConfig>(DEFAULT_APPLICATION_CONFIG);
+  const [editLink, setEditLink] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     let ignore = false;
@@ -28,6 +24,8 @@ export function RegistrationForm() {
       if (!ignore) {
         setOpen(!!body.open);
         setSeasonName(body.seasonName);
+        setDeadline(body.deadline);
+        if (body.config) setConfig(body.config);
         setChecking(false);
       }
     })();
@@ -35,35 +33,6 @@ export function RegistrationForm() {
       ignore = true;
     };
   }, []);
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    setSubmitting(true);
-    try {
-      const formData = new FormData();
-      formData.append("name", name);
-      formData.append("affiliation", affiliation);
-      if (position) formData.append("position", position);
-      formData.append("contact", contact);
-      formData.append("studentId", studentId);
-      if (photo) {
-        const jpeg = await downscaleToJpeg(photo, "avatar");
-        formData.append("photo", jpeg, "photo.jpg");
-      }
-      const res = await fetch("/api/register", { method: "POST", body: formData });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        setError(body.error ?? "Failed to submit");
-        return;
-      }
-      setDone(true);
-    } catch {
-      setError("Couldn't process that photo");
-    } finally {
-      setSubmitting(false);
-    }
-  }
 
   if (checking) return <p className="text-muted-foreground">Loading…</p>;
 
@@ -75,87 +44,51 @@ export function RegistrationForm() {
     );
   }
 
-  if (done) {
+  if (editLink) {
     return (
-      <p className="rounded-block-lg border-2 border-pitch bg-pitch/10 p-5 text-pitch-dark">
-        Thanks — your registration has been submitted for review.
-      </p>
+      <div className="max-w-xl space-y-4 rounded-block-lg border-2 border-pitch bg-pitch/10 p-5 text-pitch-dark">
+        <p className="font-bold">Thanks — your application has been submitted for review.</p>
+        <p className="text-sm">
+          Save this private link. It&rsquo;s the only way to fix your details or photo until the organisers review your
+          application — it won&rsquo;t be shown again.
+        </p>
+        <div className="flex flex-wrap items-center gap-2">
+          <input readOnly value={editLink} aria-label="Your private edit link" className="min-w-0 flex-1 rounded-lg border border-line bg-background px-3 py-2 text-xs" />
+          <button
+            type="button"
+            onClick={async () => {
+              await navigator.clipboard?.writeText(editLink).catch(() => {});
+              setCopied(true);
+            }}
+            className="rounded-full bg-pitch px-4 py-2 text-xs font-bold text-white"
+          >
+            {copied ? "Copied" : "Copy link"}
+          </button>
+        </div>
+      </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-md space-y-4">
-      <Field label="Name">
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-          className="w-full rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-pitch"
-        />
-      </Field>
-      <Field label="Affiliation" hint="Team, batch, workplace — whatever identifies your group">
-        <input
-          value={affiliation}
-          onChange={(e) => setAffiliation(e.target.value)}
-          required
-          className="w-full rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-pitch"
-        />
-      </Field>
-      <Field label="Preferred position (optional)">
-        <select
-          value={position}
-          onChange={(e) => setPosition(e.target.value as Position)}
-          className="w-full rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-pitch"
-        >
-          <option value="">No preference</option>
-          <option value="GK">Goalkeeper</option>
-          <option value="DEF">Defence</option>
-          <option value="MID">Midfield</option>
-          <option value="FWD">Forward</option>
-        </select>
-      </Field>
-      <Field label="Contact" hint="Phone or messaging handle so we can reach you">
-        <input
-          value={contact}
-          onChange={(e) => setContact(e.target.value)}
-          required
-          className="w-full rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-pitch"
-        />
-      </Field>
-      <Field label="Student ID" hint="Used to recognise you across seasons — it is never shown publicly">
-        <input
-          value={studentId}
-          onChange={(e) => setStudentId(e.target.value)}
-          required
-          className="w-full rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-pitch"
-        />
-      </Field>
-      <Field label="Photo (optional)">
-        <input
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          onChange={(e) => setPhoto(e.target.files?.[0] ?? null)}
-          className="w-full text-sm"
-        />
-      </Field>
-      {error && <p className="text-sm text-live">{error}</p>}
-      <button
-        type="submit"
-        disabled={submitting}
-        className="rounded-full bg-pitch px-6 py-2.5 text-sm font-bold text-white disabled:opacity-60"
-      >
-        {submitting ? "Submitting…" : "Submit registration"}
-      </button>
-    </form>
-  );
-}
-
-function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
-  return (
-    <label className="block">
-      <span className="mb-1 block text-sm font-medium">{label}</span>
-      {children}
-      {hint && <span className="mt-1 block text-xs text-muted-foreground">{hint}</span>}
-    </label>
+    <div>
+      {deadline && (
+        <p className="mb-4 text-sm text-muted-foreground">
+          Applications close {new Date(deadline).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}.
+        </p>
+      )}
+      <ApplicationForm
+        config={config}
+        seasonName={seasonName ?? ""}
+        mode="create"
+        submitLabel="Submit application"
+        onSubmit={async (fd) => {
+          const res = await fetch("/api/register", { method: "POST", body: fd });
+          const body = await res.json().catch(() => ({}));
+          if (!res.ok) return body.error ?? "Failed to submit";
+          setEditLink(`${window.location.origin}/register/edit/${body.editToken}`);
+          return null;
+        }}
+      />
+    </div>
   );
 }

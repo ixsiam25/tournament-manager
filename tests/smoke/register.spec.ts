@@ -22,3 +22,13 @@ test("registration page shows form or closed notice", async ({ page }) => {
   const closed = page.getByText(/isn't open|not open|closed/i).first();
   await expect(form.or(closed).first()).toBeVisible();
 });
+
+test("edit link with an unknown token is a clean 404, not a crash", async ({ request, page }) => {
+  const res = await request.get("/api/register/edit/not-a-real-token-xxxxxxxxxxxx");
+  expect(res.status()).toBe(404);
+  const put = await request.put("/api/register/edit/not-a-real-token-xxxxxxxxxxxx", { multipart: { name: "x" } });
+  expect([404, 429]).toContain(put.status());
+  const r = await page.goto("/register/edit/not-a-real-token-xxxxxxxxxxxx");
+  expect(r?.status()).toBe(200);
+  await expect(page.getByText(/isn.t valid/)).toBeVisible();
+});

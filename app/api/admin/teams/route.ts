@@ -16,7 +16,7 @@ export async function GET() {
   const teams = await prisma.team.findMany({
     where: { seasonId: current?.id ?? "none" },
     orderBy: { name: "asc" },
-    include: { _count: { select: { players: true } } },
+    include: { _count: { select: { players: { where: { status: "ACTIVE" } } } } },
   });
   return NextResponse.json({ teams });
 }

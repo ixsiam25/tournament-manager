@@ -40,7 +40,7 @@ export function SeasonRolloverWizard() {
   const [slug, setSlug] = useState("");
   const [slugTouched, setSlugTouched] = useState(false);
   const [year, setYear] = useState(new Date().getFullYear());
-  const [teamFormation, setTeamFormation] = useState<"BATCH" | "AUCTION">("BATCH");
+  const [teamFormation, setTeamFormation] = useState<"BATCH" | "AUCTION" | "MANUAL" | "DRAFT" | "BALANCED_RANDOM">("BATCH");
   const [targetTeamCount, setTargetTeamCount] = useState("");
   const [squadSizeMin, setSquadSizeMin] = useState(6);
   const [squadSizeMax, setSquadSizeMax] = useState(8);
@@ -254,10 +254,13 @@ export function SeasonRolloverWizard() {
               <Field label="Team formation" className="col-span-2">
                 <select
                   value={teamFormation}
-                  onChange={(e) => setTeamFormation(e.target.value as "BATCH" | "AUCTION")}
+                  onChange={(e) => setTeamFormation(e.target.value as "BATCH" | "AUCTION" | "MANUAL" | "DRAFT" | "BALANCED_RANDOM")}
                   className="w-full rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-pitch"
                 >
                   <option value="BATCH">Batch (semester teams)</option>
+                  <option value="MANUAL">Manual (drag players onto teams)</option>
+                  <option value="BALANCED_RANDOM">Balanced random</option>
+                  <option value="DRAFT">Snake draft</option>
                   <option value="AUCTION">Auction</option>
                 </select>
               </Field>

@@ -16,7 +16,7 @@ export default async function AdminDashboardPage() {
   const seasonId = (await getCurrentSeasonId()) ?? "none";
   const [teamCount, playerCount, matchCount, liveMatch, upcoming] = await Promise.all([
     prisma.team.count({ where: { seasonId } }),
-    prisma.player.count({ where: { seasonId } }),
+    prisma.player.count({ where: { seasonId, status: "ACTIVE" } }),
     prisma.match.count({ where: { seasonId } }),
     prisma.match.findFirst({
       where: { seasonId, status: "LIVE" },

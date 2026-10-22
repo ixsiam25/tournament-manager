@@ -36,6 +36,14 @@ enum Position {
 enum TeamFormation {
   BATCH
   AUCTION
+  MANUAL
+  DRAFT
+  BALANCED_RANDOM
+}
+
+enum PlayerStatus {
+  ACTIVE
+  RELEASED
 }
 
 enum UserRole {
@@ -174,6 +182,16 @@ model Season {
   /// pitch list (name + optional availability window each). See
   /// `lib/scheduleRandomizer.ts` (Stage 4.2) for the shape consumed from here.
   formatConfig Json?
+
+  /// Which fields the public apply form shows/requires, plus custom
+  /// questions — see `lib/applicationConfig.ts`. Null = the defaults.
+  applicationConfig   Json?
+  /// Applications close automatically at this moment even if
+  /// `registrationOpen` is still on.
+  applicationDeadline DateTime?
+  /// Progress of an organiser-run team-formation process (currently the
+  /// snake draft's order + picks) — see `lib/formation.ts`.
+  formationState      Json?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -333,26 +351,31 @@ model AppSetting {
 }
 
 model Player {
-  id           String    @id @default(cuid())
+  id           String       @id @default(cuid())
   seasonId     String
-  season       Season    @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  season       Season       @relation(fields: [seasonId], references: [id], onDelete: Cascade)
   name         String
   jerseyNumber Int
   position     Position?
-  isCaptain    Boolean   @default(false)
+  isCaptain    Boolean      @default(false)
   photoUrl     String?
   /// Nullable so an AUCTION season's unsold players (registered but not yet
   /// bought by a team) can exist. Postgres doesn't treat NULLs as equal, so
   /// the [teamId, jerseyNumber] uniqueness below still allows any number of
   /// unsold players to coexist.
   teamId       String?
-  team         Team?     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  team         Team?        @relation(fields: [teamId], references: [id], onDelete: Cascade)
   /// The stable cross-season identity of the human on this roster slot.
   /// Required: a Player row is "a Person on a Team in one edition".
   personId     String
-  person       Person    @relation(fields: [personId], references: [id])
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  person       Person       @relation(fields: [personId], references: [id])
+  /// RELEASED = dropped from the squad mid-season (injury, replacement). The
+  /// row stays so goals/assists already logged keep their player; the jersey
+  /// number is parked as a negative so the real number can be reused.
+  status       PlayerStatus @default(ACTIVE)
+  releasedAt   DateTime?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
 
   events     MatchEvent[]
   auctionLot AuctionLot?
@@ -479,26 +502,39 @@ model MatchEvent {
 /// free text (not an APU-semester enum) — this tournament isn't assumed to
 /// be APU-batch-based going forward.
 model Registration {
-  id               String             @id @default(cuid())
-  seasonId         String
-  season           Season             @relation(fields: [seasonId], references: [id], onDelete: Cascade)
-  personId         String?
-  person           Person?            @relation(fields: [personId], references: [id])
-  name             String
-  affiliation      String
-  position         Position?
-  contact          String
+  id                String             @id @default(cuid())
+  seasonId          String
+  season            Season             @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  personId          String?
+  person            Person?            @relation(fields: [personId], references: [id])
+  name              String
+  affiliation       String
+  position          Position?
+  contact           String
   /// Raw (normalised) student ID as typed on the form; becomes a
   /// PersonIdentifier when the registration is approved.
-  studentId        String?
-  photoKey         String?
-  source           RegistrationSource
-  status           RegistrationStatus @default(PENDING)
-  notes            String?
-  reviewedByUserId String?
-  reviewedBy       User?              @relation(fields: [reviewedByUserId], references: [id])
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
+  studentId         String?
+  /// Answers to the season's custom application questions, keyed by
+  /// question id.
+  answers           Json?
+  /// SHA-256 of the private edit-link token handed to the applicant once, so
+  /// they can fix their application while it is still PENDING.
+  editTokenHash     String?            @unique
+  applicantEditedAt DateTime?
+  /// How the photo sits inside the player card's photo window: zoom in
+  /// percent, offsets in px. Stored as numbers, never baked into the image,
+  /// so an organiser can re-frame later.
+  photoZoom         Int                @default(100)
+  photoX            Int                @default(0)
+  photoY            Int                @default(0)
+  photoKey          String?
+  source            RegistrationSource
+  status            RegistrationStatus @default(PENDING)
+  notes             String?
+  reviewedByUserId  String?
+  reviewedBy        User?              @relation(fields: [reviewedByUserId], references: [id])
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
 
   @@index([seasonId])
   @@index([status])
