@@ -15,7 +15,6 @@ if (process.env.ALLOW_DB_WRITE_TESTS !== "1") {
   process.exit(0);
 }
 const base = process.env.SMOKE_BASE_URL ?? "http://localhost:3100";
-const r2 = Boolean(process.env.R2_ACCOUNT_ID && process.env.R2_ACCESS_KEY_ID && process.env.R2_SECRET_ACCESS_KEY && process.env.R2_BUCKET_NAME);
 
 async function main() {
   const { prisma } = await import("../../lib/db");
@@ -74,8 +73,12 @@ async function main() {
     const goodPng = new FormData();
     goodPng.append("cutout", new Blob([new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0])], { type: "image/png" }), "x.png");
     const up = await api(`/api/admin/players/${striker.id}/cutout`, "POST", goodPng);
-    assert.equal(up.status, r2 ? 200 : 503, r2 ? "valid cut-out is stored" : "no R2 locally => clear 503, nothing half-saved");
-    if (!r2) assert.equal((await prisma.player.findUniqueOrThrow({ where: { id: striker.id } })).cutoutKey, null);
+    assert.equal(up.status, 200, "a valid cut-out is stored (local dev store when R2 isn't configured)");
+    const stored = await prisma.player.findUniqueOrThrow({ where: { id: striker.id } });
+    assert.ok(stored.cutoutKey, "the cut-out key is saved on the player");
+    const served = await fetch(`${base}/api/photos/${stored.cutoutKey}`);
+    assert.equal(served.status, 200, "and the stored cut-out is served back");
+    assert.equal(served.headers.get("content-type"), "image/png");
     assert.equal((await api(`/api/admin/players/${striker.id}/cutout`, "DELETE")).status, 200);
 
     // ---- editor UI: ratings -> live overall/tier -> save ----

@@ -17,11 +17,14 @@
     "test:formation": "tsx tests/unit/formation.ts",
     "test:formationdb": "tsx tests/integration/formation.ts",
     "test:adminui": "tsx tests/integration/admin-ui.ts",
-    "test:dev": "ALLOW_DB_WRITE_TESTS=1 sh -c \"npm run test:formation && npm run test:card && npm run test:stats && npm run test:scoping && npm run test:identity && npm run test:formationdb && npm run test:apply && npm run test:adminui && npm run test:cards && npm run test:auction && npm run test:auctionui\"",
+    "test:dev": "ALLOW_DB_WRITE_TESTS=1 sh -c \"npm run test:formation && npm run test:card && npm run test:stats && npm run test:scoping && npm run test:identity && npm run test:formationdb && npm run test:apply && npm run test:adminui && npm run test:cards && npm run test:auction && npm run test:auctionui && npm run test:journey\"",
     "test:card": "tsx tests/unit/playerCard.ts",
     "test:cards": "tsx tests/integration/cards.ts",
     "test:auction": "tsx tests/integration/auction.ts",
-    "test:auctionui": "tsx tests/integration/auction-ui.ts"
+    "test:auctionui": "tsx tests/integration/auction-ui.ts",
+    "test:journey": "tsx tests/integration/journey.ts",
+    "demo:up": "tsx scripts/demo-season.ts up",
+    "demo:down": "tsx scripts/demo-season.ts down"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

@@ -103,7 +103,7 @@ export function CardEditor() {
               <span className="rounded-full bg-line px-2 py-0.5 text-[10px] font-bold uppercase">{c.model.tier}</span>
               <span className="text-xs text-muted-foreground">{c.isCutout ? "cut-out" : c.hasPhoto ? "photo" : "no photo"}</span>
             </button>
-            {open === c.id && <CardRow key={c.id + JSON.stringify(c.ratings) + c.cardTier + c.framing.zoom + c.imageUrl} card={c} seasonName={seasonName} frozen={frozen} onSaved={load} />}
+            {open === c.id && <CardRow key={c.id + JSON.stringify(c.ratings) + c.cardTier + c.framing.zoom + c.imageUrl} card={c} seasonName={seasonName} frozen={frozen} onSaved={async (text) => { await load(); setMessage({ ok: true, text }); }} />}
           </li>
         ))}
         {visible.length === 0 && <li className="px-5 py-6 text-center text-muted-foreground">No players match.</li>}
@@ -112,7 +112,9 @@ export function CardEditor() {
   );
 }
 
-function CardRow({ card, seasonName, frozen, onSaved }: { card: CardView; seasonName: string; frozen: boolean; onSaved: () => Promise<void> }) {
+/** `onSaved` reloads the list and shows the message at the top — the row itself
+ * remounts when its data changes, so it can't be the one to show "Saved". */
+function CardRow({ card, seasonName, frozen, onSaved }: { card: CardView; seasonName: string; frozen: boolean; onSaved: (message: string) => Promise<void> }) {
   const keys = statKeysFor(card.position);
   const [ratings, setRatings] = useState<Ratings>(card.ratings);
   const [tier, setTier] = useState<Tier | "">(card.cardTier ?? "");
@@ -136,8 +138,7 @@ function CardRow({ card, seasonName, frozen, onSaved }: { card: CardView; season
     });
     setBusy(false);
     if (!res.ok) return setStatus({ ok: false, text: (await res.json().catch(() => ({}))).error ?? "Could not save" });
-    setStatus({ ok: true, text: "Saved." });
-    await onSaved();
+    await onSaved("Saved.");
   }
 
   async function rerunCutout() {
@@ -161,8 +162,7 @@ function CardRow({ card, seasonName, frozen, onSaved }: { card: CardView; season
     const res = await fetch(`/api/admin/players/${card.id}/cutout`, { method: "POST", body: fd });
     setBusy(false);
     if (!res.ok) return setStatus({ ok: false, text: (await res.json().catch(() => ({}))).error ?? "Upload failed" });
-    setStatus({ ok: true, text: "Cut-out updated." });
-    await onSaved();
+    await onSaved("Cut-out updated.");
   }
 
   async function removeCutout() {
@@ -170,8 +170,7 @@ function CardRow({ card, seasonName, frozen, onSaved }: { card: CardView; season
     const res = await fetch(`/api/admin/players/${card.id}/cutout`, { method: "DELETE" });
     setBusy(false);
     if (!res.ok) return setStatus({ ok: false, text: "Could not remove" });
-    setStatus({ ok: true, text: "Back to the plain photo." });
-    await onSaved();
+    await onSaved("Back to the plain photo.");
   }
 
   return (

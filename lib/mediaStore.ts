@@ -1,3 +1,5 @@
+import fs from "node:fs/promises";
+import path from "node:path";
 import {
   S3Client,
   PutObjectCommand,
@@ -17,6 +19,19 @@ import {
  * and tests can load `.env.local` after importing this module.
  */
 let cached: S3Client | null = null;
+
+/**
+ * Local development without R2 credentials: files go to `.local-media/` instead
+ * (and are served back through `/api/photos/<key>`), so the whole photo flow —
+ * apply, cut-out, approval, cards — can be exercised on a laptop. Never active
+ * in a production build: there a missing bucket is a real error, not something
+ * to paper over.
+ */
+const LOCAL_DIR = path.join(process.cwd(), ".local-media");
+function isLocalStore(): boolean {
+  return process.env.NODE_ENV !== "production" && !isMediaStoreConfigured();
+}
+const localPath = (key: string) => path.join(LOCAL_DIR, encodeURIComponent(key));
 
 function client(): S3Client {
   if (!cached) {
@@ -48,6 +63,12 @@ export async function putObject(
   body: ArrayBuffer | Uint8Array | string,
   contentType: string,
 ): Promise<void> {
+  if (isLocalStore()) {
+    await fs.mkdir(LOCAL_DIR, { recursive: true });
+    await fs.writeFile(localPath(key), typeof body === "string" ? body : body instanceof Uint8Array ? body : new Uint8Array(body));
+    await fs.writeFile(`${localPath(key)}.type`, contentType);
+    return;
+  }
   await client().send(
     new PutObjectCommand({
       Bucket: bucket(),
@@ -65,6 +86,7 @@ export async function uploadMedia(
   contentType: string,
 ): Promise<string> {
   await putObject(key, body, contentType);
+  if (isLocalStore()) return `/api/photos/${key}`;
   return `https://${process.env.R2_PUBLIC_URL ?? ""}/${key}`;
 }
 
@@ -72,6 +94,14 @@ export async function uploadMedia(
 export async function getObject(
   key: string,
 ): Promise<{ data: Uint8Array; contentType: string } | null> {
+  if (isLocalStore()) {
+    try {
+      const [data, type] = await Promise.all([fs.readFile(localPath(key)), fs.readFile(`${localPath(key)}.type`, "utf8").catch(() => "application/octet-stream")]);
+      return { data: new Uint8Array(data), contentType: type };
+    } catch {
+      return null;
+    }
+  }
   try {
     const res = await client().send(new GetObjectCommand({ Bucket: bucket(), Key: key }));
     if (!res.Body) return null;
@@ -87,5 +117,9 @@ export async function getObject(
 }
 
 export async function deleteObject(key: string): Promise<void> {
+  if (isLocalStore()) {
+    await Promise.all([fs.rm(localPath(key), { force: true }), fs.rm(`${localPath(key)}.type`, { force: true })]);
+    return;
+  }
   await client().send(new DeleteObjectCommand({ Bucket: bucket(), Key: key }));
 }

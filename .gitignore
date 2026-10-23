@@ -56,3 +56,6 @@ next-env.d.ts
 # Playwright
 /test-results/
 /playwright-report/
+
+# Dev-only fallback media store (lib/mediaStore.ts)
+/.local-media/

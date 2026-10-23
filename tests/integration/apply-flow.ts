@@ -15,7 +15,6 @@ if (process.env.ALLOW_DB_WRITE_TESTS !== "1") {
   process.exit(0);
 }
 const base = process.env.SMOKE_BASE_URL ?? "http://localhost:3100";
-const r2 = Boolean(process.env.R2_ACCOUNT_ID && process.env.R2_ACCESS_KEY_ID && process.env.R2_SECRET_ACCESS_KEY && process.env.R2_BUCKET_NAME);
 
 async function main() {
   const { prisma } = await import("../../lib/db");
@@ -94,27 +93,21 @@ async function main() {
     const parts = Object.fromEntries(uploads[uploads.length - 1]);
     assert.match(parts.cutout ?? "", /^image\/png:\d+$/, "the cut-out PNG is uploaded with the application");
     assert.match(parts.photo ?? "", /^image\/jpeg:\d+$/, "the original (downscaled) photo is uploaded too");
-    if (r2) {
-      await page.getByLabel("Your private edit link").waitFor({ timeout: 30000 });
-    } else {
-      await page.getByText("temporarily unavailable").waitFor({ timeout: 30000 });
-      console.log("  (R2 not configured locally → photo path degraded gracefully with a clear message)");
-      // Retry without a photo to exercise the rest of the flow.
-      await page.reload();
-      await page.getByLabel("Student ID").waitFor();
-      await page.locator("input").first().fill("Test Applicant");
-      await page.getByLabel("Student ID").fill(`zz-${stamp}`);
-      await page.getByLabel("Affiliation").fill("ZZ Batch");
-      await page.getByLabel("Contact").fill("090-0000-0000");
-      await page.getByRole("button", { name: "Submit application" }).click();
-      await page.getByLabel("Your private edit link").waitFor({ timeout: 30000 });
-    }
+    await page.getByLabel("Your private edit link").waitFor({ timeout: 30000 });
     const link = await page.getByLabel("Your private edit link").inputValue();
     assert.match(link, /\/register\/edit\/[A-Za-z0-9_-]{20,}$/);
     const reg = await prisma.registration.findFirstOrThrow({ where: { seasonId: season.id } });
     assert.equal(reg.studentId, `ZZ-${stamp}`, "student ID stored normalised");
     assert.equal(reg.status, "PENDING");
     assert.ok(reg.editTokenHash && !link.includes(reg.editTokenHash), "only a hash of the token is stored");
+    // the photo AND the cut-out really are stored and served back
+    assert.ok(reg.photoKey && reg.cutoutKey, "photo and cut-out keys are saved");
+    for (const [label, key, type] of [["photo", reg.photoKey!, "image/jpeg"], ["cut-out", reg.cutoutKey!, "image/png"]] as const) {
+      const res = await fetch(`${base}/api/photos/${key}`);
+      assert.equal(res.status, 200, `${label} is served back`);
+      assert.equal(res.headers.get("content-type"), type);
+      assert.ok((await res.arrayBuffer()).byteLength > 2000, `${label} isn't empty`);
+    }
 
     // ---- duplicate student ID is refused ----
     await page.goto(`${base}/register`);
