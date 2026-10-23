@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 import { isRateLimited, clientIp } from "@/lib/rateLimit";
 import { getActiveSeason } from "@/lib/currentSeason";
 import { resolveApplicationConfig } from "@/lib/applicationConfig";
-import { isApplicationOpen, parseApplicationForm, storeApplicantPhoto } from "@/lib/applicationForm";
+import { isApplicationOpen, parseApplicationForm, storeApplicantCutout, storeApplicantPhoto } from "@/lib/applicationForm";
 import { generateEditToken } from "@/lib/applicationToken";
 
 export const dynamic = "force-dynamic";
@@ -50,9 +50,11 @@ export async function POST(request: NextRequest) {
   }
 
   let photoKey: string | null = null;
+  let cutoutKey: string | null = null;
   if (app.photo) {
     try {
       photoKey = await storeApplicantPhoto(app.photo);
+      if (app.cutout) cutoutKey = await storeApplicantCutout(app.cutout).catch(() => null); // the cut-out is a nicety
     } catch (error) {
       // Fail the whole submission rather than silently dropping the photo —
       // the applicant can retry (or submit without one).
@@ -75,6 +77,7 @@ export async function POST(request: NextRequest) {
       studentId: app.studentId,
       answers: Object.keys(app.answers).length ? app.answers : undefined,
       photoKey,
+      cutoutKey,
       photoZoom: app.framing.photoZoom,
       photoX: app.framing.photoX,
       photoY: app.framing.photoY,

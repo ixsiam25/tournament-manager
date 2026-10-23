@@ -454,3 +454,37 @@ The app is no longer "one live season". Every live row belongs to a `Season`
   but kept in stats.
 - Tests: `npm run test:formation` (pure), and — dev branch only — `test:formationdb`,
   `test:apply` (browser), `test:adminui` (browser, minted admin session); `npm run test:dev` runs them all.
+
+## Player cards (Phase 2c, 2026-10-23)
+
+- **Rating model** (`lib/playerCard.ts`, pure, football preset): six stats per
+  player (PAC SHO PAS DRI DEF PHY; keepers DIV HAN KIC REF SPE POS), 30–99,
+  **organiser-set** (players never rate themselves). Overall is weighted by
+  position; tier from the overall (bronze < 60, silver 60–74, gold 75+; `special`
+  only by organiser override). A capped **form bonus** (+1/goal, +½/assist, max +5,
+  none for keepers) lifts the displayed overall during the edition and can lift
+  the tier. Unrated cards show dashes.
+- **Storage**: ratings, tier override, framing (`photoZoom/X/Y`) and `cutoutKey`
+  live on `Player` — one card per person per edition, so it follows the player
+  between teams. Approval copies cut-out + framing from the application.
+- **Background removal** runs in the applicant's browser in a Web Worker
+  (`lib/cutout.worker.ts` + `lib/cutoutClient.ts`, `@imgly/background-removal`
+  1.5.5, `isnet_quint8`, CPU). The ~40 MB model is fetched by the library from its
+  CDN on first use and cached by the browser; nothing about the photo leaves the
+  device for this step. The apply form shows progress, holds submit until it
+  finishes (or "use my photo as it is"), previews the cut-out on the card and
+  uploads original + cut-out PNG (signature-checked server side). Failure falls
+  back to the plain photo. Organisers can re-run removal or upload a cut-out
+  per player (`/admin/cards`).
+- **Organiser editor** `/admin/cards`: per-player ratings with live overall/tier,
+  tier override, drag/slider re-framing, cut-out tools, "start unrated at 60".
+  Frozen editions are read-only; every change is audited (`player.card`,
+  `player.cutout`).
+- **Public** `/cards`: gallery of the edition's cards (team members only) with
+  team/position filters, sorting and **Download PNG** (client-side `html-to-image`,
+  3× pixel ratio). Card images are always loaded from our own origin
+  (`sameOriginImage`) so export works.
+- Not built: server-rendered share graphics, per-sport rating presets beyond
+  football, self-hosting the cut-out model on R2.
+- Tests: `test:card` (pure), `test:cards` (editor, APIs, form bonus, gallery,
+  PNG download) and the apply-flow test now exercises the real worker.

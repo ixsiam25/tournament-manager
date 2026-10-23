@@ -374,6 +374,20 @@ model Player {
   /// number is parked as a negative so the real number can be reused.
   status       PlayerStatus @default(ACTIVE)
   releasedAt   DateTime?
+  /// Background-removed PNG of the photo (object key in R2), used on the
+  /// player card. Null = the card falls back to the plain photo.
+  cutoutKey    String?
+  /// Where the photo/cut-out sits inside the card's photo window (zoom in
+  /// percent, offsets in px) — copied from the application, editable by an
+  /// organiser.
+  photoZoom    Int          @default(100)
+  photoX       Int          @default(0)
+  photoY       Int          @default(0)
+  /// Organiser-set base ratings keyed by stat (pac, sho, … / div, han, …) —
+  /// see `lib/playerCard.ts`. Null until rated; the card shows dashes.
+  ratings      Json?
+  /// Organiser override of the rating-derived card tier (e.g. "special").
+  cardTier     String?
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
 
@@ -528,6 +542,8 @@ model Registration {
   photoX            Int                @default(0)
   photoY            Int                @default(0)
   photoKey          String?
+  /// Background-removed PNG made in the applicant's browser (R2 key).
+  cutoutKey         String?
   source            RegistrationSource
   status            RegistrationStatus @default(PENDING)
   notes             String?

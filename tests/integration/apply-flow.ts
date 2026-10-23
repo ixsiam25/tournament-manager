@@ -58,14 +58,42 @@ async function main() {
     assert.ok((await page.locator(".pcard__stats").innerText()).includes("DIV"), "GK card uses goalkeeper stat labels");
 
     // photo -> card shows it; review is mandatory
+    // Record what the form uploads (multipart bodies aren't readable from the request object).
+    await page.addInitScript(() => {
+      const w = window as unknown as { __uploads: [string, string][][] };
+      w.__uploads = [];
+      const original = window.fetch.bind(window);
+      window.fetch = (input, init) => {
+        if (init?.body instanceof FormData) w.__uploads.push([...init.body.entries()].map(([k, v]) => [k, v instanceof File ? `${v.type}:${v.size}` : "text"]));
+        return original(input, init);
+      };
+    });
+    await page.reload();
+    await page.getByLabel("Student ID").waitFor({ timeout: 30000 });
+    await page.locator("input").first().fill("Test Applicant");
+    await page.getByLabel("Student ID").fill(`zz-${stamp}`);
+    await page.getByLabel("Affiliation").fill("ZZ Batch");
+    await page.getByLabel("Contact").fill("090-0000-0000");
     await page.setInputFiles('input[type="file"]', `public/photos/${photo}`);
     await page.locator(".pcard__photo img").waitFor({ timeout: 15000 });
+    // The background removal runs in a worker; while it runs the form says so and submit is held.
+    await page.getByText(/Creating your card/).waitFor({ timeout: 15000 });
+    assert.equal(await page.getByRole("button", { name: "Preparing your card…" }).isDisabled(), true, "submit is held while the card is prepared");
+    // First run downloads the model (~40 MB), so allow a generous time.
+    await page.getByText("✓ Background removed").waitFor({ timeout: 180000 });
+    assert.equal(await page.locator(".pcard__photo--cutout img").count(), 1, "card now shows the cut-out");
+    const cutoutSrc = await page.locator(".pcard__photo--cutout img").getAttribute("src");
+    assert.match(cutoutSrc ?? "", /^blob:/);
     await page.getByRole("button", { name: "Submit application" }).click();
     await page.getByText("Please check your card").waitFor();
     await page.getByLabel("Zoom").fill("150");
     await page.getByRole("checkbox").check();
     await page.getByRole("button", { name: "Submit application" }).click();
 
+    const uploads = await page.evaluate(() => (window as unknown as { __uploads: [string, string][][] }).__uploads);
+    const parts = Object.fromEntries(uploads[uploads.length - 1]);
+    assert.match(parts.cutout ?? "", /^image\/png:\d+$/, "the cut-out PNG is uploaded with the application");
+    assert.match(parts.photo ?? "", /^image\/jpeg:\d+$/, "the original (downscaled) photo is uploaded too");
     if (r2) {
       await page.getByLabel("Your private edit link").waitFor({ timeout: 30000 });
     } else {

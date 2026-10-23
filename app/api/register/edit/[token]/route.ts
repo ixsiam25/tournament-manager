@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isRateLimited, clientIp } from "@/lib/rateLimit";
 import { resolveApplicationConfig } from "@/lib/applicationConfig";
-import { isApplicationOpen, parseApplicationForm, storeApplicantPhoto } from "@/lib/applicationForm";
+import { isApplicationOpen, parseApplicationForm, storeApplicantCutout, storeApplicantPhoto } from "@/lib/applicationForm";
 import { hashEditToken } from "@/lib/applicationToken";
 
 export const dynamic = "force-dynamic";
@@ -44,6 +44,7 @@ export async function GET(request: NextRequest, { params }: Params) {
       contact: reg.contact,
       answers: (reg.answers as Record<string, string> | null) ?? {},
       photoUrl: reg.photoKey ? `/api/photos/${reg.photoKey}` : null,
+      cutoutUrl: reg.cutoutKey ? `/api/photos/${reg.cutoutKey}` : null,
       photoZoom: reg.photoZoom,
       photoX: reg.photoX,
       photoY: reg.photoY,
@@ -78,15 +79,19 @@ export async function PUT(request: NextRequest, { params }: Params) {
   }
 
   let photoKey = reg.photoKey;
+  let cutoutKey = reg.cutoutKey;
   if (app.photo) {
     try {
       photoKey = await storeApplicantPhoto(app.photo);
+      // A new photo invalidates the old cut-out whether or not a new one arrived.
+      cutoutKey = app.cutout ? await storeApplicantCutout(app.cutout).catch(() => null) : null;
     } catch (error) {
       console.error("[register-edit] photo upload to R2 failed:", error);
       return NextResponse.json({ error: "Photo upload is temporarily unavailable — please try again" }, { status: 503 });
     }
   } else if (app.removePhoto) {
     photoKey = null;
+    cutoutKey = null;
   }
 
   await prisma.registration.update({
@@ -99,6 +104,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
       contact: app.contact,
       answers: Object.keys(app.answers).length ? app.answers : undefined,
       photoKey,
+      cutoutKey,
       photoZoom: app.framing.photoZoom,
       photoX: app.framing.photoX,
       photoY: app.framing.photoY,

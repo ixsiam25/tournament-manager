@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { href: "/admin/teams", label: "Teams", adminOnly: true },
   { href: "/admin/players", label: "Players", adminOnly: true },
   { href: "/admin/people", label: "People", adminOnly: true },
+  { href: "/admin/cards", label: "Cards", adminOnly: true },
   { href: "/admin/fixtures", label: "Fixtures", adminOnly: true },
   { href: "/admin/champions", label: "Champions", adminOnly: true },
   { href: "/admin/media", label: "Media", adminOnly: true },

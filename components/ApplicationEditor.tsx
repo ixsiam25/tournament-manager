@@ -17,6 +17,7 @@ type Loaded = {
     contact: string;
     answers: Record<string, string>;
     photoUrl: string | null;
+    cutoutUrl: string | null;
     photoZoom: number;
     photoX: number;
     photoY: number;
@@ -65,6 +66,7 @@ export function ApplicationEditor({ token }: { token: string }) {
     contact: r.contact,
     answers: r.answers,
     photoUrl: r.photoUrl,
+    cutoutUrl: r.cutoutUrl,
     photoZoom: r.photoZoom,
     photoX: r.photoX,
     photoY: r.photoY,

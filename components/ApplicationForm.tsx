@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { downscaleToJpeg } from "@/lib/downscaleImage";
+import { removeBackgroundInWorker } from "@/lib/cutoutClient";
 import { checkPhoto, type PhotoCheck } from "@/lib/photoCheck";
 import { PHOTO_OFFSET_RANGE, PHOTO_ZOOM_RANGE, type ApplicationConfig } from "@/lib/applicationConfig";
 import { PlayerCardPreview, type CardFraming } from "@/components/PlayerCardPreview";
@@ -14,6 +15,8 @@ export type ApplicationValues = {
   contact: string;
   answers: Record<string, string>;
   photoUrl: string | null;
+  /** Background-removed version of the photo, when one exists already. */
+  cutoutUrl?: string | null;
   photoZoom: number;
   photoX: number;
   photoY: number;
@@ -27,6 +30,7 @@ export const EMPTY_APPLICATION: ApplicationValues = {
   contact: "",
   answers: {},
   photoUrl: null,
+  cutoutUrl: null,
   photoZoom: 100,
   photoX: 0,
   photoY: 0,
@@ -126,7 +130,11 @@ export function ApplicationForm({
 }) {
   const [v, setV] = useState<ApplicationValues>(initial);
   const [file, setFile] = useState<File | null>(null);
+  /** The downscaled JPEG that is both previewed and uploaded. */
+  const [photoBlob, setPhotoBlob] = useState<Blob | null>(null);
   const [objectUrl, setObjectUrl] = useState<string | null>(null);
+  const [cutout, setCutout] = useState<{ status: "idle" | "running" | "done" | "failed" | "skipped"; blob: Blob | null; url: string | null; progress: number }>({ status: "idle", blob: null, url: null, progress: 0 });
+  const cancelCutout = useRef<(() => void) | null>(null);
   const [removed, setRemoved] = useState(false);
   const [check, setCheck] = useState<PhotoCheck | null>(null);
   const [reviewed, setReviewed] = useState(false);
@@ -138,8 +146,20 @@ export function ApplicationForm({
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
   }, [objectUrl]);
+  useEffect(() => {
+    return () => {
+      if (cutout.url) URL.revokeObjectURL(cutout.url);
+    };
+  }, [cutout.url]);
+  useEffect(() => () => cancelCutout.current?.(), []);
 
-  const photoSrc = objectUrl ?? (removed ? null : v.photoUrl);
+  const existingPhoto = removed ? null : v.photoUrl;
+  const photoSrc = objectUrl ?? existingPhoto;
+  // The cut-out replaces the photo on the card as soon as it exists: a fresh one
+  // for a newly chosen photo, or the stored one for an unchanged photo on edit.
+  const cutoutSrc = file ? cutout.url : removed ? null : (v.cutoutUrl ?? null);
+  const cardImage = cutoutSrc ?? photoSrc;
+  const cutoutRunning = !!file && cutout.status === "running";
   const reviewRequired = !!photoSrc && (mode === "create" || !!file);
   const framing: CardFraming = { zoom: v.photoZoom, x: v.photoX, y: v.photoY };
   const setFraming = (f: CardFraming) => setV((p) => ({ ...p, photoZoom: f.zoom, photoX: f.x, photoY: f.y }));
@@ -151,23 +171,44 @@ export function ApplicationForm({
   async function pickPhoto(next: File | null) {
     setReviewed(false);
     setError(null);
+    cancelCutout.current?.();
     if (!next) return;
     const result = await checkPhoto(next);
     setCheck(result);
     if (result.blocking) {
       setFile(null);
+      setPhotoBlob(null);
       setObjectUrl(null);
+      setCutout({ status: "idle", blob: null, url: null, progress: 0 });
       return;
     }
+    // One downscaled JPEG serves as preview, upload and cut-out input — a small
+    // image keeps the background removal fast.
+    const small = await downscaleToJpeg(next, "avatar");
     setFile(next);
+    setPhotoBlob(small);
     setRemoved(false);
-    setObjectUrl(URL.createObjectURL(next));
+    setObjectUrl(URL.createObjectURL(small));
     setFraming({ zoom: 100, x: 0, y: 0 });
+    setCutout({ status: "running", blob: null, url: null, progress: 0 });
+
+    const run = removeBackgroundInWorker(small, (p) => setCutout((c) => (c.status === "running" ? { ...c, progress: p.fraction } : c)));
+    cancelCutout.current = run.cancel;
+    run.promise
+      .then((blob) => setCutout({ status: "done", blob, url: URL.createObjectURL(blob), progress: 1 }))
+      .catch((e) => {
+        if (e instanceof Error && e.message === "cancelled") return;
+        setCutout({ status: "failed", blob: null, url: null, progress: 0 });
+      });
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    if (cutoutRunning) {
+      setError("Your card is still being prepared — one moment.");
+      return;
+    }
     if (reviewRequired && !reviewed) {
       setError("Please check your card and tick the box before submitting.");
       return;
@@ -184,8 +225,10 @@ export function ApplicationForm({
       fd.append("photoZoom", String(v.photoZoom));
       fd.append("photoX", String(v.photoX));
       fd.append("photoY", String(v.photoY));
-      if (file) fd.append("photo", await downscaleToJpeg(file, "avatar"), "photo.jpg");
-      else if (removed) fd.append("removePhoto", "1");
+      if (file && photoBlob) {
+        fd.append("photo", photoBlob, "photo.jpg");
+        if (cutout.status === "done" && cutout.blob) fd.append("cutout", cutout.blob, "cutout.png");
+      } else if (removed) fd.append("removePhoto", "1");
       const problem = await onSubmit(fd);
       if (problem) setError(problem);
     } catch {
@@ -287,8 +330,11 @@ export function ApplicationForm({
               <button
                 type="button"
                 onClick={() => {
+                  cancelCutout.current?.();
                   setRemoved(true);
                   setFile(null);
+                  setPhotoBlob(null);
+                  setCutout({ status: "idle", blob: null, url: null, progress: 0 });
                   setObjectUrl(null);
                   setReviewed(false);
                 }}
@@ -303,10 +349,10 @@ export function ApplicationForm({
         {error && <p className="text-sm text-live">{error}</p>}
         <button
           type="submit"
-          disabled={submitting}
+          disabled={submitting || cutoutRunning}
           className="rounded-full bg-pitch px-6 py-2.5 text-sm font-bold text-white disabled:opacity-60"
         >
-          {submitting ? "Sending…" : submitLabel}
+          {submitting ? "Sending…" : cutoutRunning ? "Preparing your card…" : submitLabel}
         </button>
       </div>
 
@@ -314,11 +360,27 @@ export function ApplicationForm({
         <PlayerCardPreview
           name={v.name}
           position={cardPosition}
-          photoUrl={photoSrc}
+          photoUrl={cardImage}
+          isCutout={!!cutoutSrc}
           framing={framing}
           footer={seasonName.toUpperCase()}
           onFramingChange={setFraming}
         />
+        {file && cutout.status === "running" && (
+          <div className="mt-3 text-xs" role="status">
+            <p className="mb-1">Creating your card… {cutout.progress > 0 ? `${Math.round(cutout.progress * 100)}%` : "starting"}</p>
+            <div className="h-1.5 overflow-hidden rounded bg-line">
+              <div className="h-full bg-pitch transition-all" style={{ width: `${Math.max(4, Math.round(cutout.progress * 100))}%` }} />
+            </div>
+            <button type="button" onClick={() => { cancelCutout.current?.(); setCutout({ status: "skipped", blob: null, url: null, progress: 0 }); }} className="mt-1 text-muted-foreground underline">
+              Use my photo as it is
+            </button>
+          </div>
+        )}
+        {file && cutout.status === "done" && <p className="mt-3 text-xs text-pitch">✓ Background removed — your card is ready.</p>}
+        {file && cutout.status === "failed" && (
+          <p className="mt-3 text-xs text-amber-600">We couldn&rsquo;t remove the background, so your photo is used as it is. The organisers can fix it later.</p>
+        )}
         {photoSrc ? (
           <div className="mt-4 space-y-2 text-sm">
             <p className="font-bold">Check your card</p>

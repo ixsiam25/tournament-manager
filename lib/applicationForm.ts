@@ -11,6 +11,7 @@ import { putObject } from "@/lib/mediaStore";
 
 export const MAX_PHOTO_BYTES = 4 * 1024 * 1024;
 export const ALLOWED_PHOTO_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+export const MAX_CUTOUT_BYTES = 3 * 1024 * 1024;
 
 /** Applications accept submissions only while the season switch is on AND the
  * optional deadline hasn't passed. */
@@ -28,6 +29,8 @@ export type ParsedApplication = {
   answers: Record<string, string>;
   framing: Framing;
   photo: File | null;
+  /** Background-removed PNG produced in the applicant's browser. */
+  cutout: File | null;
   removePhoto: boolean;
 };
 
@@ -60,6 +63,13 @@ export function parseApplicationForm(
   const file = formData.get("photo");
   const photo = file instanceof File && file.size > 0 ? file : null;
   const removePhoto = str("removePhoto") === "1";
+  const cutoutFile = formData.get("cutout");
+  const cutout = cutoutFile instanceof File && cutoutFile.size > 0 ? cutoutFile : null;
+  if (cutout) {
+    if (cutout.type !== "image/png") return { ok: false, error: "The card cut-out must be a PNG" };
+    if (cutout.size > MAX_CUTOUT_BYTES) return { ok: false, error: "The card cut-out is too large" };
+    if (!photo) return { ok: false, error: "A cut-out needs its photo" };
+  }
   if (photo) {
     if (!ALLOWED_PHOTO_TYPES.has(photo.type)) return { ok: false, error: "Photo must be JPEG, PNG, or WebP" };
     if (photo.size > MAX_PHOTO_BYTES) return { ok: false, error: "Photo is too large" };
@@ -87,6 +97,7 @@ export function parseApplicationForm(
       answers: checked.data.answers,
       framing: clampFraming({ photoZoom: str("photoZoom"), photoX: str("photoX"), photoY: str("photoY") }),
       photo,
+      cutout,
       removePhoto,
     },
   };
@@ -96,5 +107,16 @@ export function parseApplicationForm(
 export async function storeApplicantPhoto(file: File): Promise<string> {
   const key = `registration-${randomUUID()}`;
   await putObject(key, await file.arrayBuffer(), file.type);
+  return key;
+}
+
+/** Stores the background-removed PNG. Checks the PNG signature so an arbitrary
+ * file can't be smuggled in under a PNG content type. */
+export async function storeApplicantCutout(file: File): Promise<string> {
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const signature = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+  if (!signature.every((b, i) => bytes[i] === b)) throw new Error("not a PNG");
+  const key = `registration-cutout-${randomUUID()}`;
+  await putObject(key, bytes, "image/png");
   return key;
 }

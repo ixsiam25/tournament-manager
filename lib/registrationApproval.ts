@@ -39,6 +39,10 @@ export async function approveRegistration(registration: Registration, season: Se
         jerseyNumber: 0,
         position: registration.position,
         photoUrl: registration.photoKey ? `/api/photos/${registration.photoKey}` : null,
+        cutoutKey: registration.cutoutKey,
+        photoZoom: registration.photoZoom,
+        photoX: registration.photoX,
+        photoY: registration.photoY,
         personId,
       },
     });

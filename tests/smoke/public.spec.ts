@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-const PUBLIC_PAGES = ["/", "/fixtures", "/standings", "/teams", "/players", "/roster", "/predictions", "/auction", "/register", "/legacy", "/legacy/hall-of-fame", "/jersey"];
+const PUBLIC_PAGES = ["/", "/fixtures", "/standings", "/teams", "/players", "/roster", "/cards", "/predictions", "/auction", "/register", "/legacy", "/legacy/hall-of-fame", "/jersey"];
 
 // Known, tracked noise that is not a regression signal.
 const IGNORED_CONSOLE = [/Failed to load resource.*\/_next\/image/];

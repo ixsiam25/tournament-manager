@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { href: "/standings", label: "Standings" },
   { href: "/players", label: "Player Standings" },
   { href: "/roster", label: "Players" },
+  { href: "/cards", label: "Cards" },
   { href: "/teams", label: "Teams" },
   { href: "/jersey", label: "Jersey" },
   { href: "/predictions", label: "Champions Prediction" },
@@ -18,7 +19,7 @@ const NAV_ITEMS = [
   { href: "/legacy", label: "Legacy" },
 ];
 
-const SEASON_ONLY_HREFS = new Set(["/fixtures", "/standings", "/players", "/roster", "/teams", "/predictions"]);
+const SEASON_ONLY_HREFS = new Set(["/fixtures", "/standings", "/players", "/roster", "/cards", "/teams", "/predictions"]);
 
 export function NavMenu({
   showRegister,
