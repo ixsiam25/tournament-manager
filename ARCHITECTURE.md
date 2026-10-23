@@ -530,7 +530,7 @@ The app is no longer "one live season". Every live row belongs to a `Season`
   wrap up. New seasons start with `teamFormation = UNDECIDED`; the formation board
   shows a choose-a-method step first and only then the board. Creating a season
   opens the application portal immediately (checkbox, on by default).
-- **Batches** (`lib/batch.ts`, pure): affiliation can be an intake like "Fall 24"
+- **Batches** (`lib/batch.ts`, pure): affiliation can be a graduation batch like "Fall 27"
   / "Spring 25" (season setting `affiliationKind: "batch"`, default). The batch
   picker (`BatchPicker`) shows the meaning live; the server canonicalises any
   spelling and rejects non-batches and batches that haven't started. Calendar:
@@ -548,3 +548,12 @@ The app is no longer "one live season". Every live row belongs to a `Season`
   second dev server (:3101, `NEXT_DIST_DIR=.next-test`) via `npm run test:dev`
   (`scripts/test-dev.sh`), so they never disturb hand-testing on the dev branch
   (:3100). `npm run test:clean` removes leftovers from an interrupted run.
+
+> **Update 2026-10-24 — batch label meaning:** confirmed with the organiser that
+> "Fall 27" names the term the batch **graduates** (`batchMeaning: "graduation"` is
+> now the default; `"entry"` remains as a per-season option). Counting back from the
+> graduation term gives the current semester (the graduation term itself is the 8th,
+> last one); after it passes the batch is alumni; one that graduates 8+ terms ahead
+> hasn't started. On 23 Oct 2026: Fall 26 = 8th, Spring 27 = 7th, Fall 27 = 6th …
+> Spring 30 = 1st; Spring 26 and older = alumni. `batchLabelForSemester` builds
+> labels from a semester so the demo and tests stay valid on any date.

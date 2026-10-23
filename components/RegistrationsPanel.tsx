@@ -223,7 +223,7 @@ export function RegistrationsPanel() {
                 className="w-full rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-pitch"
               />
             ) : (
-              <BatchPicker value={affiliation} onChange={setAffiliation} required meaning={season?.applicationConfig?.batchMeaning ?? "entry"} />
+              <BatchPicker value={affiliation} onChange={setAffiliation} required meaning={season?.applicationConfig?.batchMeaning ?? "graduation"} />
             )}
             <input
               value={studentId}
@@ -336,7 +336,7 @@ export function RegistrationsPanel() {
             <div className="min-w-0 flex-1">
               <span className="font-bold">{r.name}</span>
               <span className="ml-2 text-sm text-muted-foreground">
-                <BatchBadge label={r.affiliation} meaning={season?.applicationConfig?.batchMeaning ?? "entry"} />
+                <BatchBadge label={r.affiliation} meaning={season?.applicationConfig?.batchMeaning ?? "graduation"} />
               </span>
               {r.position && <span className="ml-2 text-xs text-muted-foreground">{r.position}</span>}
               {r.studentId && <span className="ml-2 font-mono text-xs text-muted-foreground">ID {r.studentId}</span>}

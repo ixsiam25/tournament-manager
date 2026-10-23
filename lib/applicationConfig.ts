@@ -26,7 +26,7 @@ export type ApplicationConfig = {
   /** "batch": the affiliation is an intake like "Fall 24" and the system works out
    * the current semester (or alumni) itself; "text": free text. */
   affiliationKind: "text" | "batch";
-  /** What a batch label names: the term the batch started ("entry") or graduates. */
+  /** What a batch label names: the term the batch graduates ("graduation", the default) or started ("entry"). */
   batchMeaning: BatchMeaning;
 };
 
@@ -49,7 +49,7 @@ export const DEFAULT_APPLICATION_CONFIG: ApplicationConfig = {
   questions: [],
   intro: "",
   affiliationKind: "batch",
-  batchMeaning: "entry",
+  batchMeaning: "graduation",
 };
 
 export const MAX_QUESTIONS = 6;
@@ -76,7 +76,7 @@ export const applicationConfigSchema = z
     questions: z.array(questionSchema).max(MAX_QUESTIONS, `At most ${MAX_QUESTIONS} custom questions`),
     intro: z.string().trim().max(600),
     affiliationKind: z.enum(["text", "batch"]).default("batch"),
-    batchMeaning: z.enum(["entry", "graduation"]).default("entry"),
+    batchMeaning: z.enum(["entry", "graduation"]).default("graduation"),
   })
   .superRefine((cfg, ctx) => {
     const ids = new Set<string>();

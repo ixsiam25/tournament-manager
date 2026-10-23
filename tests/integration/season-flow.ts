@@ -7,7 +7,7 @@
 import assert from "node:assert/strict";
 import { config } from "dotenv";
 import { chromium, type Page } from "playwright-core";
-import { batchInfo } from "../../lib/batch";
+import { batchInfo, batchLabelForSemester, parseBatch } from "../../lib/batch";
 config({ path: process.env.TEST_ENV_FILE ?? ".env.local" });
 
 if (process.env.ALLOW_DB_WRITE_TESTS !== "1") {
@@ -67,10 +67,13 @@ async function main() {
     await adminPage.getByText("Open · 0 application(s)").waitFor(T);
 
     // ---- 3. players apply with their batch ----
-    const applicants: [string, "FALL" | "SPRING", number][] = [
-      ["ZZ Flow Anan", "FALL", 2025], ["ZZ Flow Bashir", "FALL", 2025], ["ZZ Flow Chitra", "SPRING", 2024],
-      ["ZZ Flow Dipu", "SPRING", 2023], ["ZZ Flow Eshita", "SPRING", 2020], ["ZZ Flow Farhan", "FALL", 2018],
-    ];
+    // Batches are built from "which semester are they in today", so the test stays true on any date.
+    const semesters = [6, 6, 4, 2, 10, 13]; // two in the same batch, three current batches, two alumni batches
+    const names = ["ZZ Flow Anan", "ZZ Flow Bashir", "ZZ Flow Chitra", "ZZ Flow Dipu", "ZZ Flow Eshita", "ZZ Flow Farhan"];
+    const applicants = names.map((name, i) => {
+      const t = parseBatch(batchLabelForSemester(semesters[i]))!;
+      return [name, t.term, t.year] as const;
+    });
     for (const [i, [name, term, year]] of applicants.entries()) {
       const p = await mk(false);
       await p.goto(`${base}/register`);
@@ -79,7 +82,7 @@ async function main() {
       await p.getByLabel("Student ID").fill(`ZZF${stamp}${i}`);
       await p.getByLabel("Batch term").selectOption(term);
       await p.getByLabel("Batch year").selectOption(String(year));
-      const info = batchInfo(`${term === "FALL" ? "Fall" : "Spring"} ${String(year % 100).padStart(2, "0")}`);
+      const info = batchInfo(batchLabelForSemester(semesters[i]));
       assert.ok(info.valid);
       assert.match(await p.getByTestId("batch-status").innerText(), new RegExp(info.status === "alumni" ? "Alumni" : info.text), "the form shows what the batch means today");
       await p.getByLabel("Contact").fill("090-0000-0000");
@@ -126,14 +129,15 @@ async function main() {
     // teams: one per batch with the computed semester; alumni merged
     const teams = await prisma.team.findMany({ where: { seasonId: season.id }, include: { _count: { select: { players: true } } } });
     const byName = Object.fromEntries(teams.map((t) => [t.name, t]));
-    assert.deepEqual(Object.keys(byName).sort(), ["Alumni", "Fall 25", "Spring 23", "Spring 24"]);
-    for (const label of ["Fall 25", "Spring 24", "Spring 23"]) {
+    const studentLabels = [6, 4, 2].map((n) => batchLabelForSemester(n));
+    assert.deepEqual(Object.keys(byName).sort(), [...studentLabels, "Alumni"].sort());
+    for (const label of studentLabels) {
       const info = batchInfo(label);
       assert.ok(info.valid && info.status === "student");
       assert.equal(byName[label].semester, info.semester, `${label} team carries its current semester`);
     }
-    assert.equal(byName["Fall 25"]._count.players, 2);
-    assert.equal(byName["Alumni"]._count.players, 2, "Spring 20 + Fall 18 -> one Alumni team");
+    assert.equal(byName[studentLabels[0]]._count.players, 2, "two applicants from the same batch share a team");
+    assert.equal(byName["Alumni"]._count.players, 2, "two different alumni batches -> one Alumni team");
     assert.equal(byName["Alumni"].semester, null);
 
     // ---- 7. the checklist moves on to the rest of the system ----
@@ -153,7 +157,7 @@ async function main() {
       await prisma.season.delete({ where: { id: seasonId } });
     }
     await prisma.person.deleteMany({ where: { name: { startsWith: "ZZ " } } });
-    await prisma.franchise.deleteMany({ where: { name: { in: ["Alumni", "Spring 23", "Spring 24", "Fall 25"] }, teams: { none: {} } } });
+    await prisma.franchise.deleteMany({ where: { name: { in: ["Alumni", ...[6, 4, 2].map((n) => batchLabelForSemester(n))] }, teams: { none: {} } } });
     await prisma.auditLog.deleteMany({ where: { summary: { contains: "ZZ " } } });
     await prisma.$disconnect();
   }

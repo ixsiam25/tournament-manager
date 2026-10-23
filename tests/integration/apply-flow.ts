@@ -8,7 +8,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { config } from "dotenv";
 import { chromium, type Page } from "playwright-core";
-import { batchInfo } from "../../lib/batch";
+import { batchLabelForSemester, parseBatch } from "../../lib/batch";
 config({ path: process.env.TEST_ENV_FILE ?? ".env.local" });
 
 if (process.env.ALLOW_DB_WRITE_TESTS !== "1") {
@@ -57,13 +57,13 @@ async function main() {
     await page.locator("input").first().fill("Test Applicant"); // Name
     assert.equal((await page.locator(".pcard__name").innerText()).trim(), "TEST APPLICANT", "card shows the typed name");
     await page.getByLabel("Student ID").fill(`zz-${stamp}`);
-    await pickBatch(page, "FALL", 2024);
-    const expectSemester = batchInfo("Fall 24");
-    assert.ok(expectSemester.valid);
-    assert.equal((await page.getByTestId("batch-status").innerText()).trim(), `Fall 24 — ${expectSemester.text}`, "the form works out the semester itself");
-    await pickBatch(page, "SPRING", 2020);
-    assert.match(await page.getByTestId("batch-status").innerText(), /Spring 20 — Alumni/, "an old batch is shown as alumni");
-    await pickBatch(page, "FALL", 2024);
+    const current = parseBatch(batchLabelForSemester(5))!; // a batch in its 5th semester today
+    await pickBatch(page, current.term, current.year);
+    assert.equal((await page.getByTestId("batch-status").innerText()).trim(), `${batchLabelForSemester(5)} — 5th semester`, "the form works out the semester itself");
+    const old = parseBatch(batchLabelForSemester(11))!; // graduated a while ago
+    await pickBatch(page, old.term, old.year);
+    assert.match(await page.getByTestId("batch-status").innerText(), /— Alumni/, "an old batch is shown as alumni");
+    await pickBatch(page, current.term, current.year);
     await page.getByLabel("Contact").fill("090-0000-0000");
     await page.getByLabel("Preferred position").selectOption("GK");
     assert.equal((await page.locator(".pcard__pos").innerText()).trim(), "GK", "card shows the position");

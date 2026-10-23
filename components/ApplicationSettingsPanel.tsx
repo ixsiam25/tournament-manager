@@ -128,8 +128,8 @@ export function ApplicationSettingsPanel() {
             <label className="block text-sm">
               <span className="mb-1 block font-bold">A batch label means…</span>
               <select value={config.batchMeaning} onChange={(e) => setConfig({ ...config, batchMeaning: e.target.value as "entry" | "graduation" })} aria-label="Batch meaning" className={input + " w-full"}>
-                <option value="entry">The term the batch started (Fall 25 = entered Fall 2025)</option>
                 <option value="graduation">The term the batch graduates (Fall 27 = graduates Fall 2027)</option>
+                <option value="entry">The term the batch started (Fall 25 = entered Fall 2025)</option>
               </select>
             </label>
           )}

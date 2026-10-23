@@ -13,6 +13,8 @@ if (process.env.ALLOW_DB_WRITE_TESTS !== "1") {
   process.exit(0);
 }
 
+import { batchLabelForSemester as batchLabelForSemesterForCleanup } from "../../lib/batch";
+
 async function main() {
   const { prisma } = await import("../../lib/db");
   const svc = await import("../../lib/formationService");
@@ -105,21 +107,26 @@ async function main() {
     assert.equal(grouped.overflow, 1, "5th Sem 3 player doesn't fit (max 4)");
     assert.equal(await prisma.player.count({ where: { seasonId: batch.id, teamId: null } }), 1);
 
-    // 5b. Batch-aware grouping: team per intake batch with its real semester, alumni together.
+    // 5b. Batch-aware grouping: team per batch with its real semester, alumni together.
+    const ref = new Date(2026, 7, 4);
+    const { batchLabelForSemester } = await import("../../lib/batch");
+    const sem2 = batchLabelForSemester(2, ref);
+    const sem7 = batchLabelForSemester(7, ref);
+    const messy = sem2.replace(" ", "'").toLowerCase(); // "fall'27"-style spelling of the same batch
     const bs = await prisma.season.create({
-      data: { tournamentId: tournament.id, number: 61000 + (stamp % 900), name: "ZZ Batch Season", slug: `zz-batch-${stamp}`, year: 2096, status: "ACTIVE", teamFormation: "BATCH", squadSizeMin: 2, squadSizeMax: 4, startsOn: new Date(2026, 7, 4) },
+      data: { tournamentId: tournament.id, number: 61000 + (stamp % 900), name: "ZZ Batch Season", slug: `zz-batch-${stamp}`, year: 2096, status: "ACTIVE", teamFormation: "BATCH", squadSizeMin: 2, squadSizeMax: 4, startsOn: ref },
     });
     seasonIds.push(bs.id);
-    for (const [name, label] of [["ZZ B1", "Fall 25"], ["ZZ B2", "fall'25"], ["ZZ B3", "Spring 23"], ["ZZ B4", "Fall 20"], ["ZZ B5", "Spring 19"], ["ZZ B6", "Some Club"]] as const) await apply(bs.id, name, label);
+    for (const [name, label] of [["ZZ B1", sem2], ["ZZ B2", messy], ["ZZ B3", sem7], ["ZZ B4", batchLabelForSemester(10, ref)], ["ZZ B5", batchLabelForSemester(12, ref)], ["ZZ B6", "Some Club"]] as const) await apply(bs.id, name, label);
     const batchResult = await svc.groupByAffiliation(await fresh(bs.id), null);
     assert.equal(batchResult.placed, 6);
     const batchTeams = await prisma.team.findMany({ where: { seasonId: bs.id }, include: { _count: { select: { players: true } } }, orderBy: { name: "asc" } });
     const byName = Object.fromEntries(batchTeams.map((t) => [t.name, t]));
-    assert.deepEqual(Object.keys(byName).sort(), ["Alumni", "Fall 25", "Some Club", "Spring 23"], "one team per batch, alumni merged, free text kept");
-    assert.equal(byName["Fall 25"].semester, 2, "Fall 25 is in its 2nd semester in Aug 2026");
-    assert.equal(byName["Fall 25"]._count.players, 2, "two spellings of the same batch land together");
-    assert.equal(byName["Spring 23"].semester, 7);
-    assert.equal(byName["Alumni"]._count.players, 2, "Fall 20 and Spring 19 are both alumni");
+    assert.deepEqual(Object.keys(byName).sort(), [sem2, sem7, "Alumni", "Some Club"].sort(), "one team per batch, alumni merged, free text kept");
+    assert.equal(byName[sem2].semester, 2, "that batch is in its 2nd semester on the season's start date");
+    assert.equal(byName[sem2]._count.players, 2, "two spellings of the same batch land together");
+    assert.equal(byName[sem7].semester, 7);
+    assert.equal(byName["Alumni"]._count.players, 2, "two different alumni batches share one team");
     assert.equal(byName["Alumni"].semester, null);
 
     // 6. Balanced deal: preview == apply for the same seed; everyone placed within capacity.
@@ -167,7 +174,7 @@ async function main() {
     }
     await prisma.person.deleteMany({ where: { name: { startsWith: "ZZ " } } });
     await prisma.franchise.deleteMany({ where: { name: { startsWith: "ZZ " } } });
-    await prisma.franchise.deleteMany({ where: { name: { in: ["Alumni", "Spring 23", "Fall 25", "Some Club"] }, teams: { none: {} } } });
+    await prisma.franchise.deleteMany({ where: { name: { in: ["Alumni", "Some Club", batchLabelForSemesterForCleanup(2, new Date(2026, 7, 4)), batchLabelForSemesterForCleanup(7, new Date(2026, 7, 4))] }, teams: { none: {} } } });
     await prisma.auditLog.deleteMany({ where: { summary: { contains: "ZZ " } } });
     await prisma.$disconnect();
   }

@@ -1,12 +1,12 @@
 import { ordinalSemester } from "@/lib/semester";
 
 /**
- * Graduation-batch ("intake") labels like "Fall 24" / "Spring 25", and what
- * they mean today. Pure and dependency-light so the apply form (browser), the
- * server and the formation tools all agree.
+ * Graduation-batch labels like "Fall 27" / "Spring 24", and what they mean
+ * today. Pure and dependency-light so the apply form (browser), the server and
+ * the formation tools all agree.
  *
- * A batch is named by the term it STARTED in (the label meaning is configurable
- * per season — see `BatchMeaning`). Terms follow the APU calendar: the Spring
+ * A batch is named by the term it GRADUATES in (the label meaning is
+ * configurable per season — see `BatchMeaning`; "entry" names the term it started). Terms follow the APU calendar: the Spring
  * term runs April–August and the Fall term September–March, so a batch's
  * semester number is simply how many terms have started since its own. After
  * `MAX_SEMESTERS` (8 = four years) the batch counts as alumni; a batch whose
@@ -62,10 +62,11 @@ export type BatchInfo =
     };
 
 /**
- * What a batch label means on `onDate`. With `meaning: "graduation"` the label is
- * the term the batch graduates in, so its first term was seven terms earlier.
+ * What a batch label means on `onDate`. By default the label is the term the batch
+ * graduates in, so its first term was seven terms earlier ("entry": the label is
+ * the first term itself).
  */
-export function batchInfo(label: string | null | undefined, onDate: Date = new Date(), meaning: BatchMeaning = "entry"): BatchInfo {
+export function batchInfo(label: string | null | undefined, onDate: Date = new Date(), meaning: BatchMeaning = "graduation"): BatchInfo {
   const parsed = parseBatch(label);
   if (!parsed) return { valid: false };
   const entryIndex = termIndex(parsed) - (meaning === "graduation" ? MAX_SEMESTERS - 1 : 0);
@@ -77,4 +78,15 @@ export function batchInfo(label: string | null | undefined, onDate: Date = new D
   }
   if (semester > MAX_SEMESTERS) return { valid: true, label: canonical, status: "alumni", semester: null, text: "Alumni" };
   return { valid: true, label: canonical, status: "student", semester, text: `${ordinalSemester(semester)} semester` };
+}
+
+/**
+ * The label of the batch that is in its `semester`-th semester on `onDate` —
+ * the inverse of `batchInfo`. Used to build realistic demo/test data that stays
+ * correct whatever day it is run (`semester` 1…8; 9 and above are alumni).
+ */
+export function batchLabelForSemester(semester: number, onDate: Date = new Date(), meaning: BatchMeaning = "graduation"): string {
+  const entryIndex = termIndex(termOfDate(onDate)) - (semester - 1);
+  const labelIndex = entryIndex + (meaning === "graduation" ? MAX_SEMESTERS - 1 : 0);
+  return formatBatch({ term: labelIndex % 2 === 1 ? "FALL" : "SPRING", year: Math.floor(labelIndex / 2) });
 }

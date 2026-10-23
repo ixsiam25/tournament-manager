@@ -63,7 +63,11 @@ async function main() {
   // 22 applications already submitted, spread over intake batches (current
   // students in different semesters, plus alumni) — all still PENDING review.
   const names = ["Rafi Hasan", "Tanvir Alam", "Nusrat Jahan", "Imran Khan", "Sadia Noor", "Hasan Mahmud", "Mim Akter", "Arif Rahman", "Joy Das", "Lamia Sultana", "Rony Mia", "Tisha Roy", "Fahim Ahmed", "Nadia Islam", "Shuvo Paul", "Tania Begum", "Mehedi Hasan", "Rupa Chowdhury", "Sakib Khan", "Anika Tabassum", "Zayed Karim", "Orpita Das"];
-  const batches = ["Fall 25", "Fall 25", "Fall 25", "Fall 25", "Spring 25", "Spring 25", "Spring 25", "Fall 24", "Fall 24", "Fall 24", "Fall 24", "Spring 24", "Spring 24", "Spring 24", "Fall 23", "Fall 23", "Fall 23", "Spring 23", "Spring 23", "Spring 21", "Spring 21", "Fall 19"];
+  const { batchLabelForSemester } = await import("../lib/batch");
+  // Built from "which semester are they in today" so the demo is true on any date:
+  // current students in semesters 2–7 plus three alumni batches.
+  const semesters = [2, 2, 2, 2, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 9, 9, 12];
+  const batches = semesters.map((n) => batchLabelForSemester(n));
   const positions = ["FWD", "MID", "DEF", "GK", "MID", "DEF", "FWD", "MID", "DEF", "FWD", "MID", "DEF", "GK", "MID", "FWD", "DEF", "MID", "FWD", "DEF", "MID", "FWD", "GK"] as const;
   for (const [i, name] of names.entries()) {
     await prisma.registration.create({
