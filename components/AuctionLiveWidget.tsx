@@ -61,6 +61,12 @@ export function AuctionLiveWidget({ initial }: { initial: PublicAuctionStatus })
               <p className="text-sm text-muted-foreground">
                 {currentLot.position ?? "No position"} · base {currentLot.basePrice}
               </p>
+              {currentLot.currentBid != null && (
+                <p className="mt-1 text-sm font-bold">
+                  Current bid {currentLot.currentBid}
+                  {currentLot.leaderName ? ` · ${currentLot.leaderName}` : ""}
+                </p>
+              )}
             </div>
           </div>
         ) : (

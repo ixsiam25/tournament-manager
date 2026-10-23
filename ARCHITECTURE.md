@@ -488,3 +488,35 @@ The app is no longer "one live season". Every live row belongs to a `Season`
   football, self-hosting the cut-out model on R2.
 - Tests: `test:card` (pure), `test:cards` (editor, APIs, form bonus, gallery,
   PNG download) and the apply-flow test now exercises the real worker.
+
+## Auction upgrade (Phase 2d, 2026-10-23)
+
+- **Service layer** `lib/auctionService.ts` (+ `lib/auctionRoute.ts` wrapper) holds all
+  auction rules; the routes are thin. Lot states: QUEUED, IN_PROGRESS, SOLD,
+  UNSOLD and the new **HELD** (parked until the end).
+- **Live bids**: the auctioneer records the leading bid (`AuctionLot.currentBid /
+  currentBidTeamId`); it must beat the current bid by the increment, stay within
+  the team's max allowable bid and squad limit. "Sold to <leader> for <bid>" is one
+  click. Bidding mode is organiser-entered; phone bidding is not built.
+- **Squad-aware budgets**: squad size is everyone ACTIVE on the team (bought,
+  retained or placed in wrap-up); budget only moves for paid sales. The max
+  allowable bid still reserves base price for the empty legal slots.
+- **Retain** a queued player before bidding, or **place** a held/unsold player in
+  wrap-up: free or at the base price (`assignLot`). Undo reverts the latest
+  sold/unsold/held lot.
+- **Wrap-up**: when the queue is empty the console lists held + unsold players;
+  a seeded **fair draw** (`drawProposal` / `applyDraw`, same engine as the
+  formation board) gives each team below the minimum exactly what it needs.
+  **Close** is refused until nothing is queued/up and every team has the minimum
+  squad; it sets `AuctionSettings.lockedAt` (all auction mutations then refuse)
+  and **Reopen** clears it. Players unplaced at close are left out.
+- **Projector** `/stage/auction` (chrome-less, polls `/api/public/auction/stage`
+  every 2 s): `lib/auctionStage.ts` derives the phase from lot state alone —
+  opening slide, lot on the block with live bid + leader, SOLD/UNSOLD/ON HOLD
+  result for 12 s, team-budget board between lots, final squads once closed. The
+  console is the only remote control. Cards on screen are the real player cards.
+- Public `/auction` also shows the current bid. Password-gated actions (undo,
+  close) stay password-gated.
+- Tests: `test:auction` (service rules + projector phases) and `test:auctionui`
+  (console driving the projector in a browser); password-gated steps are covered at
+  service level.

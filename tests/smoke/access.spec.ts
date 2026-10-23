@@ -22,6 +22,13 @@ const ADMIN_APIS: Array<[string, string]> = [
   ["PATCH", "/api/admin/players/does-not-exist/card"],
   ["POST", "/api/admin/players/does-not-exist/cutout"],
   ["GET", "/api/admin/cards"],
+  ["POST", "/api/admin/auction/bid"],
+  ["POST", "/api/admin/auction/hold"],
+  ["POST", "/api/admin/auction/unhold"],
+  ["POST", "/api/admin/auction/assign"],
+  ["POST", "/api/admin/auction/draw"],
+  ["POST", "/api/admin/auction/close"],
+  ["POST", "/api/admin/auction/reopen"],
   ["POST", "/api/admin/players/does-not-exist/release"],
   ["PATCH", "/api/admin/people/does-not-exist"],
 ];

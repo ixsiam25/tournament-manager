@@ -46,13 +46,14 @@ function badgeFor(team: { name: string; shortName: string | null } | null): stri
 
 /** Cards for one edition: ratings → model, plus the live goals/assists that
  * drive the form bonus. `includePool` also returns unassigned players (admin). */
-export async function getCards(seasonId: string, opts: { includePool?: boolean; teamId?: string | null } = {}): Promise<CardView[]> {
+export async function getCards(seasonId: string, opts: { includePool?: boolean; teamId?: string | null; playerIds?: string[] } = {}): Promise<CardView[]> {
   const players = await prisma.player.findMany({
     where: {
       seasonId,
       status: "ACTIVE",
+      ...(opts.playerIds ? { id: { in: opts.playerIds } } : {}),
       ...(opts.teamId ? { teamId: opts.teamId } : {}),
-      ...(opts.includePool || opts.teamId ? {} : { teamId: { not: null } }),
+      ...(opts.includePool || opts.teamId || opts.playerIds ? {} : { teamId: { not: null } }),
     },
     include: { team: { select: { name: true, shortName: true } } },
     orderBy: [{ team: { name: "asc" } }, { name: "asc" }],

@@ -17,9 +17,11 @@
     "test:formation": "tsx tests/unit/formation.ts",
     "test:formationdb": "tsx tests/integration/formation.ts",
     "test:adminui": "tsx tests/integration/admin-ui.ts",
-    "test:dev": "ALLOW_DB_WRITE_TESTS=1 sh -c \"npm run test:formation && npm run test:card && npm run test:stats && npm run test:scoping && npm run test:identity && npm run test:formationdb && npm run test:apply && npm run test:adminui && npm run test:cards\"",
+    "test:dev": "ALLOW_DB_WRITE_TESTS=1 sh -c \"npm run test:formation && npm run test:card && npm run test:stats && npm run test:scoping && npm run test:identity && npm run test:formationdb && npm run test:apply && npm run test:adminui && npm run test:cards && npm run test:auction && npm run test:auctionui\"",
     "test:card": "tsx tests/unit/playerCard.ts",
-    "test:cards": "tsx tests/integration/cards.ts"
+    "test:cards": "tsx tests/integration/cards.ts",
+    "test:auction": "tsx tests/integration/auction.ts",
+    "test:auctionui": "tsx tests/integration/auction-ui.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

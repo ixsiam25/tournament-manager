@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-const PUBLIC_PAGES = ["/", "/fixtures", "/standings", "/teams", "/players", "/roster", "/cards", "/predictions", "/auction", "/register", "/legacy", "/legacy/hall-of-fame", "/jersey"];
+const PUBLIC_PAGES = ["/", "/fixtures", "/standings", "/teams", "/players", "/roster", "/cards", "/stage/auction", "/predictions", "/auction", "/register", "/legacy", "/legacy/hall-of-fame", "/jersey"];
 
 // Known, tracked noise that is not a regression signal.
 const IGNORED_CONSOLE = [/Failed to load resource.*\/_next\/image/];
@@ -28,4 +28,11 @@ test("unknown route returns 404, not 500", async ({ page }) => {
 test("missing photo key degrades to 404, not 500", async ({ request }) => {
   const res = await request.get("/api/photos/does-not-exist");
   expect(res.status()).toBe(404);
+});
+
+test("auction projector state API answers without errors", async ({ request }) => {
+  const res = await request.get("/api/public/auction/stage");
+  expect(res.status()).toBe(200);
+  const body = await res.json();
+  expect(["off", "opening", "lot", "result", "between", "closing"]).toContain(body.phase);
 });

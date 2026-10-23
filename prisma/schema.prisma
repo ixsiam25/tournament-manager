@@ -85,6 +85,9 @@ enum AuctionLotStatus {
   IN_PROGRESS
   SOLD
   UNSOLD
+  /// Parked by the auctioneer until the end of the auction (resolved in the
+  /// wrap-up step: assigned, drawn, or left out).
+  HELD
 }
 
 /// A recurring series with its own identity ("BFL", a futsal cup, …). Owns its
@@ -577,22 +580,27 @@ model AuctionSettings {
 /// `order` is the queue position the admin/auctioneer runs through; `round`
 /// distinguishes the first pass from a second round for unsold players.
 model AuctionLot {
-  id           String           @id @default(cuid())
-  seasonId     String
-  season       Season           @relation(fields: [seasonId], references: [id], onDelete: Cascade)
-  playerId     String           @unique
-  player       Player           @relation(fields: [playerId], references: [id], onDelete: Cascade)
-  order        Int
-  round        Int              @default(1)
-  status       AuctionLotStatus @default(QUEUED)
-  soldToTeamId String?
-  soldToTeam   Team?            @relation(fields: [soldToTeamId], references: [id])
-  soldPrice    Int?
-  soldAt       DateTime?
-  soldByUserId String?
-  soldBy       User?            @relation(fields: [soldByUserId], references: [id])
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
+  id               String           @id @default(cuid())
+  seasonId         String
+  season           Season           @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  playerId         String           @unique
+  player           Player           @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  order            Int
+  round            Int              @default(1)
+  status           AuctionLotStatus @default(QUEUED)
+  soldToTeamId     String?
+  soldToTeam       Team?            @relation(fields: [soldToTeamId], references: [id])
+  soldPrice        Int?
+  soldAt           DateTime?
+  /// Live bid being tracked while the lot is IN_PROGRESS (organiser-entered):
+  /// shown on the projector view and used as the default sale price/team.
+  currentBid       Int?
+  currentBidTeamId String?
+  heldAt           DateTime?
+  soldByUserId     String?
+  soldBy           User?            @relation(fields: [soldByUserId], references: [id])
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
 
   @@index([seasonId])
   @@index([status])
