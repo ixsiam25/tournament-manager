@@ -5,6 +5,7 @@ import { requireUser } from "@/lib/userAuth";
 import { logAudit } from "@/lib/audit";
 import { getActiveSeason } from "@/lib/currentSeason";
 import { normalizeStudentId } from "@/lib/identity";
+import { formatBatch, parseBatch } from "@/lib/batch";
 
 export const dynamic = "force-dynamic";
 
@@ -66,7 +67,11 @@ export async function POST(request: NextRequest) {
     return {
       seasonId: season.id,
       name,
-      affiliation,
+      // A readable batch ("fall'24") is stored canonically ("Fall 24"); anything else is kept as typed.
+      affiliation: (() => {
+        const b = parseBatch(affiliation);
+        return b ? formatBatch(b) : affiliation;
+      })(),
       position: VALID_POSITIONS.has(positionUpper) ? (positionUpper as "GK" | "DEF" | "MID" | "FWD") : null,
       contact,
       studentId: normalizeStudentId(studentIdRaw),

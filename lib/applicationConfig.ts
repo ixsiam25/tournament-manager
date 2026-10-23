@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { batchInfo, parseBatch, formatBatch, type BatchMeaning } from "@/lib/batch";
 
 /**
  * What the public apply form asks for, per season. Pure (no server imports):
@@ -22,6 +23,11 @@ export type ApplicationConfig = {
   questions: Question[];
   /** Shown above the form, e.g. rules or a deadline reminder. */
   intro: string;
+  /** "batch": the affiliation is an intake like "Fall 24" and the system works out
+   * the current semester (or alumni) itself; "text": free text. */
+  affiliationKind: "text" | "batch";
+  /** What a batch label names: the term the batch started ("entry") or graduates. */
+  batchMeaning: BatchMeaning;
 };
 
 export const FIELD_LABELS: Record<FieldKey, string> = {
@@ -42,6 +48,8 @@ export const DEFAULT_APPLICATION_CONFIG: ApplicationConfig = {
   },
   questions: [],
   intro: "",
+  affiliationKind: "batch",
+  batchMeaning: "entry",
 };
 
 export const MAX_QUESTIONS = 6;
@@ -67,6 +75,8 @@ export const applicationConfigSchema = z
     }),
     questions: z.array(questionSchema).max(MAX_QUESTIONS, `At most ${MAX_QUESTIONS} custom questions`),
     intro: z.string().trim().max(600),
+    affiliationKind: z.enum(["text", "batch"]).default("batch"),
+    batchMeaning: z.enum(["entry", "graduation"]).default("entry"),
   })
   .superRefine((cfg, ctx) => {
     const ids = new Set<string>();
@@ -128,6 +138,7 @@ const POSITIONS = new Set(["GK", "DEF", "MID", "FWD"]);
 export function validateApplication(
   config: ApplicationConfig,
   input: ApplicationInput,
+  now: Date = new Date(),
 ): { ok: true; data: Omit<ApplicationInput, "hasPhoto"> } | { ok: false; error: string } {
   const name = input.name.trim();
   if (!name) return { ok: false, error: "Name is required" };
@@ -143,7 +154,14 @@ export function validateApplication(
   };
 
   const studentId = text("studentId", input.studentId, 40);
-  const affiliation = text("affiliation", input.affiliation, 80);
+  let affiliation = text("affiliation", input.affiliation, 80);
+  if (config.affiliationKind === "batch" && "value" in affiliation && affiliation.value) {
+    const parsed = parseBatch(affiliation.value);
+    if (!parsed) return { ok: false, error: "Enter your batch like “Fall 24” or “Spring 25”" };
+    const info = batchInfo(formatBatch(parsed), now, config.batchMeaning);
+    if (info.valid && info.status === "incoming") return { ok: false, error: `That batch hasn't started yet (${info.text}) — check the year` };
+    affiliation = { value: formatBatch(parsed) };
+  }
   const contact = text("contact", input.contact, 120);
   for (const r of [studentId, affiliation, contact]) if ("error" in r && r.error) return { ok: false, error: r.error };
 

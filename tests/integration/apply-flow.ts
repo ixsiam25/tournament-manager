@@ -7,14 +7,21 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { config } from "dotenv";
-import { chromium } from "playwright-core";
-config({ path: ".env.local" });
+import { chromium, type Page } from "playwright-core";
+import { batchInfo } from "../../lib/batch";
+config({ path: process.env.TEST_ENV_FILE ?? ".env.local" });
 
 if (process.env.ALLOW_DB_WRITE_TESTS !== "1") {
   console.log("skipped: set ALLOW_DB_WRITE_TESTS=1 (dev branch only)");
   process.exit(0);
 }
 const base = process.env.SMOKE_BASE_URL ?? "http://localhost:3100";
+
+/** Chooses a batch in the two-dropdown picker. */
+async function pickBatch(page: Page, term: "FALL" | "SPRING", year: number) {
+  await page.getByLabel("Batch term").selectOption(term);
+  await page.getByLabel("Batch year").selectOption(String(year));
+}
 
 async function main() {
   const { prisma } = await import("../../lib/db");
@@ -46,11 +53,17 @@ async function main() {
     // ---- default form ----
     await page.goto(`${base}/register`);
     await page.getByLabel("Student ID").waitFor({ timeout: 30000 });
-    assert.equal(await page.getByText("Affiliation").count() > 0, true);
+    assert.equal(await page.getByText("Batch", { exact: true }).count() > 0, true, "the form asks for a batch");
     await page.locator("input").first().fill("Test Applicant"); // Name
     assert.equal((await page.locator(".pcard__name").innerText()).trim(), "TEST APPLICANT", "card shows the typed name");
     await page.getByLabel("Student ID").fill(`zz-${stamp}`);
-    await page.getByLabel("Affiliation").fill("ZZ Batch");
+    await pickBatch(page, "FALL", 2024);
+    const expectSemester = batchInfo("Fall 24");
+    assert.ok(expectSemester.valid);
+    assert.equal((await page.getByTestId("batch-status").innerText()).trim(), `Fall 24 — ${expectSemester.text}`, "the form works out the semester itself");
+    await pickBatch(page, "SPRING", 2020);
+    assert.match(await page.getByTestId("batch-status").innerText(), /Spring 20 — Alumni/, "an old batch is shown as alumni");
+    await pickBatch(page, "FALL", 2024);
     await page.getByLabel("Contact").fill("090-0000-0000");
     await page.getByLabel("Preferred position").selectOption("GK");
     assert.equal((await page.locator(".pcard__pos").innerText()).trim(), "GK", "card shows the position");
@@ -71,7 +84,7 @@ async function main() {
     await page.getByLabel("Student ID").waitFor({ timeout: 30000 });
     await page.locator("input").first().fill("Test Applicant");
     await page.getByLabel("Student ID").fill(`zz-${stamp}`);
-    await page.getByLabel("Affiliation").fill("ZZ Batch");
+    await pickBatch(page, "FALL", 2024);
     await page.getByLabel("Contact").fill("090-0000-0000");
     await page.setInputFiles('input[type="file"]', `public/photos/${photo}`);
     await page.locator(".pcard__photo img").waitFor({ timeout: 15000 });
@@ -114,7 +127,7 @@ async function main() {
     await page.getByLabel("Student ID").waitFor();
     await page.locator("input").first().fill("Someone Else");
     await page.getByLabel("Student ID").fill(`ZZ-${stamp}`);
-    await page.getByLabel("Affiliation").fill("x");
+    await pickBatch(page, "SPRING", 2025);
     await page.getByLabel("Contact").fill("x");
     await page.getByRole("button", { name: "Submit application" }).click();
     await page.getByText("already exists for this season").waitFor({ timeout: 30000 });
@@ -155,7 +168,7 @@ async function main() {
     });
     await page.goto(`${base}/register`);
     await page.getByText("ZZ intro text").waitFor({ timeout: 30000 });
-    assert.equal(await page.getByLabel("Affiliation").count(), 0, "disabled field must not render");
+    assert.equal(await page.getByLabel("Batch term").count(), 0, "disabled field must not render");
     assert.equal(await page.locator('input[type="file"]').count(), 0, "disabled photo must not render");
     await page.locator("input").first().fill("Config Person");
     await page.getByLabel("Student ID").fill(`ZZ-${stamp}-2`);
@@ -166,6 +179,25 @@ async function main() {
     await page.getByLabel("Your private edit link").waitFor({ timeout: 30000 });
     const second = await prisma.registration.findFirstOrThrow({ where: { seasonId: season.id, studentId: `ZZ-${stamp}-2` } });
     assert.deepEqual(second.answers, { foot: "Left" });
+
+    // ---- the server enforces the batch rules whatever the browser sent ----
+    await prisma.season.update({ where: { id: season.id }, data: { applicationConfig: { fields: { studentId: { enabled: true, required: true }, affiliation: { enabled: true, required: true }, position: { enabled: false, required: false }, contact: { enabled: false, required: false }, photo: { enabled: false, required: false } }, questions: [], intro: "", affiliationKind: "batch", batchMeaning: "entry" } } });
+    const post = async (affiliation: string, id: string) => {
+      const fd = new FormData();
+      fd.append("name", "ZZ Rules");
+      fd.append("studentId", id);
+      fd.append("affiliation", affiliation);
+      return fetch(`${base}/api/register`, { method: "POST", body: fd });
+    };
+    const notBatch = await post("Sem 3", `ZZR${stamp}a`);
+    assert.equal(notBatch.status, 400);
+    assert.match((await notBatch.json()).error, /Fall 24/, "free text is refused with an example");
+    const future = await post("Fall 2050", `ZZR${stamp}b`);
+    assert.equal(future.status, 400);
+    assert.match((await future.json()).error, /hasn't started yet/, "a batch that hasn't started is refused");
+    const messy = await post("  fall'24 ", `ZZR${stamp}c`);
+    assert.equal(messy.status, 201);
+    assert.equal((await prisma.registration.findFirstOrThrow({ where: { seasonId: season.id, studentId: `ZZR${stamp}C` } })).affiliation, "Fall 24", "a messy spelling is stored canonically");
 
     // ---- deadline closes applications even though the switch is on ----
     await prisma.season.update({ where: { id: season.id }, data: { applicationDeadline: new Date(Date.now() - 60_000) } });

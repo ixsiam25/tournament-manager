@@ -6,7 +6,7 @@
 // Run: ALLOW_DB_WRITE_TESTS=1 npm run test:formationdb
 import assert from "node:assert/strict";
 import { config } from "dotenv";
-config({ path: ".env.local" });
+config({ path: process.env.TEST_ENV_FILE ?? ".env.local" });
 
 if (process.env.ALLOW_DB_WRITE_TESTS !== "1") {
   console.log("skipped: set ALLOW_DB_WRITE_TESTS=1 (dev branch only)");
@@ -105,6 +105,23 @@ async function main() {
     assert.equal(grouped.overflow, 1, "5th Sem 3 player doesn't fit (max 4)");
     assert.equal(await prisma.player.count({ where: { seasonId: batch.id, teamId: null } }), 1);
 
+    // 5b. Batch-aware grouping: team per intake batch with its real semester, alumni together.
+    const bs = await prisma.season.create({
+      data: { tournamentId: tournament.id, number: 61000 + (stamp % 900), name: "ZZ Batch Season", slug: `zz-batch-${stamp}`, year: 2096, status: "ACTIVE", teamFormation: "BATCH", squadSizeMin: 2, squadSizeMax: 4, startsOn: new Date(2026, 7, 4) },
+    });
+    seasonIds.push(bs.id);
+    for (const [name, label] of [["ZZ B1", "Fall 25"], ["ZZ B2", "fall'25"], ["ZZ B3", "Spring 23"], ["ZZ B4", "Fall 20"], ["ZZ B5", "Spring 19"], ["ZZ B6", "Some Club"]] as const) await apply(bs.id, name, label);
+    const batchResult = await svc.groupByAffiliation(await fresh(bs.id), null);
+    assert.equal(batchResult.placed, 6);
+    const batchTeams = await prisma.team.findMany({ where: { seasonId: bs.id }, include: { _count: { select: { players: true } } }, orderBy: { name: "asc" } });
+    const byName = Object.fromEntries(batchTeams.map((t) => [t.name, t]));
+    assert.deepEqual(Object.keys(byName).sort(), ["Alumni", "Fall 25", "Some Club", "Spring 23"], "one team per batch, alumni merged, free text kept");
+    assert.equal(byName["Fall 25"].semester, 2, "Fall 25 is in its 2nd semester in Aug 2026");
+    assert.equal(byName["Fall 25"]._count.players, 2, "two spellings of the same batch land together");
+    assert.equal(byName["Spring 23"].semester, 7);
+    assert.equal(byName["Alumni"]._count.players, 2, "Fall 20 and Spring 19 are both alumni");
+    assert.equal(byName["Alumni"].semester, null);
+
     // 6. Balanced deal: preview == apply for the same seed; everyone placed within capacity.
     const bal = await mkSeason(3, "BALANCED_RANDOM");
     for (const [i, n] of ["ZZ P1", "ZZ P2", "ZZ P3", "ZZ P4", "ZZ P5", "ZZ P6"].entries()) await apply(bal.id, n, "x", (["GK", "DEF", "MID", "FWD", "DEF", "MID"] as const)[i]);
@@ -150,6 +167,7 @@ async function main() {
     }
     await prisma.person.deleteMany({ where: { name: { startsWith: "ZZ " } } });
     await prisma.franchise.deleteMany({ where: { name: { startsWith: "ZZ " } } });
+    await prisma.franchise.deleteMany({ where: { name: { in: ["Alumni", "Spring 23", "Fall 25", "Some Club"] }, teams: { none: {} } } });
     await prisma.auditLog.deleteMany({ where: { summary: { contains: "ZZ " } } });
     await prisma.$disconnect();
   }

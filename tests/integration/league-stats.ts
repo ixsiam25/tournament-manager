@@ -2,7 +2,7 @@
 // Read-only. Run: npm run test:stats (dev branch after rehydrating Season IX).
 import assert from "node:assert/strict";
 import { config } from "dotenv";
-config({ path: ".env.local" });
+config({ path: process.env.TEST_ENV_FILE ?? ".env.local" });
 
 async function main() {
   const { getLeagueStats, getLeagueStatsFromSnapshots } = await import("../../lib/leagueStats");

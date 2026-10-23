@@ -34,6 +34,9 @@ enum Position {
 }
 
 enum TeamFormation {
+  /// A new edition starts here: applications come first, and the organiser
+  /// chooses how teams are formed once registration has closed and been reviewed.
+  UNDECIDED
   BATCH
   AUCTION
   MANUAL
@@ -146,7 +149,7 @@ model Season {
 
   /// How this season's teams are built — semester batches (as Season IX) or
   /// a live auction. Gates which admin screens exist for the season.
-  teamFormation TeamFormation @default(BATCH)
+  teamFormation TeamFormation @default(UNDECIDED)
 
   startsOn    DateTime?
   endsOn      DateTime?

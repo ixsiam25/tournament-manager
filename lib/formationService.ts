@@ -4,6 +4,8 @@ import type { AuthedUser } from "@/lib/userAuth";
 import { logAudit } from "@/lib/audit";
 import { findOrCreateFranchise } from "@/lib/franchise";
 import { assignJerseys, nextFreeJersey, seasonInPlay } from "@/lib/rosterRules";
+import { batchInfo } from "@/lib/batch";
+import { resolveApplicationConfig } from "@/lib/applicationConfig";
 import {
   balancedDeal,
   isDraftState,
@@ -36,6 +38,9 @@ const playerSelect = {
 } as const;
 
 export function assertBoardUsable(season: Pick<Season, "teamFormation">) {
+  if (season.teamFormation === "UNDECIDED") {
+    throw new FormationError("Choose how this season forms its teams first (Season setup → Confirm applicants & choose formation).");
+  }
   if (season.teamFormation === "AUCTION") {
     throw new FormationError("This season runs an auction — move players with the auction console instead.");
   }
@@ -73,6 +78,13 @@ export async function getBoard(season: Season) {
       teamFormation: season.teamFormation,
       squadSizeMin: season.squadSizeMin,
       squadSizeMax: season.squadSizeMax,
+      registrationOpen: season.registrationOpen,
+      batchMeaning: resolveApplicationConfig(season.applicationConfig).batchMeaning,
+      batchDate: (season.startsOn ?? new Date()).toISOString(),
+    },
+    applications: {
+      pending: await prisma.registration.count({ where: { seasonId: season.id, status: "PENDING" } }),
+      approved: await prisma.registration.count({ where: { seasonId: season.id, status: "APPROVED" } }),
     },
     inPlay,
     teams: teams.map((t) => ({ id: t.id, name: t.name, players: t.players.map(withAffiliation) })),
@@ -174,25 +186,35 @@ async function poolAndTeams(season: Season) {
   return { pool, teams, affiliationByPerson: new Map(regs.map((r) => [r.personId!, r.affiliation])) };
 }
 
-/** BATCH strategy: one team per affiliation (semester/batch). Teams are
- * created (or reused) by name; players beyond the squad limit stay in the pool. */
+/** BATCH strategy: one team per intake batch ("Fall 24" → a team with that name and
+ * its current semester), all alumni batches together in one "Alumni" team. Anything
+ * that isn't a batch label (free-text affiliations, old data) groups by its text.
+ * Teams are created (or reused) by name; players beyond the squad limit stay in the pool. */
 export async function groupByAffiliation(season: Season, actor: AuthedUser | null) {
   assertBoardUsable(season);
   const { pool, teams, affiliationByPerson } = await poolAndTeams(season);
   const max = season.squadSizeMax ?? Infinity;
+  const meaning = resolveApplicationConfig(season.applicationConfig).batchMeaning;
+  const reference = season.startsOn ?? new Date();
 
-  const groups = new Map<string, { label: string; players: typeof pool }>();
+  const groups = new Map<string, { label: string; semester: number | null; players: typeof pool }>();
   let noAffiliation = 0;
   for (const p of pool) {
-    const label = affiliationByPerson.get(p.personId)?.trim();
-    if (!label) {
+    const raw = affiliationByPerson.get(p.personId)?.trim();
+    if (!raw) {
       noAffiliation++;
       continue;
     }
-    const key = label.toLowerCase();
-    const g = groups.get(key) ?? { label, players: [] };
+    const info = batchInfo(raw, reference, meaning);
+    const group =
+      info.valid && info.status === "alumni"
+        ? { key: "alumni", label: "Alumni", semester: null }
+        : info.valid
+          ? { key: info.label.toLowerCase(), label: info.label, semester: info.semester }
+          : { key: raw.toLowerCase(), label: raw, semester: null };
+    const g = groups.get(group.key) ?? { label: group.label, semester: group.semester, players: [] };
     g.players.push(p);
-    groups.set(key, g);
+    groups.set(group.key, g);
   }
 
   const moves: Move[] = [];
@@ -203,7 +225,7 @@ export async function groupByAffiliation(season: Season, actor: AuthedUser | nul
     if (!team) {
       const franchise = await findOrCreateFranchise(season.tournamentId, g.label);
       const taken = await prisma.team.findUnique({ where: { seasonId_franchiseId: { seasonId: season.id, franchiseId: franchise.id } } });
-      team = taken ?? (await prisma.team.create({ data: { seasonId: season.id, franchiseId: franchise.id, name: g.label } }));
+      team = taken ?? (await prisma.team.create({ data: { seasonId: season.id, franchiseId: franchise.id, name: g.label, semester: g.semester } }));
       if (!taken) teamsCreated++;
     }
     const size = teams.find((t) => t.id === team.id)?._count.players ?? 0;
@@ -211,7 +233,7 @@ export async function groupByAffiliation(season: Season, actor: AuthedUser | nul
     g.players.slice(0, room).forEach((p) => moves.push({ playerId: p.id, teamId: team.id }));
     overflow += Math.max(0, g.players.length - room);
   }
-  const placed = await applyMoves(season, moves, actor, "Grouped by affiliation");
+  const placed = await applyMoves(season, moves, actor, "Grouped by batch");
   return { placed, teamsCreated, overflow, noAffiliation };
 }
 

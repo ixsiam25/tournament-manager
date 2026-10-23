@@ -8,7 +8,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { config } from "dotenv";
 import { chromium } from "playwright-core";
-config({ path: ".env.local" });
+config({ path: process.env.TEST_ENV_FILE ?? ".env.local" });
 
 if (process.env.ALLOW_DB_WRITE_TESTS !== "1") {
   console.log("skipped: set ALLOW_DB_WRITE_TESTS=1 (dev branch only)");
@@ -58,7 +58,8 @@ async function main() {
       await page.getByLabel("Student ID").waitFor(T);
       await page.locator("input").first().fill(a.name);
       await page.getByLabel("Student ID").fill(`ZZJ${stamp}${i}`);
-      await page.getByLabel("Affiliation").fill(i % 2 ? "ZZ Sem 5" : "ZZ Sem 3");
+      await page.getByLabel("Batch term").selectOption(i % 2 ? "SPRING" : "FALL");
+      await page.getByLabel("Batch year").selectOption(i % 2 ? "2025" : "2024");
       await page.getByLabel("Contact").fill("090-1111-2222");
       await page.getByLabel("Preferred position").selectOption(a.position);
       if (a.photo) {

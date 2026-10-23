@@ -520,3 +520,31 @@ The app is no longer "one live season". Every live row belongs to a `Season`
 - Tests: `test:auction` (service rules + projector phases) and `test:auctionui`
   (console driving the projector in a browser); password-gated steps are covered at
   service level.
+
+## Season lifecycle & graduation batches (2026-10-23)
+
+- **Lifecycle** the organiser follows (`/admin/season`, derived from data by
+  `lib/seasonProgress.ts` — nothing to keep in sync): season created →
+  applications (open, then closed by the organiser) → review & **confirm applicants,
+  then choose how teams are formed** → form the teams → fixtures → matchdays →
+  wrap up. New seasons start with `teamFormation = UNDECIDED`; the formation board
+  shows a choose-a-method step first and only then the board. Creating a season
+  opens the application portal immediately (checkbox, on by default).
+- **Batches** (`lib/batch.ts`, pure): affiliation can be an intake like "Fall 24"
+  / "Spring 25" (season setting `affiliationKind: "batch"`, default). The batch
+  picker (`BatchPicker`) shows the meaning live; the server canonicalises any
+  spelling and rejects non-batches and batches that haven't started. Calendar:
+  Spring = Apr–Aug, Fall = Sep–Mar; **semester = terms started since the batch's
+  own term; after 8 semesters (4 years) → alumni**. Verified against Season IX's
+  real teams (Spring 26 → 1st, Fall 25 → 2nd, Fall 24 → 4th, Spring 23 → 7th).
+  `batchMeaning: "graduation"` flips the label to the graduating term.
+- **Group by batch**: one team per batch (named by label, `Team.semester` set), all
+  alumni batches in a single "Alumni" team; free-text affiliations still group by text.
+  Registration review, the formation board and the apply form all show
+  "Fall 25 · 3rd semester" / "Alumni".
+- Migrations added: `formation_undecided` (enum value) and `formation_default`
+  (separate: a new enum value can't be used in the transaction that adds it).
+- **Test isolation**: automated tests run on their own Neon branch (`test`) and a
+  second dev server (:3101, `NEXT_DIST_DIR=.next-test`) via `npm run test:dev`
+  (`scripts/test-dev.sh`), so they never disturb hand-testing on the dev branch
+  (:3100). `npm run test:clean` removes leftovers from an interrupted run.

@@ -59,3 +59,5 @@ next-env.d.ts
 
 # Dev-only fallback media store (lib/mediaStore.ts)
 /.local-media/
+
+/.next-test/

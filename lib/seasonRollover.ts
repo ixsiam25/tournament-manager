@@ -106,12 +106,14 @@ export type OpenSeasonInput = {
   name: string;
   slug: string;
   year: number;
-  teamFormation: "BATCH" | "AUCTION" | "MANUAL" | "DRAFT" | "BALANCED_RANDOM";
+  teamFormation: "UNDECIDED" | "BATCH" | "AUCTION" | "MANUAL" | "DRAFT" | "BALANCED_RANDOM";
   targetTeamCount?: number | null;
   squadSizeMin: number;
   squadSizeMax: number;
   registrationSelfServeEnabled: boolean;
   registrationExcelImportEnabled: boolean;
+  /** Open the public application form right away (the usual flow). */
+  openRegistrationNow?: boolean;
   formatConfig: SeasonFormatConfig;
 };
 
@@ -134,7 +136,7 @@ export async function openNextSeason(input: OpenSeasonInput): Promise<{ seasonId
         targetTeamCount: input.targetTeamCount ?? null,
         squadSizeMin: input.squadSizeMin,
         squadSizeMax: input.squadSizeMax,
-        registrationOpen: false,
+        registrationOpen: (input.openRegistrationNow ?? true) && input.registrationSelfServeEnabled,
         registrationSelfServeEnabled: input.registrationSelfServeEnabled,
         registrationExcelImportEnabled: input.registrationExcelImportEnabled,
         formatConfig: input.formatConfig as object,

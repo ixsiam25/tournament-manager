@@ -6,6 +6,7 @@ import { removeBackgroundInWorker } from "@/lib/cutoutClient";
 import { checkPhoto, type PhotoCheck } from "@/lib/photoCheck";
 import { PHOTO_OFFSET_RANGE, PHOTO_ZOOM_RANGE, type ApplicationConfig } from "@/lib/applicationConfig";
 import { PlayerCardPreview, type CardFraming } from "@/components/PlayerCardPreview";
+import { BatchPicker } from "@/components/BatchPicker";
 
 export type ApplicationValues = {
   name: string;
@@ -253,11 +254,16 @@ export function ApplicationForm({
           </Field>
         )}
 
-        {f.affiliation.enabled && (
-          <Field label="Affiliation" required={f.affiliation.required} hint="Team, batch, workplace — whatever identifies your group">
-            <input value={v.affiliation} onChange={(e) => set("affiliation", e.target.value)} required={f.affiliation.required} maxLength={80} className={INPUT} />
-          </Field>
-        )}
+        {f.affiliation.enabled &&
+          (config.affiliationKind === "batch" ? (
+            <Field label="Batch" required={f.affiliation.required} hint="The term your batch started, e.g. Fall 24 — we work out your current semester (or alumni) automatically">
+              <BatchPicker value={v.affiliation} onChange={(label) => set("affiliation", label)} required={f.affiliation.required} meaning={config.batchMeaning} />
+            </Field>
+          ) : (
+            <Field label="Affiliation" required={f.affiliation.required} hint="Team, batch, workplace — whatever identifies your group">
+              <input value={v.affiliation} onChange={(e) => set("affiliation", e.target.value)} required={f.affiliation.required} maxLength={80} className={INPUT} />
+            </Field>
+          ))}
 
         {f.position.enabled && (
           <Field label="Preferred position" required={f.position.required}>

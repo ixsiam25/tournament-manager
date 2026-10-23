@@ -18,7 +18,7 @@ const NAV_ITEMS = [
   { href: "/admin/registrations", label: "Registrations", adminOnly: true },
   { href: "/admin/formation", label: "Formation", adminOnly: true },
   { href: "/admin/auction", label: "Auction", adminOnly: true },
-  { href: "/admin/season/rollover", label: "Season", adminOnly: true },
+  { href: "/admin/season", label: "Season", adminOnly: true },
   { href: "/admin/settings", label: "Settings", adminOnly: true },
   { href: "/admin/users", label: "Users", adminOnly: true },
   { href: "/admin/audit", label: "Audit", adminOnly: true },

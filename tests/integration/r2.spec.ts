@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 
 // Real round-trip against the configured R2 bucket. Skipped automatically
 // when R2 credentials are absent, so it never blocks the smoke suite.
-config({ path: ".env.local" });
+config({ path: process.env.TEST_ENV_FILE ?? ".env.local" });
 const configured = Boolean(
   process.env.R2_ACCOUNT_ID && process.env.R2_ACCESS_KEY_ID && process.env.R2_SECRET_ACCESS_KEY && process.env.R2_BUCKET_NAME,
 );

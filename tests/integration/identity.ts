@@ -5,7 +5,7 @@
 // Run: ALLOW_DB_WRITE_TESTS=1 npm run test:identity
 import assert from "node:assert/strict";
 import { config } from "dotenv";
-config({ path: ".env.local" });
+config({ path: process.env.TEST_ENV_FILE ?? ".env.local" });
 
 if (process.env.ALLOW_DB_WRITE_TESTS !== "1") {
   console.log("skipped: set ALLOW_DB_WRITE_TESTS=1 (dev branch only)");

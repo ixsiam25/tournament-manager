@@ -41,6 +41,7 @@ export function parseApplicationForm(
   formData: FormData,
   config: ApplicationConfig,
   existingPhoto = false,
+  now: Date = new Date(),
 ): { ok: true; value: ParsedApplication } | { ok: false; error: string } {
   const str = (k: string) => {
     const v = formData.get(k);
@@ -83,7 +84,7 @@ export function parseApplicationForm(
     contact: str("contact"),
     answers,
     hasPhoto: !!photo || (existingPhoto && !removePhoto),
-  });
+  }, now);
   if (!checked.ok) return checked;
 
   return {

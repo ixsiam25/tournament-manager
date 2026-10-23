@@ -8,7 +8,7 @@
 import assert from "node:assert/strict";
 import { config } from "dotenv";
 import { chromium } from "playwright-core";
-config({ path: ".env.local" });
+config({ path: process.env.TEST_ENV_FILE ?? ".env.local" });
 
 if (process.env.ALLOW_DB_WRITE_TESTS !== "1") {
   console.log("skipped: set ALLOW_DB_WRITE_TESTS=1 (dev branch only)");

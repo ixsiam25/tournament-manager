@@ -40,7 +40,7 @@ export function SeasonRolloverWizard() {
   const [slug, setSlug] = useState("");
   const [slugTouched, setSlugTouched] = useState(false);
   const [year, setYear] = useState(new Date().getFullYear());
-  const [teamFormation, setTeamFormation] = useState<"BATCH" | "AUCTION" | "MANUAL" | "DRAFT" | "BALANCED_RANDOM">("BATCH");
+  const [teamFormation, setTeamFormation] = useState<"UNDECIDED" | "BATCH" | "AUCTION" | "MANUAL" | "DRAFT" | "BALANCED_RANDOM">("UNDECIDED");
   const [targetTeamCount, setTargetTeamCount] = useState("");
   const [squadSizeMin, setSquadSizeMin] = useState(6);
   const [squadSizeMax, setSquadSizeMax] = useState(8);
@@ -56,6 +56,7 @@ export function SeasonRolloverWizard() {
   const [pitches, setPitches] = useState<Pitch[]>([{ name: "Field 1", availabilityStart: "", availabilityEnd: "" }]);
   const [registrationSelfServeEnabled, setRegistrationSelfServeEnabled] = useState(true);
   const [registrationExcelImportEnabled, setRegistrationExcelImportEnabled] = useState(true);
+  const [openRegistrationNow, setOpenRegistrationNow] = useState(true);
   const [opening, setOpening] = useState(false);
 
   async function loadStatus() {
@@ -154,6 +155,7 @@ export function SeasonRolloverWizard() {
         squadSizeMax,
         registrationSelfServeEnabled,
         registrationExcelImportEnabled,
+        openRegistrationNow,
         formatConfig: {
           matchFormat,
           knockoutStructure,
@@ -254,10 +256,11 @@ export function SeasonRolloverWizard() {
               <Field label="Team formation" className="col-span-2">
                 <select
                   value={teamFormation}
-                  onChange={(e) => setTeamFormation(e.target.value as "BATCH" | "AUCTION" | "MANUAL" | "DRAFT" | "BALANCED_RANDOM")}
+                  onChange={(e) => setTeamFormation(e.target.value as "UNDECIDED" | "BATCH" | "AUCTION" | "MANUAL" | "DRAFT" | "BALANCED_RANDOM")}
                   className="w-full rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-pitch"
                 >
-                  <option value="BATCH">Batch (semester teams)</option>
+                  <option value="UNDECIDED">Decide after applications close (recommended)</option>
+                  <option value="BATCH">By batch (Fall/Spring intake)</option>
                   <option value="MANUAL">Manual (drag players onto teams)</option>
                   <option value="BALANCED_RANDOM">Balanced random</option>
                   <option value="DRAFT">Snake draft</option>
@@ -419,7 +422,13 @@ export function SeasonRolloverWizard() {
                 />
                 Excel bulk import
               </label>
-              <p className="text-xs text-muted-foreground">Admin manual add is always available regardless.</p>
+              <label className="flex items-center gap-2 pt-2 text-sm font-medium">
+                <input type="checkbox" checked={openRegistrationNow} onChange={(e) => setOpenRegistrationNow(e.target.checked)} />
+                Open applications as soon as the season is created
+              </label>
+              <p className="text-xs text-muted-foreground">
+                Admin manual add is always available regardless. You close registration yourself from Season setup when it is time to review.
+              </p>
             </div>
           </section>
 

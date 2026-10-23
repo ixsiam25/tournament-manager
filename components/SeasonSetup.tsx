@@ -1,0 +1,102 @@
+"use client";
+
+import Link from "next/link";
+import { useCallback, useEffect, useState } from "react";
+import type { SetupStep } from "@/lib/seasonProgress";
+
+type Overview = { season: { id: string; name: string; status: string } | null; steps: SetupStep[] };
+
+/** The season's checklist: where it is now and the next thing to do. */
+export function SeasonSetup() {
+  const [data, setData] = useState<Overview | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setData(await (await fetch("/api/admin/season/overview")).json());
+  }, []);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- initial data load
+    load();
+  }, [load]);
+
+  async function run(action: "openRegistration" | "closeRegistration") {
+    setBusy(true);
+    setError(null);
+    const res = await fetch("/api/admin/season/active", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ registrationOpen: action === "openRegistration" }),
+    });
+    setBusy(false);
+    if (!res.ok) setError((await res.json().catch(() => ({}))).error ?? "That didn't work");
+    await load();
+  }
+
+  if (!data) return <p className="text-muted-foreground">Loading…</p>;
+  if (!data.season)
+    return (
+      <p className="rounded-lg border border-line bg-surface p-5">
+        There&apos;s no season yet. <Link href="/admin/season/rollover" className="font-bold text-pitch underline">Create the first one</Link>.
+      </p>
+    );
+
+  return (
+    <div className="space-y-4">
+      <p className="text-lg font-bold">
+        {data.season.name} <span className="ml-2 rounded-full bg-line px-2 py-0.5 text-[10px] uppercase">{data.season.status.toLowerCase()}</span>
+      </p>
+      {error && <p className="text-sm text-live">{error}</p>}
+      <ol className="space-y-3">
+        {data.steps.map((s, i) => (
+          <li
+            key={s.key}
+            data-step={s.key}
+            data-status={s.status}
+            className={
+              "rounded-2xl border p-4 " +
+              (s.status === "current" ? "border-pitch bg-pitch/5 ring-2 ring-pitch/20" : s.status === "done" ? "border-line bg-surface opacity-80" : "border-line bg-surface")
+            }
+          >
+            <div className="flex items-start gap-3">
+              <span
+                className={
+                  "mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-black " +
+                  (s.status === "done" ? "bg-pitch text-white" : s.status === "current" ? "border-2 border-pitch text-pitch" : "border border-line text-muted-foreground")
+                }
+                aria-label={s.status}
+              >
+                {s.status === "done" ? "✓" : i + 1}
+              </span>
+              <div className="min-w-0 flex-1">
+                <h2 className="font-bold">{s.title}</h2>
+                <p className="text-sm text-muted-foreground">{s.detail}</p>
+                {s.actions.length > 0 && (
+                  <div className="mt-3 flex flex-wrap items-center gap-3">
+                    {s.actions.map((a) =>
+                      a.href ? (
+                        <Link key={a.label} href={a.href} className={a.primary ? "rounded-full bg-pitch px-4 py-1.5 text-sm font-bold text-white" : "text-sm font-medium text-pitch underline"}>
+                          {a.label}
+                        </Link>
+                      ) : (
+                        <button
+                          key={a.label}
+                          disabled={busy}
+                          onClick={() => run(a.action!)}
+                          className={a.primary ? "rounded-full bg-pitch px-4 py-1.5 text-sm font-bold text-white disabled:opacity-40" : "text-sm font-medium text-pitch underline disabled:opacity-40"}
+                        >
+                          {a.label}
+                        </button>
+                      ),
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { BatchBadge } from "@/components/BatchBadge";
 
 type Pos = "GK" | "DEF" | "MID" | "FWD";
 type BoardPlayer = {
@@ -13,7 +14,8 @@ type BoardPlayer = {
   affiliation: string | null;
 };
 type Board = {
-  season: { id: string; name: string; teamFormation: Strategy; squadSizeMin: number | null; squadSizeMax: number | null };
+  season: { id: string; name: string; teamFormation: Strategy | "UNDECIDED"; squadSizeMin: number | null; squadSizeMax: number | null; registrationOpen: boolean; batchMeaning: "entry" | "graduation"; batchDate: string };
+  applications: { pending: number; approved: number };
   inPlay: boolean;
   teams: { id: string; name: string; players: BoardPlayer[] }[];
   pool: BoardPlayer[];
@@ -23,7 +25,7 @@ type Strategy = "BATCH" | "MANUAL" | "DRAFT" | "BALANCED_RANDOM" | "AUCTION";
 type Move = { playerId: string; teamId: string };
 
 const STRATEGIES: { value: Strategy; label: string; help: string }[] = [
-  { value: "BATCH", label: "By batch / affiliation", help: "One team per affiliation. Press “Group by affiliation” to build them from the applications." },
+  { value: "BATCH", label: "By batch (Fall/Spring intake)", help: "One team per intake batch — e.g. “Fall 24”, shown with its current semester. Alumni batches are gathered into one Alumni team. Press “Group by batch” to build them from the applications." },
   { value: "MANUAL", label: "Manual", help: "Drag players from the pool onto teams — or use each player's “Move to” menu." },
   { value: "BALANCED_RANDOM", label: "Balanced random", help: "Deals the pool across teams evenly, spreading positions (and strength once ratings exist). Preview, re-roll, then apply." },
   { value: "DRAFT", label: "Snake draft", help: "Captains pick in turn, the order reversing each round. Start the draft, then pick for the team on the clock." },
@@ -82,7 +84,47 @@ export function FormationBoard() {
 
   if (!board) return error ? <p className="text-live">{error}</p> : <p className="text-muted-foreground">Loading…</p>;
 
-  const strategy = board.season.teamFormation;
+  if (board.season.teamFormation === "UNDECIDED") {
+    const risky = board.season.registrationOpen || board.applications.pending > 0;
+    return (
+      <div className="space-y-5">
+        <div className="rounded-2xl border border-line bg-surface p-5">
+          <h2 className="mb-1 text-lg font-bold">Confirm applicants &amp; choose how teams are formed</h2>
+          <p className="text-sm text-muted-foreground">
+            {board.applications.approved} approved applicant(s) are ready. Pick how {board.season.name} builds its teams — you can still change your mind until players are sold in an auction.
+          </p>
+          {risky && (
+            <p className="mt-3 rounded-lg border border-amber-500/50 bg-amber-500/10 p-3 text-sm" role="alert">
+              {board.season.registrationOpen && "Applications are still open. "}
+              {board.applications.pending > 0 && `${board.applications.pending} application(s) are still waiting for review. `}
+              <Link href="/admin/season" className="font-bold underline">Back to Season setup</Link> to close registration and finish reviewing first — or choose now anyway.
+            </p>
+          )}
+        </div>
+        {error && <p className="text-sm text-live">{error}</p>}
+        <div className="grid gap-3 md:grid-cols-2">
+          {STRATEGIES.map((s) => (
+            <div key={s.value} className="flex flex-col justify-between rounded-2xl border border-line bg-surface p-4">
+              <div>
+                <h3 className="font-bold">{s.label}</h3>
+                <p className="mt-1 text-sm text-muted-foreground">{s.help}</p>
+              </div>
+              <button
+                disabled={busy}
+                onClick={() => call("/api/admin/formation/strategy", { method: "PATCH", body: JSON.stringify({ teamFormation: s.value }) })}
+                aria-label={`Choose ${s.label}`}
+                className="mt-4 self-start rounded-full bg-pitch px-5 py-1.5 text-sm font-bold text-white disabled:opacity-40"
+              >
+                Choose this
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  const strategy = board.season.teamFormation as Strategy;
   const max = board.season.squadSizeMax;
   const min = board.season.squadSizeMin;
   const help = STRATEGIES.find((s) => s.value === strategy)?.help;
@@ -99,7 +141,11 @@ export function FormationBoard() {
         {!inPool && <span className="mr-1.5 text-xs font-normal text-muted-foreground">#{p.jerseyNumber}</span>}
         {p.name}
         {p.isCaptain && <span className="ml-1 rounded-full bg-brand/15 px-1 text-[10px] font-bold text-brand">C</span>}
-        {inPool && p.affiliation && <span className="ml-2 text-xs font-normal text-muted-foreground">{p.affiliation}</span>}
+        {inPool && p.affiliation && (
+          <span className="ml-2 text-xs font-normal text-muted-foreground">
+            <BatchBadge label={p.affiliation} meaning={board.season.batchMeaning} date={new Date(board.season.batchDate)} />
+          </span>
+        )}
       </span>
       {p.position && <span className={"rounded px-1.5 text-[10px] font-bold " + POS_STYLE[p.position]}>{p.position}</span>}
       {inPool && proposedTeam.has(p.id) && <span className="rounded bg-pitch/15 px-1.5 text-[10px] font-bold text-pitch">→ {teamName.get(proposedTeam.get(p.id)!)}</span>}
@@ -174,9 +220,9 @@ export function FormationBoard() {
       {strategy === "BATCH" && (
         <button disabled={busy || board.pool.length === 0} onClick={() => call("/api/admin/formation/group", { method: "POST" }, (r) => {
           const x = r as { placed: number; teamsCreated: number; overflow: number; noAffiliation: number };
-          return `Placed ${x.placed} player(s), created ${x.teamsCreated} team(s)${x.overflow ? `, ${x.overflow} didn't fit` : ""}${x.noAffiliation ? `, ${x.noAffiliation} have no affiliation` : ""}.`;
+          return `Placed ${x.placed} player(s), created ${x.teamsCreated} team(s)${x.overflow ? `, ${x.overflow} didn't fit` : ""}${x.noAffiliation ? `, ${x.noAffiliation} have no batch` : ""}.`;
         })} className="rounded-full bg-pitch px-5 py-2 text-sm font-bold text-white disabled:opacity-40">
-          Group by affiliation
+          Group by batch
         </button>
       )}
 
@@ -258,7 +304,7 @@ export function FormationBoard() {
               </section>
             );
           })}
-          {board.teams.length === 0 && <p className="text-sm text-muted-foreground">No teams yet — create teams on the Teams page{strategy === "BATCH" ? ", or press “Group by affiliation”" : ""}.</p>}
+          {board.teams.length === 0 && <p className="text-sm text-muted-foreground">No teams yet — create teams on the Teams page{strategy === "BATCH" ? ", or press “Group by batch”" : ""}.</p>}
         </div>
       </div>
     </div>

@@ -5,6 +5,8 @@ import { logAudit } from "@/lib/audit";
 import { registrationSchema } from "@/lib/validation";
 import { approveRegistration } from "@/lib/registrationApproval";
 import { normalizeStudentId } from "@/lib/identity";
+import { resolveApplicationConfig } from "@/lib/applicationConfig";
+import { formatBatch, parseBatch } from "@/lib/batch";
 import { getActiveSeason } from "@/lib/currentSeason";
 
 export const dynamic = "force-dynamic";
@@ -41,11 +43,18 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Invalid data" }, { status: 400 });
   }
 
+  let affiliation = parsed.data.affiliation;
+  if (resolveApplicationConfig(season.applicationConfig).affiliationKind === "batch") {
+    const batch = parseBatch(affiliation);
+    if (!batch) return NextResponse.json({ error: "Enter the batch like “Fall 24” or “Spring 25”" }, { status: 400 });
+    affiliation = formatBatch(batch);
+  }
+
   const registration = await prisma.registration.create({
     data: {
       seasonId: season.id,
       name: parsed.data.name,
-      affiliation: parsed.data.affiliation,
+      affiliation,
       position: parsed.data.position,
       contact: parsed.data.contact,
       studentId: normalizeStudentId(parsed.data.studentId),

@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { BatchBadge } from "@/components/BatchBadge";
+import { BatchPicker } from "@/components/BatchPicker";
 
 type Position = "GK" | "DEF" | "MID" | "FWD" | "";
 type Source = "SELF_SERVE" | "ADMIN_MANUAL" | "EXCEL_IMPORT";
@@ -20,6 +22,7 @@ type Registration = {
   createdAt: string;
 };
 type Season = {
+  applicationConfig?: { affiliationKind?: "text" | "batch"; batchMeaning?: "entry" | "graduation" } | null;
   id: string;
   name: string;
   registrationOpen: boolean;
@@ -211,13 +214,17 @@ export function RegistrationsPanel() {
               required
               className="w-full rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-pitch"
             />
-            <input
-              value={affiliation}
-              onChange={(e) => setAffiliation(e.target.value)}
-              placeholder="Affiliation"
-              required
-              className="w-full rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-pitch"
-            />
+            {season?.applicationConfig?.affiliationKind === "text" ? (
+              <input
+                value={affiliation}
+                onChange={(e) => setAffiliation(e.target.value)}
+                placeholder="Affiliation"
+                required
+                className="w-full rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-pitch"
+              />
+            ) : (
+              <BatchPicker value={affiliation} onChange={setAffiliation} required meaning={season?.applicationConfig?.batchMeaning ?? "entry"} />
+            )}
             <input
               value={studentId}
               onChange={(e) => setStudentId(e.target.value)}
@@ -328,7 +335,9 @@ export function RegistrationsPanel() {
             )}
             <div className="min-w-0 flex-1">
               <span className="font-bold">{r.name}</span>
-              <span className="ml-2 text-sm text-muted-foreground">{r.affiliation}</span>
+              <span className="ml-2 text-sm text-muted-foreground">
+                <BatchBadge label={r.affiliation} meaning={season?.applicationConfig?.batchMeaning ?? "entry"} />
+              </span>
               {r.position && <span className="ml-2 text-xs text-muted-foreground">{r.position}</span>}
               {r.studentId && <span className="ml-2 font-mono text-xs text-muted-foreground">ID {r.studentId}</span>}
               {r.answers && Object.keys(r.answers).length > 0 && (

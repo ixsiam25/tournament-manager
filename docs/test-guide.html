@@ -9,86 +9,68 @@
 @media (prefers-color-scheme:dark){:root{--bg:#15100f;--card:#1e1816;--ink:#f2ede6;--mute:#a39a91;--line:#3a312d;--brand:#d4647d;--ok:#6fbf94;--warn:#e0a24d}}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 -apple-system,"Hiragino Sans",system-ui,sans-serif}
 .wrap{max-width:900px;margin:0 auto;padding:24px 16px 80px}
-h1{font:700 28px Georgia,serif;margin:0 0 4px}h2{font:700 19px Georgia,serif;margin:30px 0 8px;display:flex;justify-content:space-between;align-items:baseline}
+h1{font:700 28px Georgia,serif;margin:0 0 4px}h2{font:700 19px Georgia,serif;margin:30px 0 8px;display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
 .sub{color:var(--mute)}.bar{position:sticky;top:0;background:var(--bg);padding:10px 0;border-bottom:1px solid var(--line);z-index:3;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 .meter{flex:1;min-width:120px;height:8px;background:var(--line);border-radius:4px;overflow:hidden}.meter i{display:block;height:100%;width:0;background:var(--ok);transition:width .2s}
 .item{display:grid;grid-template-columns:24px 1fr;gap:10px;padding:12px 14px;border:1px solid var(--line);background:var(--card);margin:8px 0;border-radius:2px}
 .item.done{opacity:.6}.item input{margin-top:4px;width:18px;height:18px}
-.item b{display:block}.item .see{color:var(--mute);font-size:13.5px;margin-top:3px}.item .see::before{content:"You should see: ";font-weight:600;color:var(--ink)}
+.item b{display:block}.item .see{color:var(--mute);font-size:13.5px;margin-top:3px;display:block}.item .see::before{content:"You should see: ";font-weight:600;color:var(--ink)}
 a{color:var(--brand)}code{background:var(--line);padding:1px 5px;border-radius:2px;font-size:12.5px}
 .note{border-left:4px solid var(--warn);padding:10px 14px;background:var(--card);margin:14px 0}
-.tag{font-size:11px;border:1px solid var(--line);border-radius:10px;padding:1px 7px;color:var(--mute);margin-left:6px}
+.tag{font-size:11px;border:1px solid var(--line);border-radius:10px;padding:1px 7px;color:var(--mute)}
 button{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:6px 12px;border-radius:2px;cursor:pointer}
+table{border-collapse:collapse;width:100%;font-size:13.5px;margin:8px 0}th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left}
 </style>
 </head>
 <body><div class="wrap">
 <h1>BFL platform — test guide</h1>
-<p class="sub">Everything below runs on your laptop against the <b>dev</b> database — a copy of production. Nothing you do here touches the live site. A demo edition, <b>“BFL Season X (demo)”</b>, is already loaded: 4 teams, 20 approved players in the pool, 3 pending applications, registration open.</p>
+<p class="sub">Follows the real lifecycle: <b>create season → applications open → registration closes &amp; admin reviews → confirm and choose team formation → teams form → the rest</b>. Everything runs on your laptop against the <b>dev</b> database (a copy of production) — nothing here touches the live site.</p>
 
-<div class="note"><b>Start it:</b> the dev server is running at <a href="http://localhost:3100">http://localhost:3100</a>. Log in to the admin at <a href="http://localhost:3100/admin/login">/admin/login</a> with your normal admin account (the dev database has a copy of your users). Use a private window for the “player” steps so you stay logged in as admin in the other one.</div>
+<div class="note"><b>Start from the beginning:</b> in a terminal in <code>football-tournament/</code> run <code>npm run demo:down</code> then <code>npm run demo:up</code>. That builds <b>“BFL Season X (demo)”</b> exactly as a brand-new season looks: applications <b>open</b>, team formation <b>not chosen</b>, no teams, 22 applications waiting (spread over batches Fall 25 … Spring 21 and Fall 19, so you'll see current semesters <i>and</i> alumni). Server: <a href="http://localhost:3100">localhost:3100</a>. Admin login: <a href="http://localhost:3100/admin/login">/admin/login</a> with your usual account. Use a private window for “player” steps. <b>If the server was started before an update, restart it</b> (Ctrl-C in its terminal tab, then <code>npm run dev -- -p 3100</code>).</div>
+
+<h2>How a batch becomes a semester</h2>
+<p class="sub">A batch is named by the term it <b>started</b>: “Fall 25” = intake of Fall 2025. Terms follow the campus calendar — <b>Spring = April–August, Fall = September–March</b>. Semester = how many terms have started since. After the 8th semester (4 years) the batch is <b>alumni</b>; a batch that hasn't started yet is rejected. Checked against Season IX (4 Aug 2026): Spring 26 → 1st, Fall 25 → 2nd, Fall 24 → 4th, Spring 23 → 7th — exactly the teams' real semesters.</p>
+<table><tr><th>Batch</th><th>Today (Oct 2026)</th></tr><tr><td>Fall 26</td><td>1st semester</td></tr><tr><td>Spring 26</td><td>2nd semester</td></tr><tr><td>Fall 25</td><td>3rd semester</td></tr><tr><td>Spring 23</td><td>8th semester (last)</td></tr><tr><td>Fall 22 and older</td><td>Alumni</td></tr><tr><td>Spring 27</td><td>Not started — refused</td></tr></table>
+<p class="sub">If you meant the label to be the <i>graduation</i> term instead (Fall 27 = graduates Fall 2027), switch it in Settings → Application form → “A batch label means…”.</p>
 
 <div class="bar"><b id="count">0 / 0</b><div class="meter"><i id="fill"></i></div><button id="reset">Reset ticks</button></div>
 <div id="root"></div>
 
 <h2>If something looks wrong</h2>
-<p>Tell me the step number, what you did, and what you saw (a screenshot helps). Anything you break here is harmless — <code>npm run demo:down</code> then <code>npm run demo:up</code> rebuilds the demo from scratch.</p>
+<p>Tell me the step number, what you did and what you saw (a screenshot helps). Anything you break is harmless — <code>npm run demo:down &amp;&amp; npm run demo:up</code> rebuilds the demo.</p>
 </div>
 <script>
 const S=[
-["A · Apply as a player","Private window · no login",[
- ["Open the application page","<a href='http://localhost:3100/register'>/register</a>","A form with Name, Student ID, Affiliation, Position, Contact, Photo, and a gold player card on the right that updates as you type."],
- ["Add a photo of yourself","Choose a real photo, ideally from your phone camera","A “Creating your card… %” bar. After 10–60 s (the first time downloads a ~40 MB model) it says “✓ Background removed” and your cut-out appears on the card. Submit stays greyed out until it finishes."],
- ["Adjust the card","Drag the photo on the card; move the Zoom / Left-right / Up-down sliders","The photo moves/zooms on the card. Nothing is saved yet."],
- ["Try to submit without ticking “I've checked my card”","Press Submit application","A red message asking you to check your card first."],
- ["Submit properly","Tick the box and submit","A green box with a private edit link and a Copy button. Copy it somewhere."],
- ["Try applying twice with the same student ID","Fill the form again with the same ID","“An application with this student ID already exists for this season.”"],
- ["Fix your application with the edit link","Paste the link in the address bar; change your name; Save","“Saved — your changes are in.” Your photo and card are still there."]]],
-["B · Review applications","Admin window",[
- ["See the applications","<a href='http://localhost:3100/admin/registrations'>/admin/registrations</a>","Your application at the top (with your photo as a small circle), plus 3 “Pending Person” applications."],
- ["Approve yours + the three pending","Tick them all, then press “Approve 4 selected”","They disappear from Pending. (They become players in the pool.)"],
- ["Check the people directory","<a href='http://localhost:3100/admin/people'>/admin/people</a> · search “Pending” and your name","Each person with a student ID chip. Try typing an ID that already exists on a different person — it refuses and tells you to merge."]]],
-["C · Player cards","Admin window",[
- ["Open the card editor","<a href='http://localhost:3100/admin/cards'>/admin/cards</a>","All players listed, “—” for unrated ones. Yours shows “cut-out”."],
- ["Rate everyone quickly","Press “Start unrated players at 60”","Every card gets a 60 overall (silver)."],
- ["Rate yourself","Click your row → type six ratings → Save card","The big card updates live: overall, tier colour (60–74 silver, 75+ gold). “Saved.” appears at the top."],
- ["Override the tier","Open a player → Tier override → special","The card turns maroon/gold."],
- ["Re-frame the photo","Drag the photo or use the sliders → Save","Framing sticks after reload."],
- ["Re-run the cut-out","On your row press “Re-run background removal”","“Cut-out updated.” (takes a while on the first run)."]]],
-["D · Forming teams","Admin window",[
- ["Open the board","<a href='http://localhost:3100/admin/formation'>/admin/formation</a>","A Pool column (24 players) and 4 team columns. The strategy menu says “Balanced random”."],
- ["Pre-assign a few by hand","Drag someone onto a team, or use that player's “Move to…” menu","Their number appears (#1, #2…). Try to overfill a team past 7 — it refuses with a message."],
- ["Balanced random deal","Preview deal → look → Re-roll → Apply this deal","The preview shows “→ Team” badges; applying matches the preview exactly. Pre-assigned players stay put."],
- ["Try the snake draft","Switch strategy to “Snake draft”; empty the teams first (move players back to the pool); Start draft","“On the clock: …”; press Pick on a player; the order reverses each round; “Undo last pick” works."],
- ["Batch by affiliation","Switch to “By batch / affiliation” → Group by affiliation","Teams named “Sem 3” / “Sem 5” are created and players land in them."]]],
-["E · Fixing the roster","Admin window",[
- ["Open the roster manager","<a href='http://localhost:3100/admin/players'>/admin/players</a>","Every player with editable name, number, team, position, captain star."],
- ["Rename a player and change a number","Edit the name box and click away; change a number to one a teammate has","The rename saves. The duplicate number is refused and names who has it."],
- ["Make a captain","Click the ★","Only one captain per team — the old one loses it."],
- ["Release a player","Press Release on someone","They vanish from the squad (tick “Show released” to see them); their number is free again. Restore brings them back."],
- ["Upload a photo","Click a player's circle and choose an image","The photo shows immediately."]]],
-["F · Public pages","Private window",[
- ["The card gallery","<a href='http://localhost:3100/cards'>/cards</a>","Cards for every player on a team. Filter by team/position, sort, and press Download PNG on yours — a real image downloads."],
- ["The rest of the site","<a href='http://localhost:3100/teams'>/teams</a> · <a href='http://localhost:3100/roster'>/roster</a> · <a href='http://localhost:3100/fixtures'>/fixtures</a>","Teams and players of the demo edition (not Season IX). Look on a phone-sized window too."],
- ["The old season is still there","<a href='http://localhost:3100/legacy'>/legacy</a>","Season IX with its champion, standings and Hall of Fame — unchanged."]]],
-["G · Auction + projector","Admin window + a second window for the screen",[
- ["Switch the demo to an auction","On the formation board, move everyone back to the pool, then set strategy to “Auction”","A link to the auction console appears."],
- ["Set it up","<a href='http://localhost:3100/admin/auction'>/admin/auction</a> → budget 1000, base 50, increment 10 → Save & start","The console with a queue of players."],
- ["Open the projector in another window","<a href='http://localhost:3100/stage/auction'>/stage/auction</a> (no login needed)","“The auction begins” with the team crests."],
- ["Run a lot","Next lot → pick a team, enter 50, Record bid → another team 70","The projector shows the player's card, the current bid in huge numbers, and the leading team — within 2 seconds."],
- ["Sell it","Press “Sold to … for 70”","SOLD stamp with the team and price on the projector. Team budget drops."],
- ["Hold a player","Next lot → “Hold till the end”","Projector says ON HOLD; the player appears under “On hold”."],
- ["Retain before bidding","In “Up next”, choose a team on a row → Retain","Placed at no charge; that team's squad count goes up, its budget doesn't change."],
- ["Wrap-up","Resolve all lots (sell / unsold). When the queue is empty “Wrap-up” appears → Preview fair draw → Apply","Held/unsold players go to teams still below the minimum squad (5)."],
- ["Close the auction","Press Close auction (asks for your admin password)","Only works once every team has 5+ players. Projector then shows the final squads."]]],
-["H · Stress it a little","Anything",[
- ["Bad inputs","Student ID with spaces/lowercase; a huge photo; a screenshot instead of a photo; a group photo","Nothing crashes; you get a friendly warning or message."],
- ["Phone","Apply from a real phone (ask me to open the server to your network first)","The form is usable one-handed; the card appears below the form."],
- ["Two people at once","Apply from two windows at the same time","Both succeed."]]]
+["A · The season checklist","Admin window",[
+ ["Open Season setup","<a href='http://localhost:3100/admin/season'>/admin/season</a>","A numbered checklist. “Season created” ✓ done; “Applications” highlighted as the thing to do now (Open · 22 applications, 22 waiting for review); the later steps greyed."]]],
+["B · Apply as a player (while registration is open)","Private window · no login",[
+ ["Open the form","<a href='http://localhost:3100/register'>/register</a>","A form with Name, Student ID, <b>Batch</b> (two dropdowns: Fall/Spring and a year), Position, Contact, Photo — and a gold card that updates live."],
+ ["Choose your batch","Pick Fall + 2024, then Spring + 2020, then something very recent","Under the dropdowns, live: “Fall 24 — 5th semester”, “Spring 20 — Alumni”. A batch that hasn't started yet is shown in red and the server refuses it."],
+ ["Add a real photo and submit","Photo → wait for “✓ Background removed” → adjust → tick the box → submit","Green box with your private edit link."],
+ ["Type a nonsense batch","(Not possible in the form — the server also refuses it.) Optional: try applying twice with the same student ID","“An application with this student ID already exists.”"]]],
+["C · Registration closes and you review","Admin window",[
+ ["Close registration","On <a href='http://localhost:3100/admin/season'>Season setup</a> press <b>Close registration</b>","The Applications line says “Closed”, and the public form at /register now says registration isn't open. The step stays highlighted because applications are still waiting."],
+ ["Review the applications","Press “Review N application(s)” (or open /admin/registrations)","Each applicant with their batch and what it means today — e.g. “Fall 25 · 3rd semester”, “Spring 21 · Alumni” — plus your own application with its photo."],
+ ["Approve everyone","Tick them all → “Approve N selected”","They leave the Pending list. Back on Season setup, Applications is ✓ and <b>“Confirm applicants &amp; choose how teams are formed”</b> is now the highlighted step."]]],
+["D · Confirm and choose how teams are formed","Admin window",[
+ ["Open the choice","Press “Confirm &amp; choose formation”","A page titled “Confirm applicants &amp; choose how teams are formed” with five cards: by batch, manual, balanced random, snake draft, auction. No team board yet — it appears only after you choose."],
+ ["Choose “By batch”","Press “Choose this” on that card","The board appears with all approved players in the Pool (each with their batch + semester)."],
+ ["Group by batch","Press <b>Group by batch</b>","Teams appear named after the batches — “Fall 25”, “Spring 25”, “Fall 24”, … — and every alumni batch together in one <b>Alumni</b> team. Pool goes to 0 (players over the squad limit of 6 would stay behind and be reported)."],
+ ["Back to the checklist","<a href='http://localhost:3100/admin/season'>Season setup</a>","Formation ✓, “Form the teams” ✓, and <b>Fixtures</b> is now the highlighted step."]]],
+["E · Try the other formation methods (optional)","Admin window",[
+ ["Re-run with a different method","Run <code>npm run demo:down &amp;&amp; npm run demo:up</code>, approve everyone again, then choose <b>Balanced random</b> / <b>Snake draft</b> / <b>Manual</b>","These need teams to exist first: create 4 teams at <a href='http://localhost:3100/admin/teams'>/admin/teams</a>, then use the board (Preview deal → Apply; or Start draft)."],
+ ["Auction","Reset again, approve everyone, choose <b>Auction</b>","The auction console and the projector view (<a href='http://localhost:3100/stage/auction'>/stage/auction</a>) — set budget 1000 / base 50 / step 10, create 4 teams first, then run lots. Closing the auction asks for your admin password."]]],
+["F · Cards, roster, public pages","Admin + private window",[
+ ["Rate the players","<a href='http://localhost:3100/admin/cards'>/admin/cards</a> → “Start unrated players at 60” → open one and set six ratings","The card updates live (60–74 silver, 75+ gold)."],
+ ["Fix the roster","<a href='http://localhost:3100/admin/players'>/admin/players</a>","Rename someone, change a number (a clash is refused), ★ a captain, Release someone."],
+ ["See it publicly","<a href='http://localhost:3100/cards'>/cards</a> · <a href='http://localhost:3100/teams'>/teams</a> · <a href='http://localhost:3100/roster'>/roster</a>","Cards (with Download PNG), teams and players of the demo season; Season IX is still under <a href='http://localhost:3100/legacy'>/legacy</a>."]]],
+["G · Your next real season","Admin window",[
+ ["Create the next season with the wizard","<a href='http://localhost:3100/admin/season/rollover'>/admin/season/rollover</a> (this part asks for your admin password, so only you can do it)","Fill in name/number; “Team formation” defaults to “Decide after applications close (recommended)”; “Open applications as soon as the season is created” is ticked. After creating it, Season setup shows Applications as the current step."]]]
 ];
-const root=document.getElementById("root");let n=0;const key="bflTestGuide";let st={};try{st=JSON.parse(localStorage.getItem(key)||"{}")}catch(e){}
+const root=document.getElementById("root");let n=0;const key="bflTestGuide2";let st={};try{st=JSON.parse(localStorage.getItem(key)||"{}")}catch(e){}
 S.forEach(([t,w,items],si)=>{const h=document.createElement("h2");h.innerHTML=`<span>${t}</span><span class="tag">${w}</span>`;root.appendChild(h);
 items.forEach(([title,doit,see],ii)=>{n++;const id=si+"-"+ii;const d=document.createElement("label");d.className="item"+(st[id]?" done":"");
-d.innerHTML=`<input type="checkbox" ${st[id]?"checked":""}><span><b>${n-0}. ${title}</b><span>${doit}</span><span class="see">${see}</span></span>`;
+d.innerHTML=`<input type="checkbox" ${st[id]?"checked":""}><span><b>${n}. ${title}</b><span>${doit}</span><span class="see">${see}</span></span>`;
 d.querySelector("input").onchange=e=>{st[id]=e.target.checked;d.classList.toggle("done",e.target.checked);try{localStorage.setItem(key,JSON.stringify(st))}catch(_){};upd()};root.appendChild(d)})});
 function upd(){const total=document.querySelectorAll(".item").length,done=document.querySelectorAll(".item input:checked").length;document.getElementById("count").textContent=done+" / "+total;document.getElementById("fill").style.width=(done/total*100)+"%"}
 document.getElementById("reset").onclick=()=>{st={};try{localStorage.removeItem(key)}catch(_){};document.querySelectorAll(".item input").forEach(i=>i.checked=false);document.querySelectorAll(".item").forEach(i=>i.classList.remove("done"));upd()};

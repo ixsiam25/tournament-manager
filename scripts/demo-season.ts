@@ -1,6 +1,6 @@
 // A throwaway demo edition on the DEV branch so the whole system can be tried by
-// hand: registration open, 4 teams (reusing Season IX franchises), 20 approved
-// applicants in the pool, a few pending applications.
+// hand, starting where a real season starts: just created, applications open,
+// team formation undecided, 22 applications (several batches, incl. alumni) waiting.
 //
 //   npm run demo:up     create it and make it the current edition
 //   npm run demo:down   delete it and point the site back at the previous edition
@@ -31,6 +31,7 @@ async function main() {
     await prisma.tournament.update({ where: { id: tournament.id }, data: { currentSeasonId: previous?.id ?? null } });
     await prisma.season.delete({ where: { id: existing.id } });
     await prisma.person.deleteMany({ where: { identifiers: { some: { value: { startsWith: "DEMO" } } } } });
+    await prisma.franchise.deleteMany({ where: { teams: { none: {} }, tournamentId: tournament.id, name: { in: ["Spring 25", "Fall 24", "Spring 24", "Fall 23", "Spring 23", "Alumni"] } } });
     console.log(`Demo season removed; the site shows ${previous?.name ?? "no season"} again.`);
     return;
   }
@@ -39,6 +40,8 @@ async function main() {
   if (existing) return console.log("The demo season already exists (run demo:down first to rebuild it).");
 
   const max = await prisma.season.aggregate({ _max: { number: true } });
+  // The state a brand-new season is in right after the organiser creates it:
+  // applications open, team formation NOT chosen yet, no teams.
   const season = await prisma.season.create({
     data: {
       tournamentId: tournament.id,
@@ -47,10 +50,9 @@ async function main() {
       slug: SLUG,
       year: 2026,
       status: "ACTIVE",
-      teamFormation: "BALANCED_RANDOM",
-      squadSizeMin: 5,
-      squadSizeMax: 7,
-      targetTeamCount: 4,
+      teamFormation: "UNDECIDED",
+      squadSizeMin: 3,
+      squadSizeMax: 6,
       registrationOpen: true,
       registrationSelfServeEnabled: true,
       registrationExcelImportEnabled: true,
@@ -58,27 +60,17 @@ async function main() {
   });
   await prisma.tournament.update({ where: { id: tournament.id }, data: { currentSeasonId: season.id } });
 
-  // Teams reuse existing franchises so continuity from Season IX is visible.
-  const franchises = await prisma.franchise.findMany({ where: { tournamentId: tournament.id }, orderBy: { name: "asc" }, take: 4 });
-  for (const f of franchises) await prisma.team.create({ data: { seasonId: season.id, franchiseId: f.id, name: f.name, shortName: f.shortName } });
-
-  const photos = fs.readdirSync("public/photos").filter((f) => f.startsWith("cmrx") && f.endsWith(".jpg"));
-  const names = ["Rafi Hasan", "Tanvir Alam", "Nusrat Jahan", "Imran Khan", "Sadia Noor", "Hasan Mahmud", "Mim Akter", "Arif Rahman", "Joy Das", "Lamia Sultana", "Rony Mia", "Tisha Roy", "Fahim Ahmed", "Nadia Islam", "Shuvo Paul", "Tania Begum", "Mehedi Hasan", "Rupa Chowdhury", "Sakib Khan", "Anika Tabassum"];
-  const positions = ["FWD", "MID", "DEF", "GK", "MID", "DEF", "FWD", "MID", "DEF", "FWD", "MID", "DEF", "GK", "MID", "FWD", "DEF", "MID", "FWD", "DEF", "MID"] as const;
-  const { approveRegistration } = await import("../lib/registrationApproval");
+  // 22 applications already submitted, spread over intake batches (current
+  // students in different semesters, plus alumni) — all still PENDING review.
+  const names = ["Rafi Hasan", "Tanvir Alam", "Nusrat Jahan", "Imran Khan", "Sadia Noor", "Hasan Mahmud", "Mim Akter", "Arif Rahman", "Joy Das", "Lamia Sultana", "Rony Mia", "Tisha Roy", "Fahim Ahmed", "Nadia Islam", "Shuvo Paul", "Tania Begum", "Mehedi Hasan", "Rupa Chowdhury", "Sakib Khan", "Anika Tabassum", "Zayed Karim", "Orpita Das"];
+  const batches = ["Fall 25", "Fall 25", "Fall 25", "Fall 25", "Spring 25", "Spring 25", "Spring 25", "Fall 24", "Fall 24", "Fall 24", "Fall 24", "Spring 24", "Spring 24", "Spring 24", "Fall 23", "Fall 23", "Fall 23", "Spring 23", "Spring 23", "Spring 21", "Spring 21", "Fall 19"];
+  const positions = ["FWD", "MID", "DEF", "GK", "MID", "DEF", "FWD", "MID", "DEF", "FWD", "MID", "DEF", "GK", "MID", "FWD", "DEF", "MID", "FWD", "DEF", "MID", "FWD", "GK"] as const;
   for (const [i, name] of names.entries()) {
-    const reg = await prisma.registration.create({
-      data: { seasonId: season.id, name, affiliation: i % 2 ? "Sem 3" : "Sem 5", contact: "demo", studentId: `DEMO${String(i + 1).padStart(3, "0")}`, position: positions[i], source: "ADMIN_MANUAL", status: "APPROVED" },
-    });
-    await approveRegistration(reg, season);
-  }
-  await prisma.player.updateMany({ where: { seasonId: season.id }, data: { photoUrl: `/photos/${photos[0]}` } });
-  for (const [i, name] of ["Pending Person One", "Pending Person Two", "Pending Person Three"].entries()) {
     await prisma.registration.create({
-      data: { seasonId: season.id, name, affiliation: "Sem 3", contact: "demo", studentId: `DEMOP${i + 1}`, position: positions[i], source: "SELF_SERVE", status: "PENDING" },
+      data: { seasonId: season.id, name, affiliation: batches[i], contact: "demo", studentId: `DEMO${String(i + 1).padStart(3, "0")}`, position: positions[i], source: "SELF_SERVE", status: "PENDING" },
     });
   }
-  console.log(`Demo ready: "${season.name}" — 4 teams, 20 players in the pool, 3 pending applications, registration open.`);
+  console.log(`Demo ready: "${season.name}" — applications OPEN, team formation not chosen yet, 22 applications waiting (several batches + alumni), no teams.`);
 }
 
 main()
