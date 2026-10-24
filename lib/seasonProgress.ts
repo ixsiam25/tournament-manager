@@ -77,6 +77,20 @@ export async function getSeasonProgress(season: Season): Promise<SetupStep[]> {
     formationDone,
   );
 
+  // Batch seasons create their teams from the applications' batches, so there is
+  // nothing to set up first; every other method needs the teams to exist.
+  if (strategy !== "BATCH") {
+    add(
+      {
+        key: "teamsetup",
+        title: "Set up the teams (name, logo, captain, manager)",
+        detail: !formationDone ? "Waiting for the formation choice" : teams.length >= 2 ? `${teams.length} team(s) created` : teams.length === 1 ? "1 team so far — add at least one more" : "No teams yet",
+        actions: formationDone ? [{ label: teams.length >= 2 ? "Edit the teams" : "Set up the teams", href: "/admin/season/teams", primary: teams.length < 2 }] : [],
+      },
+      formationDone && teams.length >= 2,
+    );
+  }
+
   add(
     {
       key: "teams",
@@ -85,7 +99,7 @@ export async function getSeasonProgress(season: Season): Promise<SetupStep[]> {
       actions: formationDone
         ? [
             isAuction ? { label: "Open the auction", href: "/admin/auction", primary: true } : { label: "Open the formation board", href: "/admin/formation", primary: true },
-            { label: "Teams", href: "/admin/teams" },
+            { label: "Team details (logos, managers, captains)", href: "/admin/season/teams" },
             { label: "Player cards", href: "/admin/cards" },
           ]
         : [],

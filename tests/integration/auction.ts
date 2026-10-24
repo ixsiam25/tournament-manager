@@ -1,4 +1,4 @@
-// Auction upgrade against the real schema: live bids, hold/unhold, retained
+// Auction against the real schema: team-less live bids, retained
 // players, squad-aware budgets, unsold/requeue, the wrap-up fair draw, close
 // checks + lock, and the projector's phase derivation.
 // Throwaway ZZ seasons; dev branch only. Run: ALLOW_DB_WRITE_TESTS=1 npm run test:auction
@@ -56,18 +56,23 @@ async function main() {
     const first = await svc.nextLot(await A.ctx());
     assert.equal(first.player.name.startsWith("ZZ P"), true);
     await assert.rejects(async () => svc.nextLot(await A.ctx()), /Resolve the current lot/);
-    await assert.rejects(async () => svc.setBid(await A.ctx(), ta.id, 40), /at least the base price/);
-    await svc.setBid(await A.ctx(), ta.id, 50);
-    await assert.rejects(async () => svc.setBid(await A.ctx(), tb.id, 55), /beat 50 by at least 10/);
-    await assert.rejects(async () => svc.setBid(await A.ctx(), tb.id, 960), /can bid at most 950/);
-    await svc.setBid(await A.ctx(), tb.id, 60);
+    await assert.rejects(async () => svc.setBid(await A.ctx(), 40), /at least the base price/);
+    await svc.setBid(await A.ctx(), 50); // bids are just amounts — no team is named
+    await assert.rejects(async () => svc.setBid(await A.ctx(), 55), /beat 50 by at least 10/);
+    await svc.setBid(await A.ctx(), 60);
+    assert.equal((await prisma.auctionLot.findUniqueOrThrow({ where: { id: first.id } })).currentBidTeamId, null, "no bidding team is recorded");
     stage = await getStageState();
-    assert.ok(stage.phase === "lot" && stage.currentBid === 60 && stage.leader?.name === "ZZ B", "projector shows the live bid and its leader");
+    assert.ok(stage.phase === "lot" && stage.currentBid === 60 && stage.leader === null, "the projector shows the live bid and no team");
     await svc.clearBid(await A.ctx());
     assert.equal((await prisma.auctionLot.findUniqueOrThrow({ where: { id: first.id } })).currentBid, null);
+    await svc.setBid(await A.ctx(), 60);
+
+    // the budget is checked where the team is finally named: the sale
+    await assert.rejects(async () => svc.sellLot(await A.ctx(), tb.id, 960), /max allowable bid \(950/);
+    await assert.rejects(async () => svc.sellLot(await A.ctx(), tb.id, 40), /at least the base price/);
 
     // ---- sale: budget + roster + stage result ----
-    await svc.sellLot(await A.ctx(), ta.id, 60);
+    await svc.sellLot(await A.ctx(), ta.id); // the price defaults to the recorded bid (60)
     const soldLot = await prisma.auctionLot.findUniqueOrThrow({ where: { id: first.id }, include: { player: true } });
     assert.equal(soldLot.status, "SOLD");
     assert.equal(soldLot.player.teamId, ta.id);
@@ -77,26 +82,21 @@ async function main() {
     stage = await getStageState(new Date(Date.now() + 60_000));
     assert.equal(stage.phase, "between", "the result clears after a few seconds");
 
-    // ---- hold / undo / unhold ----
+    // ---- unsold is the only "not now" outcome; undo puts the player back ----
     const second = await svc.nextLot(await A.ctx());
-    await svc.holdLot(await A.ctx());
-    assert.equal((await prisma.auctionLot.findUniqueOrThrow({ where: { id: second.id } })).status, "HELD");
-    stage = await getStageState();
-    assert.ok(stage.phase === "result" && stage.kind === "HELD");
-    await svc.undoLast(await A.ctx());
-    assert.equal((await prisma.auctionLot.findUniqueOrThrow({ where: { id: second.id } })).status, "QUEUED", "undo puts a held lot back in the queue");
-    await svc.nextLot(await A.ctx()); // the queue order may differ; hold whatever is up
-    const heldA = (await prisma.auctionLot.findFirstOrThrow({ where: { seasonId: A.season.id, status: "IN_PROGRESS" } })).id;
-    await svc.holdLot(await A.ctx());
-    const tailBefore = await prisma.auctionLot.aggregate({ where: { seasonId: A.season.id, status: "QUEUED" }, _max: { order: true } });
-    await svc.unholdLot(await A.ctx(), heldA);
-    const back = await prisma.auctionLot.findUniqueOrThrow({ where: { id: heldA } });
-    assert.equal(back.status, "QUEUED");
-    assert.equal(back.order, (tailBefore._max.order ?? -1) + 1, "an un-held lot goes to the back of the queue");
-    await svc.nextLot(await A.ctx());
     await svc.markUnsold(await A.ctx());
+    assert.equal((await prisma.auctionLot.findUniqueOrThrow({ where: { id: second.id } })).status, "UNSOLD");
+    await svc.undoLast(await A.ctx());
+    assert.equal((await prisma.auctionLot.findUniqueOrThrow({ where: { id: second.id } })).status, "QUEUED", "undo puts the player back in the queue");
+    await assert.rejects(async () => svc.sellLot(await A.ctx(), ta.id), /No lot is currently up/);
+    await svc.nextLot(await A.ctx());
+    await assert.rejects(async () => svc.sellLot(await A.ctx(), ta.id), /no bid has been recorded/i);
+    await svc.markUnsold(await A.ctx()); // the lot brought up above
     stage = await getStageState();
     assert.ok(stage.phase === "result" && stage.kind === "UNSOLD");
+    for (const state of [stage, await getStageState(new Date(Date.now() + 60_000))]) {
+      assert.ok(!/budget|remaining|squad/i.test(JSON.stringify(state)), "the projector state carries no budgets or squad data");
+    }
 
     // ---- retained player: free, counts toward the squad, budget untouched ----
     const queued = await prisma.auctionLot.findFirstOrThrow({ where: { seasonId: A.season.id, status: "QUEUED" }, include: { player: true } });
@@ -122,8 +122,7 @@ async function main() {
     const B = await mkAuction(2, ["ZZ X", "ZZ Y"], ["ZZ Q1", "ZZ Q2", "ZZ Q3", "ZZ Q4", "ZZ Q5"]);
     for (let i = 0; i < 5; i++) {
       await svc.nextLot(await B.ctx());
-      if (i % 2 === 0) await svc.holdLot(await B.ctx());
-      else await svc.markUnsold(await B.ctx());
+      await svc.markUnsold(await B.ctx());
     }
     assert.equal((await svc.closeChecks(await B.ctx())).blockers.length, 2, "both teams are short of the minimum squad");
     const preview = await svc.drawProposal(await B.ctx(), 5);
@@ -146,7 +145,7 @@ async function main() {
     await svc.reopenAuction(await B.ctx());
     assert.equal((await B.ctx()).settings.lockedAt, null);
 
-    console.log("✓ auction: live bids, hold/unhold, retain, squad-aware budgets, fair draw, close/lock, projector phases");
+    console.log("✓ auction: team-less live bids, sale-time budget check, unsold/undo, retain, squad-aware budgets, fair draw, close/lock, projector phases");
   } finally {
     await prisma.tournament.update({ where: { id: tournament.id }, data: { currentSeasonId: original } });
     for (const seasonId of seasonIds) {

@@ -20,11 +20,10 @@ export async function GET() {
   }
 
   const playerSelect = { id: true, name: true, position: true, photoUrl: true } as const;
-  const [currentLot, queue, held, unsold, teams, soldCount, checks] = await Promise.all([
+  const [currentLot, queue, unsold, teams, soldCount, checks] = await Promise.all([
     prisma.auctionLot.findFirst({ where: { seasonId: season.id, status: "IN_PROGRESS" }, include: { player: { select: playerSelect } } }),
     prisma.auctionLot.findMany({ where: { seasonId: season.id, status: "QUEUED" }, include: { player: { select: playerSelect } }, orderBy: [{ round: "asc" }, { order: "asc" }] }),
-    prisma.auctionLot.findMany({ where: { seasonId: season.id, status: "HELD" }, include: { player: { select: playerSelect } }, orderBy: { heldAt: "asc" } }),
-    prisma.auctionLot.findMany({ where: { seasonId: season.id, status: "UNSOLD" }, include: { player: { select: playerSelect } }, orderBy: { updatedAt: "asc" } }),
+    prisma.auctionLot.findMany({ where: { seasonId: season.id, status: { in: ["UNSOLD", "HELD"] } }, include: { player: { select: playerSelect } }, orderBy: { updatedAt: "asc" } }),
     getTeamAuctionStatuses(season, settings),
     prisma.auctionLot.count({ where: { seasonId: season.id, status: "SOLD" } }),
     closeChecks({ season, settings, actor: null }),
@@ -35,7 +34,6 @@ export async function GET() {
     settings,
     currentLot,
     queue,
-    held,
     unsold,
     unsoldCount: unsold.length,
     soldCount,

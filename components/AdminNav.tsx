@@ -8,7 +8,7 @@ import type { UserRole } from "@/lib/generated/prisma/client";
 
 const NAV_ITEMS = [
   { href: "/admin", label: "Dashboard", adminOnly: false },
-  { href: "/admin/teams", label: "Teams", adminOnly: true },
+  { href: "/admin/season/teams", label: "Teams", adminOnly: true },
   { href: "/admin/players", label: "Players", adminOnly: true },
   { href: "/admin/people", label: "People", adminOnly: true },
   { href: "/admin/cards", label: "Cards", adminOnly: true },

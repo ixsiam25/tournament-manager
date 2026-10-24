@@ -27,7 +27,8 @@
     "demo:down": "tsx scripts/demo-season.ts down",
     "test:batch": "tsx tests/unit/batch.ts",
     "test:seasonflow": "tsx tests/integration/season-flow.ts",
-    "test:clean": "tsx scripts/clean-test-data.ts"
+    "test:clean": "tsx scripts/clean-test-data.ts",
+    "test:teamsetup": "tsx tests/integration/team-setup.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

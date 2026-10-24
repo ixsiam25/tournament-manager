@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { usePasswordConfirm } from "@/components/PasswordConfirm";
 import { Crest } from "@/components/Crest";
 
@@ -30,7 +30,6 @@ export function AuctionConsole() {
   const [settings, setSettings] = useState<Settings>(null);
   const [currentLot, setCurrentLot] = useState<Lot | null>(null);
   const [queue, setQueue] = useState<ListedLot[]>([]);
-  const [held, setHeld] = useState<ListedLot[]>([]);
   const [unsold, setUnsold] = useState<ListedLot[]>([]);
   const [teams, setTeams] = useState<TeamStatus[]>([]);
   const [closed, setClosed] = useState(false);
@@ -44,8 +43,8 @@ export function AuctionConsole() {
   const [basePrice, setBasePrice] = useState(50);
   const [bidIncrement, setBidIncrement] = useState(10);
 
-  const [bidTeamId, setBidTeamId] = useState("");
   const [bidAmount, setBidAmount] = useState("");
+  const bidInput = useRef<HTMLInputElement>(null);
   const [sellTeamId, setSellTeamId] = useState("");
   const [sellPrice, setSellPrice] = useState("");
   const [seed, setSeed] = useState(() => Math.floor(Math.random() * 1_000_000));
@@ -73,7 +72,6 @@ export function AuctionConsole() {
     setSettings(body.settings);
     setCurrentLot(body.currentLot);
     setQueue(body.queue ?? []);
-    setHeld(body.held ?? []);
     setUnsold(body.unsold ?? []);
     setTeams(body.teams ?? []);
     setClosed(!!body.closed);
@@ -151,13 +149,14 @@ export function AuctionConsole() {
   }
 
   const teamName = (id: string | null) => teams.find((t) => t.teamId === id)?.teamName ?? "";
-  const leaderId = currentLot?.currentBidTeamId ?? null;
   const leaderBid = currentLot?.currentBid ?? null;
   const resolved = !currentLot && queue.length === 0;
-  const waiting = held.length + unsold.length;
+  const waiting = unsold.length;
+  const nextBid = (leaderBid ?? settings.basePrice - settings.bidIncrement) + settings.bidIncrement;
+  const sellPriceValue = sellPrice !== "" ? sellPrice : leaderBid != null ? String(leaderBid) : "";
 
   async function undo() {
-    if (!(await confirmWithPassword("Undo the last sale / unsold / hold?"))) return;
+    if (!(await confirmWithPassword("Undo the last sale / unsold result?"))) return;
     act("undo");
   }
 
@@ -168,7 +167,7 @@ export function AuctionConsole() {
         <h1 className="heading-display text-2xl">Auction</h1>
         <div className="flex items-center gap-4 text-sm text-muted-foreground">
           <span>
-            {queue.length} queued · {held.length} held · {unsold.length} unsold
+            {queue.length} queued · {unsold.length} unsold
           </span>
           <Link href="/stage/auction" target="_blank" className="font-bold text-pitch underline">
             Open projector view ↗
@@ -209,82 +208,106 @@ export function AuctionConsole() {
                 <p className="text-3xl font-black" data-testid="leading-bid">
                   {leaderBid ?? "—"}
                 </p>
-                <p className="text-sm font-medium">{leaderId ? teamName(leaderId) : "no bids yet"}</p>
+                <p className="text-sm font-medium">{leaderBid == null ? "no bids yet" : "current bid"}</p>
               </div>
             </div>
 
-            <div className="mb-4 flex flex-wrap items-end gap-3 rounded-xl border border-line p-3">
-              <span className="basis-full text-xs font-bold uppercase text-muted-foreground">Record a bid (shows on the projector)</span>
-              <select aria-label="Bidding team" value={bidTeamId} onChange={(e) => setBidTeamId(e.target.value)} className={FIELD}>
-                <option value="">Team…</option>
-                {teams.map((t) => (
-                  <option key={t.teamId} value={t.teamId}>
-                    {t.teamName} (max {t.maxAllowableBid})
-                  </option>
-                ))}
-              </select>
-              <input aria-label="Bid amount" type="number" value={bidAmount} onChange={(e) => setBidAmount(e.target.value)} placeholder={String((leaderBid ?? settings.basePrice - settings.bidIncrement) + settings.bidIncrement)} className={FIELD + " w-28"} />
+            <form
+              className="mb-4 flex flex-wrap items-end gap-3 rounded-xl border border-line p-3"
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!bidAmount) return;
+                if (await act("bid", { amount: Number(bidAmount) })) {
+                  setBidAmount("");
+                  bidInput.current?.focus();
+                }
+              }}
+            >
+              <label className="text-xs font-bold uppercase text-muted-foreground">
+                Bid
+                <input
+                  ref={bidInput}
+                  autoFocus
+                  aria-label="Bid amount"
+                  inputMode="numeric"
+                  type="number"
+                  value={bidAmount}
+                  onChange={(e) => setBidAmount(e.target.value)}
+                  placeholder={String(nextBid)}
+                  className={FIELD + " mt-1 block w-32 text-lg font-bold"}
+                />
+              </label>
+              <button type="submit" disabled={busy || !bidAmount} className="rounded-full border border-pitch px-4 py-2 text-sm font-bold text-pitch disabled:opacity-40">
+                Record bid (Enter)
+              </button>
               <button
-                disabled={busy || !bidTeamId || !bidAmount}
+                type="button"
+                disabled={busy}
                 onClick={async () => {
-                  if (await act("bid", { teamId: bidTeamId, amount: Number(bidAmount) })) setBidAmount("");
+                  if (await act("bid", { amount: nextBid })) bidInput.current?.focus();
                 }}
-                className="rounded-full border border-pitch px-4 py-2 text-sm font-bold text-pitch disabled:opacity-40"
+                className="rounded-full border border-line px-4 py-2 text-sm font-bold disabled:opacity-40"
+                title="Raise the bid by one step"
               >
-                Record bid
+                +{settings.bidIncrement} → {nextBid}
               </button>
               {leaderBid != null && (
-                <button disabled={busy} onClick={() => act("bid", { clear: true })} className="text-sm underline">
+                <button type="button" disabled={busy} onClick={() => act("bid", { clear: true })} className="text-sm underline">
                   Clear bids
                 </button>
               )}
-            </div>
+            </form>
 
-            <div className="flex flex-wrap items-end gap-3">
-              {leaderId && leaderBid != null && (
-                <button
-                  disabled={busy}
-                  onClick={() => act("sell", { teamId: leaderId, price: leaderBid }, `Sold to ${teamName(leaderId)} for ${leaderBid}.`)}
-                  className="rounded-full bg-pitch px-5 py-2 text-sm font-bold text-white disabled:opacity-40"
-                >
-                  Sold to {teamName(leaderId)} for {leaderBid}
-                </button>
-              )}
-              <details className="text-sm">
-                <summary className="cursor-pointer text-muted-foreground">Sell to someone else / other price</summary>
-                <div className="mt-2 flex flex-wrap items-end gap-3">
-                  <select aria-label="Sold to" value={sellTeamId} onChange={(e) => setSellTeamId(e.target.value)} className={FIELD}>
-                    <option value="">Select team…</option>
-                    {teams.map((t) => (
-                      <option key={t.teamId} value={t.teamId}>
-                        {t.teamName} (max {t.maxAllowableBid})
-                      </option>
-                    ))}
-                  </select>
-                  <input aria-label="Sale price" type="number" value={sellPrice} onChange={(e) => setSellPrice(e.target.value)} className={FIELD + " w-28"} />
-                  <button disabled={busy || !sellTeamId || !sellPrice} onClick={() => act("sell", { teamId: sellTeamId, price: Number(sellPrice) })} className="rounded-full bg-pitch px-5 py-2 text-sm font-bold text-white disabled:opacity-40">
-                    Sold
-                  </button>
-                </div>
-              </details>
-              <button disabled={busy} onClick={() => act("unsold")} className="rounded-full border border-live px-5 py-2 text-sm font-bold text-live disabled:opacity-40">
+            <form
+              className="flex flex-wrap items-end gap-3"
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!sellTeamId || !sellPriceValue) return;
+                if (await act("sell", { teamId: sellTeamId, price: Number(sellPriceValue) }, "Sold.")) {
+                  setSellTeamId("");
+                  setSellPrice("");
+                }
+              }}
+            >
+              <label className="text-xs font-bold uppercase text-muted-foreground">
+                Sold to
+                <select aria-label="Sold to" value={sellTeamId} onChange={(e) => setSellTeamId(e.target.value)} className={FIELD + " mt-1 block"}>
+                  <option value="">Select team…</option>
+                  {teams.map((t) => (
+                    <option key={t.teamId} value={t.teamId}>
+                      {t.teamName} (max {t.maxAllowableBid})
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-xs font-bold uppercase text-muted-foreground">
+                Price
+                <input aria-label="Sale price" type="number" value={sellPriceValue} onChange={(e) => setSellPrice(e.target.value)} className={FIELD + " mt-1 block w-28"} />
+              </label>
+              <button type="submit" disabled={busy || !sellTeamId || !sellPriceValue} className="rounded-full bg-pitch px-6 py-2 text-sm font-bold text-white disabled:opacity-40">
+                Sold
+              </button>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => act("unsold")}
+                className="rounded-full border border-live px-5 py-2 text-sm font-bold text-live disabled:opacity-40"
+                title="Nobody took this player. He goes on the unsold list — run the unsold players again, or place them in the wrap-up."
+              >
                 Unsold
               </button>
-              <button disabled={busy} onClick={() => act("hold")} className="rounded-full border border-line px-5 py-2 text-sm font-bold disabled:opacity-40" title="Park this player until the end of the auction">
-                Hold till the end
-              </button>
-            </div>
+            </form>
           </div>
         ) : (
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-muted-foreground">No lot currently up.</p>
             <div className="flex gap-3">
-              <button onClick={() => act("next")} disabled={busy || closed || queue.length === 0} className="rounded-full bg-pitch px-5 py-2 text-sm font-bold text-white disabled:opacity-40">
+              <button onClick={() => { setSellTeamId(""); setSellPrice(""); act("next"); }} disabled={busy || closed || queue.length === 0} className="rounded-full bg-pitch px-5 py-2 text-sm font-bold text-white disabled:opacity-40">
                 Next lot
               </button>
               {unsold.length > 0 && queue.length === 0 && !closed && (
                 <button onClick={() => act("requeue-unsold")} disabled={busy} className="rounded-full border border-line px-5 py-2 text-sm font-bold disabled:opacity-40">
-                  Requeue {unsold.length} unsold for another round
+                  Run the {unsold.length} unsold player(s) again
                 </button>
               )}
             </div>
@@ -295,26 +318,11 @@ export function AuctionConsole() {
         </button>
       </section>
 
-      {held.length > 0 && (
-        <section className="mb-6">
-          <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">On hold ({held.length})</h2>
-          <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface text-sm">
-            {held.map((l) => (
-              <PlaceRow key={l.id} lot={l} teams={teams} busy={busy || closed} onAssign={(teamId, free) => act("assign", { lotId: l.id, teamId, free })} extra={
-                <button onClick={() => act("unhold", { lotId: l.id })} disabled={busy || closed} className="text-xs underline">
-                  Back to queue
-                </button>
-              } />
-            ))}
-          </ul>
-        </section>
-      )}
-
       {resolved && !closed && (
         <section className="mb-6 rounded-2xl border border-line bg-surface p-5" aria-label="Wrap-up">
           <h2 className="mb-1 text-lg font-bold">Wrap-up</h2>
           <p className="mb-4 text-sm text-muted-foreground">
-            Everyone has been through the room. Place the {waiting} held / unsold player(s) — directly, or with a fair draw to the teams still short of {season.squadSizeMin ?? "the minimum"} players — then close.
+            Everyone has been through the room. Place the {waiting} unsold player(s) — directly, or with a fair draw to the teams still short of {season.squadSizeMin ?? "the minimum"} players — then close.
           </p>
           {unsold.length > 0 && (
             <ul className="mb-4 divide-y divide-line overflow-hidden rounded-xl border border-line text-sm">
@@ -347,7 +355,7 @@ export function AuctionConsole() {
               {proposal && (
                 <span className="text-xs text-muted-foreground">
                   {proposal.moves.length} placed{proposal.stillNeeded > 0 ? `, ${proposal.stillNeeded} slot(s) still unfilled` : ""}:{" "}
-                  {proposal.moves.map((m) => `${[...held, ...unsold].find((l) => l.id === m.lotId)?.player.name} → ${teamName(m.teamId)}`).join(", ") || "nobody needs a player"}
+                  {proposal.moves.map((m) => `${unsold.find((l) => l.id === m.lotId)?.player.name} → ${teamName(m.teamId)}`).join(", ") || "nobody needs a player"}
                 </span>
               )}
             </div>
@@ -391,7 +399,7 @@ export function AuctionConsole() {
             <p className="text-sm text-muted-foreground">Max bid: {t.maxAllowableBid}</p>
           </div>
         ))}
-        {teams.length === 0 && <p className="text-sm text-muted-foreground">No teams yet — create some via Teams first.</p>}
+        {teams.length === 0 && <p className="text-sm text-muted-foreground">No teams yet — set them up in the Season tab (Set up the teams).</p>}
       </div>
 
       {queue.length > 0 && (

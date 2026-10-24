@@ -1,5 +1,5 @@
 // The auctioneer's console driving the projector view in a real browser:
-// next lot, live bid, sold-to-leader, hold, wrap-up draw, then the closed
+// next lot, Enter-to-record bids, sold (team chosen only then), unsold, wrap-up draw, then the closed
 // state. (Password-gated actions — undo, close — are covered at service level.)
 // Throwaway ZZ season; dev branch only; needs a dev server on :3100.
 // Run: ALLOW_DB_WRITE_TESTS=1 npm run test:auctionui
@@ -52,39 +52,47 @@ async function main() {
 
     await console_.goto(`${base}/admin/auction`);
     await console_.getByRole("button", { name: "Next lot" }).click();
-    await console_.getByText("Record a bid").waitFor(T);
+    await console_.getByLabel("Bid amount").waitFor(T);
     const onTheBlock = (await console_.locator("p.text-lg.font-bold").first().innerText()).trim();
     await stage.locator('[data-phase="lot"]').waitFor(T);
     await stage.getByText(onTheBlock.toUpperCase(), { exact: false }).first().waitFor(T);
     assert.equal((await stage.getByTestId("stage-bid").innerText()).trim(), "50", "opening price shows until someone bids");
 
-    // a bid recorded on the console appears on the projector with its leader
-    await console_.getByLabel("Bidding team").selectOption(teams[1].id);
+    // bids are just amounts typed into one box: Enter records them, no team involved
     await console_.getByLabel("Bid amount").fill("70");
-    await console_.getByRole("button", { name: "Record bid" }).click();
+    await console_.getByLabel("Bid amount").press("Enter");
     await console_.getByTestId("leading-bid").filter({ hasText: "70" }).waitFor(T);
     await stage.getByTestId("stage-bid").filter({ hasText: "70" }).waitFor(T);
-    await stage.getByText("ZZ Blues").first().waitFor(T);
+    assert.equal(await console_.getByLabel("Bid amount").inputValue(), "", "the box clears, ready for the next bid");
+    assert.equal(await console_.getByLabel("Bidding team").count(), 0, "there is no 'which team bid' selector");
     // a too-small raise is refused with the rule explained
-    await console_.getByLabel("Bidding team").selectOption(teams[0].id);
     await console_.getByLabel("Bid amount").fill("75");
-    await console_.getByRole("button", { name: "Record bid" }).click();
+    await console_.getByLabel("Bid amount").press("Enter");
     await console_.getByText(/beat 70 by at least 10/).waitFor(T);
+    await console_.getByLabel("Bid amount").fill("");
+    // the +step shortcut raises by one increment
+    await console_.getByRole("button", { name: /\+10 → 80/ }).click();
+    await console_.getByTestId("leading-bid").filter({ hasText: "80" }).waitFor(T);
 
-    // sell to the leader in one click -> SOLD stamp on the projector
-    await console_.getByRole("button", { name: /Sold to ZZ Blues for 70/ }).click();
+    // the team is chosen only when the player is sold; the price defaults to the bid
+    assert.equal(await console_.getByLabel("Sale price").inputValue(), "80");
+    await console_.getByLabel("Sold to").selectOption(teams[1].id);
+    await console_.getByRole("button", { name: "Sold", exact: true }).click();
     await stage.getByTestId("stage-result").getByText("Sold", { exact: true }).waitFor(T);
-    await stage.getByText("for 70").waitFor(T);
+    await stage.getByText("for 80").waitFor(T);
     const sold = await prisma.auctionLot.findFirstOrThrow({ where: { seasonId: season.id, status: "SOLD" } });
-    assert.equal(sold.soldPrice, 70);
+    assert.equal(sold.soldPrice, 80);
     assert.equal(sold.soldToTeamId, teams[1].id);
 
-    // hold the next one: it shows "On hold" and appears in the held list
+    // the projector never shows budgets or squad sizes
+    assert.equal(await stage.getByText(/\d+ left · squad/).count(), 0, "no team budgets on the projector");
+
+    // "Unsold" is the single not-now outcome (there is no separate hold)
+    assert.equal(await console_.getByRole("button", { name: /Hold/ }).count(), 0, "no hold button");
     await console_.getByRole("button", { name: "Next lot" }).click();
-    await console_.getByRole("button", { name: "Hold till the end" }).click();
-    await stage.getByTestId("stage-result").getByText("On hold").waitFor(T);
-    await console_.getByText("On hold (1)").waitFor(T);
-    assert.equal(await prisma.auctionLot.count({ where: { seasonId: season.id, status: "HELD" } }), 1);
+    await console_.getByRole("button", { name: "Unsold", exact: true }).click();
+    await stage.getByTestId("stage-result").getByText("Unsold").waitFor(T);
+    assert.equal(await prisma.auctionLot.count({ where: { seasonId: season.id, status: "UNSOLD" } }), 1);
 
     // retain a queued player with a team from the "Up next" list
     const upNext = console_.locator("ol");
@@ -121,7 +129,7 @@ async function main() {
     assert.equal(await console_.getByRole("button", { name: "Next lot" }).isDisabled(), true, "a closed auction can't continue");
 
     assert.deepEqual(errors, [], "no uncaught page errors");
-    console.log("✓ auction UI: console drives the projector (lot, live bid, sold, hold), retain, wrap-up draw, closed state");
+    console.log("✓ auction UI: console drives the projector (lot, Enter-recorded bids, sold, unsold; no budgets shown), retain, wrap-up draw, closed state");
   } finally {
     await browser.close();
     await prisma.tournament.update({ where: { id: tournament.id }, data: { currentSeasonId: original } });

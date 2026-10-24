@@ -7,12 +7,13 @@ import { getCards, type CardView } from "@/lib/cardData";
  * stage falls back to the budget board. */
 export const RESULT_SECONDS = 12;
 
-export type StageTeam = { id: string; name: string; logoUrl: string | null; remaining: number; budget: number; squad: number };
+/** Only what the room may see: names. Budgets and squad sizes stay on the organiser's console. */
+export type StageTeam = { id: string; name: string };
 export type StageCard = Pick<CardView, "name" | "model" | "imageUrl" | "isCutout" | "framing" | "badge" | "position">;
 
 export type StageState =
   | { phase: "off" }
-  | { phase: "opening"; seasonName: string; players: number; budget: number; basePrice: number; teams: StageTeam[] }
+  | { phase: "opening"; seasonName: string; players: number; basePrice: number; teams: StageTeam[] }
   | {
       phase: "lot";
       seasonName: string;
@@ -23,18 +24,16 @@ export type StageState =
       leader: { name: string } | null;
       sold: number;
       left: number;
-      teams: StageTeam[];
     }
   | {
       phase: "result";
       seasonName: string;
-      kind: "SOLD" | "UNSOLD" | "HELD";
+      kind: "SOLD" | "UNSOLD";
       card: StageCard;
       price: number | null;
       team: { name: string } | null;
-      teams: StageTeam[];
     }
-  | { phase: "between"; seasonName: string; sold: number; left: number; teams: StageTeam[] }
+  | { phase: "between"; seasonName: string; sold: number; left: number }
   | { phase: "closing"; seasonName: string; squads: { team: { name: string }; players: { name: string; number: number; position: string | null }[] }[] };
 
 const toStageCard = (c: CardView): StageCard => ({
@@ -61,7 +60,7 @@ export async function getStageState(now = new Date()): Promise<StageState> {
   if (!settings) return { phase: "off" };
 
   const statuses = await getTeamAuctionStatuses(season, settings);
-  const teams: StageTeam[] = statuses.map((t) => ({ id: t.teamId, name: t.teamName, logoUrl: t.logoUrl, remaining: t.remainingBudget, budget: settings.budgetPerTeam, squad: t.squadCount }));
+  const teams: StageTeam[] = statuses.map((t) => ({ id: t.teamId, name: t.teamName }));
   const seasonName = season.name;
 
   if (settings.lockedAt) {
@@ -97,7 +96,7 @@ export async function getStageState(now = new Date()): Promise<StageState> {
     const card = await cardFor(current.playerId);
     if (card) {
       const leader = current.currentBidTeamId ? teams.find((t) => t.id === current.currentBidTeamId) : null;
-      return { phase: "lot", seasonName, card, basePrice: settings.basePrice, bidIncrement: settings.bidIncrement, currentBid: current.currentBid, leader: leader ? { name: leader.name } : null, sold, left, teams };
+      return { phase: "lot", seasonName, card, basePrice: settings.basePrice, bidIncrement: settings.bidIncrement, currentBid: current.currentBid, leader: leader ? { name: leader.name } : null, sold, left };
     }
   }
 
@@ -107,15 +106,14 @@ export async function getStageState(now = new Date()): Promise<StageState> {
       return {
         phase: "result",
         seasonName,
-        kind: lastResolved.status as "SOLD" | "UNSOLD" | "HELD",
+        kind: lastResolved.status === "SOLD" ? "SOLD" : "UNSOLD",
         card,
         price: lastResolved.status === "SOLD" ? lastResolved.soldPrice : null,
         team: lastResolved.soldToTeam ? { name: lastResolved.soldToTeam.name } : null,
-        teams,
       };
     }
   }
 
-  if (!lastResolved) return { phase: "opening", seasonName, players: total, budget: settings.budgetPerTeam, basePrice: settings.basePrice, teams };
-  return { phase: "between", seasonName, sold, left, teams };
+  if (!lastResolved) return { phase: "opening", seasonName, players: total, basePrice: settings.basePrice, teams };
+  return { phase: "between", seasonName, sold, left };
 }

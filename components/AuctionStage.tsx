@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Crest } from "@/components/Crest";
 import { PlayerCardView } from "@/components/PlayerCardView";
-import type { StageCard, StageState, StageTeam } from "@/lib/auctionStage";
+import type { StageCard, StageState } from "@/lib/auctionStage";
 
 const POLL_MS = 2000;
 const CARD_SCALE = 1.7;
@@ -65,7 +65,7 @@ function Screen({ state }: { state: StageState }) {
           <div className="pt-16 text-center">
             <p className="text-7xl font-black uppercase tracking-widest">The auction begins</p>
             <p className="mt-6 text-3xl text-white/70">
-              {state.players} players · {state.teams.length} teams · {state.budget} each · base {state.basePrice}
+              {state.players} players · {state.teams.length} teams · base price {state.basePrice}
             </p>
             <div className="mt-14 flex flex-wrap justify-center gap-10">
               {state.teams.map((t) => (
@@ -99,12 +99,13 @@ function Screen({ state }: { state: StageState }) {
                     {state.leader.name}
                   </p>
                 ) : (
-                  <p className="mt-2 text-3xl text-white/50">Waiting for a bid · raise by {state.bidIncrement}</p>
+                  <p className="mt-2 text-3xl text-white/50">
+                    {state.currentBid == null ? `Waiting for a bid · raise by ${state.bidIncrement}` : `Next bid: ${state.currentBid + state.bidIncrement} or more`}
+                  </p>
                 )}
               </div>
             </div>
           </div>
-          <Budgets teams={state.teams} />
         </div>
       );
 
@@ -129,7 +130,7 @@ function Screen({ state }: { state: StageState }) {
                 </div>
               ) : (
                 <p className="mt-12 text-8xl font-black uppercase tracking-widest text-white/60" data-testid="stage-result">
-                  {state.kind === "UNSOLD" ? "Unsold" : "On hold"}
+                  Unsold
                 </p>
               )}
             </div>
@@ -140,9 +141,13 @@ function Screen({ state }: { state: StageState }) {
     case "between":
       return (
         <div>
-          <Header seasonName={state.seasonName} right={`${state.sold} sold · ${state.left} to go`} />
-          <p className="mb-6 text-3xl font-bold uppercase tracking-widest text-white/60">Team budgets</p>
-          <Budgets teams={state.teams} large />
+          <Header seasonName={state.seasonName} />
+          <div className="pt-28 text-center" data-testid="stage-between">
+            <p className="text-6xl font-black uppercase tracking-widest">Next player coming up…</p>
+            <p className="mt-8 text-4xl text-white/70">
+              {state.sold} sold · {state.left} still to go
+            </p>
+          </div>
         </div>
       );
 
@@ -180,27 +185,6 @@ function BigCard({ card }: { card: StageCard }) {
       <div style={{ transform: `scale(${CARD_SCALE})`, transformOrigin: "top left", width: 230 }}>
         <PlayerCardView name={card.name} model={card.model} imageUrl={card.imageUrl} isCutout={card.isCutout} framing={card.framing} badge={card.badge} />
       </div>
-    </div>
-  );
-}
-
-function Budgets({ teams, large = false }: { teams: StageTeam[]; large?: boolean }) {
-  return (
-    <div className={"mt-10 grid gap-4 " + (large ? "md:grid-cols-2 xl:grid-cols-4" : "grid-cols-2 xl:grid-cols-4")}>
-      {teams.map((t) => (
-        <div key={t.id} className="rounded-xl border border-white/15 bg-white/5 p-4">
-          <p className={"mb-2 flex items-center gap-3 font-bold " + (large ? "text-3xl" : "text-xl")}>
-            <Crest size={large ? 44 : 30} name={t.name} />
-            {t.name}
-          </p>
-          <div className="h-3 overflow-hidden rounded bg-white/15">
-            <div className="h-full bg-amber-300" style={{ width: `${Math.max(0, Math.min(100, (t.remaining / t.budget) * 100))}%` }} />
-          </div>
-          <p className={"mt-2 text-white/70 " + (large ? "text-2xl" : "text-base")}>
-            {t.remaining} left · squad {t.squad}
-          </p>
-        </div>
-      ))}
     </div>
   );
 }

@@ -15,12 +15,13 @@ export type PublicAuctionStatus =
         currentBid: number | null;
         leaderName: string | null;
       } | null;
-      teams: { teamName: string; logoUrl: string | null; remainingBudget: number; squadCount: number }[];
       soldCount: number;
       queuedCount: number;
     };
 
 /** Public read-only view — current lot + team budgets, no admin data.
+
+ * Team budgets are deliberately not part of this: they are the organiser's data.
  * Shared by the server-rendered `/auction` page (for a flash-free initial
  * paint) and the `/api/public/auction` route it polls afterward, same
  * pattern as `lib/liveStatus.ts` / `/api/public/live`. */
@@ -31,14 +32,14 @@ export async function getPublicAuctionStatus(): Promise<PublicAuctionStatus> {
   const settings = await prisma.auctionSettings.findUnique({ where: { seasonId: season.id } });
   if (!settings) return { active: false };
 
-  const [currentLot, teams, soldCount, queuedCount] = await Promise.all([
+  const [currentLot, soldCount, queuedCount, teamsForLeader] = await Promise.all([
     prisma.auctionLot.findFirst({
       where: { seasonId: season.id, status: "IN_PROGRESS" },
       include: { player: true },
     }),
-    getTeamAuctionStatuses(season, settings),
     prisma.auctionLot.count({ where: { seasonId: season.id, status: "SOLD" } }),
     prisma.auctionLot.count({ where: { seasonId: season.id, status: "QUEUED" } }),
+    prisma.team.findMany({ where: { seasonId: season.id }, select: { id: true, name: true } }),
   ]);
 
   return {
@@ -51,15 +52,9 @@ export async function getPublicAuctionStatus(): Promise<PublicAuctionStatus> {
           photoUrl: currentLot.player.photoUrl,
           basePrice: settings.basePrice,
           currentBid: currentLot.currentBid,
-          leaderName: teams.find((t) => t.teamId === currentLot.currentBidTeamId)?.teamName ?? null,
+          leaderName: teamsForLeader.find((t) => t.id === currentLot.currentBidTeamId)?.name ?? null,
         }
       : null,
-    teams: teams.map((t) => ({
-      teamName: t.teamName,
-      logoUrl: t.logoUrl,
-      remainingBudget: t.remainingBudget,
-      squadCount: t.squadCount,
-    })),
     soldCount,
     queuedCount,
   };

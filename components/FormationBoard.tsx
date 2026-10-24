@@ -304,7 +304,7 @@ export function FormationBoard() {
               </section>
             );
           })}
-          {board.teams.length === 0 && <p className="text-sm text-muted-foreground">No teams yet — create teams on the Teams page{strategy === "BATCH" ? ", or press “Group by batch”" : ""}.</p>}
+          {board.teams.length === 0 && <p className="text-sm text-muted-foreground">No teams yet — <Link href="/admin/season/teams" className="font-bold underline">set up the teams</Link>{strategy === "BATCH" ? ", or press “Group by batch”" : ""}.</p>}
         </div>
       </div>
     </div>

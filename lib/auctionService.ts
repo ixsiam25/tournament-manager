@@ -48,7 +48,7 @@ async function inProgress(ctx: AuctionCtx) {
 export async function nextLot(ctx: AuctionCtx) {
   assertOpen(ctx);
   if (await prisma.auctionLot.findFirst({ where: { seasonId: ctx.season.id, status: "IN_PROGRESS" } })) {
-    throw new AuctionError("Resolve the current lot (sold, unsold or hold) before moving on");
+    throw new AuctionError("Resolve the current lot (sold or unsold) before moving on");
   }
   const next = await prisma.auctionLot.findFirst({
     where: { seasonId: ctx.season.id, status: "QUEUED" },
@@ -64,22 +64,26 @@ export async function nextLot(ctx: AuctionCtx) {
   return lot;
 }
 
-/** Records the live leading bid (organiser-entered) so the projector shows it
- * and "Sold" can default to it. Must beat the current bid by the increment. */
-export async function setBid(ctx: AuctionCtx, teamId: string, amount: number) {
+/** Records the live leading bid (an amount — the bidding team isn't tracked; the
+ * team is chosen when the player is sold). It must beat the current bid by the
+ * increment. If a team is given, its budget and squad limits are checked now;
+ * otherwise they are checked at the sale. */
+export async function setBid(ctx: AuctionCtx, amount: number, teamId?: string | null) {
   assertOpen(ctx);
   const lot = await inProgress(ctx);
-  const { team, status } = await statusOf(ctx, teamId);
   const { basePrice, bidIncrement } = ctx.settings;
   if (amount < basePrice) throw new AuctionError(`A bid must be at least the base price (${basePrice})`, 400);
   if (lot.currentBid != null && amount < lot.currentBid + bidIncrement) {
     throw new AuctionError(`A bid must beat ${lot.currentBid} by at least ${bidIncrement}`, 400);
   }
-  if (amount > status.maxAllowableBid) {
-    throw new AuctionError(`${team.name} can bid at most ${status.maxAllowableBid} (budget is reserved to fill a legal squad)`, 400);
+  if (teamId) {
+    const { team, status } = await statusOf(ctx, teamId);
+    if (amount > status.maxAllowableBid) {
+      throw new AuctionError(`${team.name} can bid at most ${status.maxAllowableBid} (budget is reserved to fill a legal squad)`, 400);
+    }
+    assertRoom(ctx, team.name, status.squadCount);
   }
-  assertRoom(ctx, team.name, status.squadCount);
-  return prisma.auctionLot.update({ where: { id: lot.id }, data: { currentBid: amount, currentBidTeamId: teamId } });
+  return prisma.auctionLot.update({ where: { id: lot.id }, data: { currentBid: amount, currentBidTeamId: teamId ?? null } });
 }
 
 export async function clearBid(ctx: AuctionCtx) {
@@ -101,9 +105,11 @@ async function awardPlayer(ctx: AuctionCtx, lot: { id: string; playerId: string 
 }
 
 /** Sells the lot that is up. */
-export async function sellLot(ctx: AuctionCtx, teamId: string, price: number) {
+export async function sellLot(ctx: AuctionCtx, teamId: string, priceInput?: number | null) {
   assertOpen(ctx);
   const lot = await inProgress(ctx);
+  const price = priceInput ?? lot.currentBid;
+  if (price == null) throw new AuctionError("Enter the price — no bid has been recorded for this player", 400);
   const { team, status } = await statusOf(ctx, teamId);
   if (price < ctx.settings.basePrice) throw new AuctionError(`Price must be at least the base price (${ctx.settings.basePrice})`, 400);
   if (price > status.maxAllowableBid) {
@@ -115,34 +121,13 @@ export async function sellLot(ctx: AuctionCtx, teamId: string, price: number) {
   return updated;
 }
 
+/** Nobody took the player this time. They stay on the "unsold" list: run them
+ * through again as another round, or place them in the wrap-up. */
 export async function markUnsold(ctx: AuctionCtx) {
   assertOpen(ctx);
   const lot = await inProgress(ctx);
   const updated = await prisma.auctionLot.update({ where: { id: lot.id }, data: { status: "UNSOLD", currentBid: null, currentBidTeamId: null } });
   await logAudit({ actor: ctx.actor, action: "auction.lot.unsold", entityType: "AuctionLot", entityId: lot.id, summary: `"${lot.player.name}" went unsold` });
-  return updated;
-}
-
-/** Parks the lot until the wrap-up step instead of resolving it now. */
-export async function holdLot(ctx: AuctionCtx) {
-  assertOpen(ctx);
-  const lot = await inProgress(ctx);
-  const updated = await prisma.auctionLot.update({ where: { id: lot.id }, data: { status: "HELD", heldAt: new Date(), currentBid: null, currentBidTeamId: null } });
-  await logAudit({ actor: ctx.actor, action: "auction.lot.hold", entityType: "AuctionLot", entityId: lot.id, summary: `Held "${lot.player.name}" until the end of the auction` });
-  return updated;
-}
-
-/** Puts a held lot back at the end of the queue. */
-export async function unholdLot(ctx: AuctionCtx, lotId: string) {
-  assertOpen(ctx);
-  const lot = await prisma.auctionLot.findFirst({ where: { id: lotId, seasonId: ctx.season.id, status: "HELD" }, include: { player: true } });
-  if (!lot) throw new AuctionError("That lot isn't on hold", 404);
-  const tail = await prisma.auctionLot.aggregate({ where: { seasonId: ctx.season.id, status: "QUEUED" }, _max: { round: true, order: true } });
-  const updated = await prisma.auctionLot.update({
-    where: { id: lot.id },
-    data: { status: "QUEUED", heldAt: null, round: tail._max.round ?? lot.round, order: (tail._max.order ?? -1) + 1 },
-  });
-  await logAudit({ actor: ctx.actor, action: "auction.lot.unhold", entityType: "AuctionLot", entityId: lot.id, summary: `"${lot.player.name}" is back in the queue` });
   return updated;
 }
 
@@ -171,7 +156,7 @@ export async function assignLot(ctx: AuctionCtx, lotId: string, teamId: string, 
   return updated;
 }
 
-/** Reverts the most recently resolved lot (sold, unsold or held) to QUEUED,
+/** Reverts the most recently resolved lot (sold or unsold) to QUEUED,
  * un-assigning the player if they had been placed on a team. */
 export async function undoLast(ctx: AuctionCtx) {
   assertOpen(ctx);
@@ -277,4 +262,22 @@ export async function reopenAuction(ctx: AuctionCtx) {
   if (!ctx.settings.lockedAt) throw new AuctionError("The auction isn't closed");
   await prisma.auctionSettings.update({ where: { id: ctx.settings.id }, data: { lockedAt: null } });
   await logAudit({ actor: ctx.actor, action: "auction.reopen", entityType: "Season", entityId: ctx.season.id, summary: "Reopened the auction" });
+}
+
+/**
+ * Places a player with a team at no charge, whatever the auction's state — used
+ * when the organiser names a team's captain before bidding starts. If the player
+ * already has an unsold/queued lot it is closed out as a free sale so the auction
+ * never offers them again.
+ */
+export async function placePlayerFree(args: { playerId: string; teamId: string; actor: AuthedUser | null }) {
+  const { playerId, teamId, actor } = args;
+  const jerseyNumber = await nextFreeJersey(teamId);
+  const lot = await prisma.auctionLot.findFirst({ where: { playerId, status: { in: ["QUEUED", "UNSOLD", "HELD"] } } });
+  await prisma.$transaction([
+    ...(lot
+      ? [prisma.auctionLot.update({ where: { id: lot.id }, data: { status: "SOLD", soldToTeamId: teamId, soldPrice: 0, soldAt: new Date(), soldByUserId: actor?.id ?? null } })]
+      : []),
+    prisma.player.update({ where: { id: playerId }, data: { teamId, jerseyNumber, isCaptain: false } }),
+  ]);
 }

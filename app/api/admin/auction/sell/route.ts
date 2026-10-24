@@ -7,7 +7,8 @@ export const dynamic = "force-dynamic";
 
 const bodySchema = z.object({
   teamId: z.string().trim().min(1),
-  price: z.coerce.number().int().positive(),
+  /** Defaults to the recorded bid. */
+  price: z.coerce.number().int().positive().optional(),
 });
 
 export async function POST(request: NextRequest) {

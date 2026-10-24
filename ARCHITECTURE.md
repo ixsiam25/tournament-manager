@@ -557,3 +557,24 @@ The app is no longer "one live season". Every live row belongs to a `Season`
 > hasn't started. On 23 Oct 2026: Fall 26 = 8th, Spring 27 = 7th, Fall 27 = 6th …
 > Spring 30 = 1st; Spring 26 and older = alumni. `batchLabelForSemester` builds
 > labels from a semester so the demo and tests stay valid on any date.
+
+## Organiser UX changes (2026-10-25)
+
+- **Team set-up is a step of the Season tab** (`/admin/season/teams`, the old
+  `/admin/teams` redirects there): name, short name, logo upload, optional manager
+  (name + login password) and optional captain per team. A captain with no team is
+  placed on the team at no charge (`placePlayerFree`); an unsold/queued auction lot
+  for them is closed out as a free sale, so the auction never offers them again. One
+  captain per team. The checklist gains "Set up the teams" before "Form the teams"
+  for every method except By batch (which creates its teams from the batches).
+- **Registrations review**: clicking anywhere on a pending row selects it; "Select
+  all" / "Clear selection"; "Approve N selected"; and "Approve all N" (no selection needed).
+- **Auction bidding**: a bid is just an amount (type it, press Enter; or "+step").
+  The bidding team is not recorded — the team is chosen only when the player is sold,
+  and the sale price defaults to the recorded bid. Team budgets/limits are therefore
+  checked at the sale. "Hold till the end" was removed: **Unsold** is the single
+  not-now outcome (run unsold players again, or place them in the wrap-up). The
+  `HELD` enum value stays in the database, unused; legacy HELD lots show as unsold.
+- **Projector privacy**: `/stage/auction` and `/api/public/auction/stage` carry no
+  budgets or squad sizes (asserted in the auction test); the public `/auction` page
+  no longer lists team budgets either. Budgets live only on the organiser's console.

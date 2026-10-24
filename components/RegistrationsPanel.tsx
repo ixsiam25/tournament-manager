@@ -112,14 +112,17 @@ export function RegistrationsPanel() {
     load();
   }
 
-  async function bulkApprove() {
-    if (selected.length === 0) return;
+  const pendingIds = registrations.filter((r) => r.status === "PENDING").map((r) => r.id);
+  const toggle = (id: string) => setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+
+  async function bulkApprove(ids: string[] = selected) {
+    if (ids.length === 0) return;
     setBusy(true);
     setError(null);
     const res = await fetch("/api/admin/registrations/bulk-approve", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ids: selected }),
+      body: JSON.stringify({ ids }),
     });
     setBusy(false);
     if (!res.ok) {
@@ -304,28 +307,53 @@ export function RegistrationsPanel() {
             </button>
           ))}
         </div>
-        {statusFilter === "PENDING" && selected.length > 0 && (
-          <button
-            onClick={bulkApprove}
-            disabled={busy}
-            className="rounded-full bg-pitch px-4 py-1.5 text-xs font-bold text-white disabled:opacity-40"
-          >
-            Approve {selected.length} selected
-          </button>
+        {pendingIds.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => setSelected(selected.length === pendingIds.length ? [] : pendingIds)}
+              className="rounded-full border border-line px-3 py-1.5 text-xs font-bold"
+            >
+              {selected.length === pendingIds.length ? "Clear selection" : "Select all"}
+            </button>
+            {selected.length > 0 && (
+              <button
+                onClick={() => bulkApprove()}
+                disabled={busy}
+                className="rounded-full bg-pitch px-4 py-1.5 text-xs font-bold text-white disabled:opacity-40"
+              >
+                Approve {selected.length} selected
+              </button>
+            )}
+            <button
+              onClick={() => {
+                if (window.confirm(`Approve all ${pendingIds.length} pending application(s)?`)) bulkApprove(pendingIds);
+              }}
+              disabled={busy}
+              className="rounded-full border border-pitch px-4 py-1.5 text-xs font-bold text-pitch disabled:opacity-40"
+            >
+              Approve all {pendingIds.length}
+            </button>
+          </div>
         )}
       </div>
 
       <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
         {registrations.map((r) => (
-          <li key={r.id} className="flex flex-wrap items-center gap-3 px-5 py-3.5">
+          <li
+            key={r.id}
+            onClick={(e) => {
+              // Clicking anywhere on a pending row selects it — except on its own buttons/inputs.
+              if (r.status === "PENDING" && !(e.target as HTMLElement).closest("button, a, input, select, textarea")) toggle(r.id);
+            }}
+            aria-selected={r.status === "PENDING" ? selected.includes(r.id) : undefined}
+            className={
+              "flex flex-wrap items-center gap-3 px-5 py-3.5 " +
+              (r.status === "PENDING" ? "cursor-pointer select-none hover:bg-background " : "") +
+              (selected.includes(r.id) ? "bg-pitch/10" : "")
+            }
+          >
             {r.status === "PENDING" && (
-              <input
-                type="checkbox"
-                checked={selected.includes(r.id)}
-                onChange={(e) =>
-                  setSelected((prev) => (e.target.checked ? [...prev, r.id] : prev.filter((id) => id !== r.id)))
-                }
-              />
+              <input type="checkbox" checked={selected.includes(r.id)} onChange={() => toggle(r.id)} aria-label={`Select ${r.name}`} />
             )}
             {r.photoKey ? (
               // eslint-disable-next-line @next/next/no-img-element -- small admin thumbnail via the photo proxy
