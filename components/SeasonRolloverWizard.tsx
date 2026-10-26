@@ -177,7 +177,7 @@ export function SeasonRolloverWizard() {
       setError(body.error ?? "Failed to open season");
       return;
     }
-    router.push("/admin");
+    router.push("/admin/season?created=1");
     router.refresh();
   }
 

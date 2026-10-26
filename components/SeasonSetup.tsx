@@ -3,14 +3,21 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import type { SetupStep } from "@/lib/seasonProgress";
+import { ApplicationLinkCard } from "@/components/ApplicationLinkCard";
 
-type Overview = { season: { id: string; name: string; status: string } | null; steps: SetupStep[] };
+type Overview = { season: { id: string; name: string; status: string; registrationOpen: boolean; registrationSelfServeEnabled: boolean; applicationDeadline: string | null } | null; steps: SetupStep[] };
 
 /** The season's checklist: where it is now and the next thing to do. */
 export function SeasonSetup() {
   const [data, setData] = useState<Overview | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [justCreated, setJustCreated] = useState(false);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- the query string is only readable in the browser
+    setJustCreated(new URLSearchParams(window.location.search).get("created") === "1");
+  }, []);
 
   const load = useCallback(async () => {
     setData(await (await fetch("/api/admin/season/overview")).json());
@@ -63,6 +70,8 @@ export function SeasonSetup() {
         {data.season.name} <span className="ml-2 rounded-full bg-line px-2 py-0.5 text-[10px] uppercase">{data.season.status.toLowerCase()}</span>
       </p>
       {error && <p className="text-sm text-live">{error}</p>}
+      {justCreated && <p className="rounded-xl bg-pitch px-4 py-3 text-sm font-bold text-white" role="status">✓ {data.season.name} is created.{data.season.registrationOpen ? " Applications are open — share the link below." : " Open applications below when you are ready."}</p>}
+      {data.season.registrationOpen && data.season.registrationSelfServeEnabled && <ApplicationLinkCard deadline={data.season.applicationDeadline} />}
       <p className="flex gap-4 text-sm">
         <Link href="/admin/season/details" className="font-medium text-pitch underline">Edit season details</Link>
         <Link href="/admin/season/rollover" className="font-medium text-pitch underline">Create a new season</Link>

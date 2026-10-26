@@ -38,44 +38,78 @@ export function RegistrationForm() {
 
   if (!open) {
     return (
-      <p className="rounded-block-lg border border-line bg-surface p-5 text-muted-foreground">
-        Registration isn&apos;t open right now{seasonName ? ` for ${seasonName}` : ""}. Check back later.
-      </p>
+      <div className="rounded-3xl border border-line bg-surface p-8 text-center">
+        <p className="text-4xl" aria-hidden>
+          ⏳
+        </p>
+        <h1 className="mt-3 text-xl font-bold">Applications are closed</h1>
+        <p className="mt-1 text-muted-foreground">
+          Registration isn&apos;t open right now{seasonName ? ` for ${seasonName}` : ""}. Check back later.
+        </p>
+      </div>
     );
   }
 
   if (editLink) {
     return (
-      <div className="max-w-xl space-y-4 rounded-block-lg border-2 border-pitch bg-pitch/10 p-5 text-pitch-dark">
-        <p className="font-bold">Thanks — your application has been submitted for review.</p>
-        <p className="text-sm">
-          Save this private link. It&rsquo;s the only way to fix your details or photo until the organisers review your
-          application — it won&rsquo;t be shown again.
-        </p>
-        <div className="flex flex-wrap items-center gap-2">
-          <input readOnly value={editLink} aria-label="Your private edit link" className="min-w-0 flex-1 rounded-lg border border-line bg-background px-3 py-2 text-xs" />
-          <button
-            type="button"
-            onClick={async () => {
-              await navigator.clipboard?.writeText(editLink).catch(() => {});
-              setCopied(true);
-            }}
-            className="rounded-full bg-pitch px-4 py-2 text-xs font-bold text-white"
-          >
-            {copied ? "Copied" : "Copy link"}
-          </button>
+      <div className="space-y-5">
+        <div className="rounded-3xl bg-gradient-to-br from-pitch to-pitch-dark p-7 text-center text-white shadow-lg">
+          <p className="text-4xl" aria-hidden>
+            ✅
+          </p>
+          <h2 className="mt-2 text-2xl font-black">You&rsquo;re in the queue!</h2>
+          <p className="mt-1 text-white/85">Thanks — your application has been submitted for review.</p>
         </div>
+        <div className="space-y-3 rounded-2xl border-2 border-pitch bg-pitch/10 p-5 text-pitch-dark">
+          <p className="font-bold">Save your private link</p>
+          <p className="text-sm">
+            Save this private link. It&rsquo;s the only way to fix your details or photo until the organisers review your
+            application — it won&rsquo;t be shown again.
+          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <input readOnly value={editLink} aria-label="Your private edit link" className="min-w-0 flex-1 rounded-xl border border-line bg-background px-3 py-2.5 text-xs" />
+            <button
+              type="button"
+              onClick={async () => {
+                await navigator.clipboard?.writeText(editLink).catch(() => {});
+                setCopied(true);
+              }}
+              className="rounded-full bg-pitch px-5 py-2.5 text-sm font-bold text-white"
+            >
+              {copied ? "Copied" : "Copy link"}
+            </button>
+          </div>
+        </div>
+        <ol className="space-y-2 rounded-2xl border border-line bg-surface p-5 text-sm">
+          <li className="font-bold">What happens next</li>
+          <li>1. The organisers review your application.</li>
+          <li>2. If approved, you join the player pool and get your rating.</li>
+          <li>3. Teams are formed — you&rsquo;ll be told which one is yours.</li>
+        </ol>
       </div>
     );
   }
 
   return (
-    <div>
-      {deadline && (
-        <p className="mb-4 text-sm text-muted-foreground">
-          Applications close {new Date(deadline).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}.
-        </p>
-      )}
+    <div className="space-y-6">
+      <header className="overflow-hidden rounded-3xl bg-gradient-to-br from-[#7a1128] via-[#5a0c1d] to-[#1b1412] p-6 text-white shadow-lg sm:p-8">
+        <p className="text-xs font-bold uppercase tracking-[0.25em] text-white/70">{seasonName || "Bangladesh Football League"}</p>
+        <h1 className="mt-2 heading-display text-3xl sm:text-4xl">Register</h1>
+        <p className="mt-1 text-white/85">Sign up to play this season — and get your own player card.</p>
+        <ol className="mt-5 flex flex-wrap gap-2 text-xs font-semibold">
+          {["About you", "Your photo", "Check your card & send"].map((t, i) => (
+            <li key={t} className="flex items-center gap-2 rounded-full bg-white/15 px-3 py-1.5">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-[11px] font-black text-[#5a0c1d]">{i + 1}</span>
+              {t}
+            </li>
+          ))}
+        </ol>
+        {deadline && (
+          <p className="mt-4 inline-block rounded-full bg-black/30 px-3 py-1 text-xs">
+            ⏰ Applications close {new Date(deadline).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}
+          </p>
+        )}
+      </header>
       <ApplicationForm
         config={config}
         seasonName={seasonName ?? ""}

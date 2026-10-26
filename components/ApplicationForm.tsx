@@ -38,17 +38,35 @@ export const EMPTY_APPLICATION: ApplicationValues = {
 };
 
 const INPUT =
-  "w-full rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-pitch";
+  "w-full rounded-xl border border-line bg-background px-4 py-3 text-base outline-none transition placeholder:text-muted-foreground/60 focus:border-pitch focus:ring-4 focus:ring-pitch/15";
+
+/** A numbered card that groups part of the form. */
+function Section({ n, title, sub, children }: { n: number; title: string; sub?: string; children: React.ReactNode }) {
+  return (
+    <section className="space-y-4 rounded-2xl border border-line bg-surface p-5 shadow-sm sm:p-6">
+      <header className="flex items-center gap-3">
+        <span aria-hidden className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-pitch text-sm font-black text-white">
+          {n}
+        </span>
+        <div>
+          <h2 className="text-lg font-bold leading-tight">{title}</h2>
+          {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
+        </div>
+      </header>
+      {children}
+    </section>
+  );
+}
 
 function Field({ label, hint, required, children }: { label: string; hint?: string; required?: boolean; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-sm font-bold">
+      <span className="mb-1.5 block text-sm font-semibold">
         {label}
         {!required && <span className="ml-1 font-normal text-muted-foreground">(optional)</span>}
       </span>
       {children}
-      {hint && <span className="mt-1 block text-xs text-muted-foreground">{hint}</span>}
+      {hint && <span className="mt-1.5 block text-xs text-muted-foreground">{hint}</span>}
     </label>
   );
 }
@@ -240,9 +258,11 @@ export function ApplicationForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="grid gap-8 md:grid-cols-[minmax(0,26rem)_16rem]">
-      <div className="space-y-4">
-        {config.intro && <p className="rounded-lg border border-line bg-surface p-3 text-sm">{config.intro}</p>}
+    <form onSubmit={handleSubmit} className="grid gap-6 md:grid-cols-[minmax(0,1fr)_17rem]">
+      <div className="space-y-5">
+        {config.intro && <p className="rounded-2xl border border-line bg-surface p-4 text-sm">{config.intro}</p>}
+
+        <Section n={1} title="About you" sub="The basics — takes under a minute">
 
         <Field label="Name" required>
           <input value={v.name} onChange={(e) => set("name", e.target.value)} required maxLength={60} className={INPUT} />
@@ -311,9 +331,12 @@ export function ApplicationForm({
           </Field>
         ))}
 
+        </Section>
+
         {f.photo.enabled && (
+          <Section n={2} title="Your photo" sub="We turn it into your player card while you finish the form">
           <div>
-            <span className="mb-1 block text-sm font-bold">
+            <span className="mb-1.5 block text-sm font-semibold">
               Photo{!f.photo.required && <span className="ml-1 font-normal text-muted-foreground">(optional)</span>}
             </span>
             <PhotoGuide />
@@ -350,19 +373,21 @@ export function ApplicationForm({
               </button>
             )}
           </div>
+          </Section>
         )}
 
-        {error && <p className="text-sm text-live">{error}</p>}
+        {error && <p className="rounded-xl border border-live/30 bg-live/10 px-4 py-3 text-sm font-medium text-live" role="alert">{error}</p>}
         <button
           type="submit"
           disabled={submitting || cutoutRunning}
-          className="rounded-full bg-pitch px-6 py-2.5 text-sm font-bold text-white disabled:opacity-60"
+          className="w-full rounded-full bg-pitch px-6 py-3.5 text-base font-bold text-white shadow-lg shadow-pitch/25 transition hover:bg-pitch-dark disabled:opacity-60 sm:w-auto sm:px-10"
         >
           {submitting ? "Sending…" : cutoutRunning ? "Preparing your card…" : submitLabel}
         </button>
       </div>
 
-      <aside className="md:sticky md:top-6 md:self-start">
+      <aside className="rounded-2xl bg-gradient-to-b from-[#1b1412] to-[#34161f] p-4 text-white shadow-lg md:sticky md:top-20 md:self-start">
+        <p className="mb-3 text-center text-[11px] font-bold uppercase tracking-[0.2em] text-white/60">Your player card</p>
         <PlayerCardPreview
           name={v.name}
           position={cardPosition}
@@ -375,26 +400,26 @@ export function ApplicationForm({
         {file && cutout.status === "running" && (
           <div className="mt-3 text-xs" role="status">
             <p className="mb-1">Creating your card… {cutout.progress > 0 ? `${Math.round(cutout.progress * 100)}%` : "starting"}</p>
-            <div className="h-1.5 overflow-hidden rounded bg-line">
+            <div className="h-1.5 overflow-hidden rounded bg-white/20">
               <div className="h-full bg-pitch transition-all" style={{ width: `${Math.max(4, Math.round(cutout.progress * 100))}%` }} />
             </div>
-            <button type="button" onClick={() => { cancelCutout.current?.(); setCutout({ status: "skipped", blob: null, url: null, progress: 0 }); }} className="mt-1 text-muted-foreground underline">
+            <button type="button" onClick={() => { cancelCutout.current?.(); setCutout({ status: "skipped", blob: null, url: null, progress: 0 }); }} className="mt-1 text-white/60 underline">
               Use my photo as it is
             </button>
           </div>
         )}
-        {file && cutout.status === "done" && <p className="mt-3 text-xs text-pitch">✓ Background removed — your card is ready.</p>}
+        {file && cutout.status === "done" && <p className="mt-3 text-xs text-emerald-300">✓ Background removed — your card is ready.</p>}
         {file && cutout.status === "failed" && (
-          <p className="mt-3 text-xs text-amber-600">We couldn&rsquo;t remove the background, so your photo is used as it is. The organisers can fix it later.</p>
+          <p className="mt-3 text-xs text-amber-300">We couldn&rsquo;t remove the background, so your photo is used as it is. The organisers can fix it later.</p>
         )}
         {photoSrc ? (
           <div className="mt-4 space-y-2 text-sm">
             <p className="font-bold">Check your card</p>
-            <p className="text-xs text-muted-foreground">Drag the photo on the card, or use the sliders.</p>
+            <p className="text-xs text-white/60">Drag the photo on the card, or use the sliders.</p>
             <Slider label="Zoom" min={PHOTO_ZOOM_RANGE.min} max={PHOTO_ZOOM_RANGE.max} value={v.photoZoom} onChange={(n) => set("photoZoom", n)} />
             <Slider label="Left / right" min={PHOTO_OFFSET_RANGE.min} max={PHOTO_OFFSET_RANGE.max} value={v.photoX} onChange={(n) => set("photoX", n)} />
             <Slider label="Up / down" min={PHOTO_OFFSET_RANGE.min} max={PHOTO_OFFSET_RANGE.max} value={v.photoY} onChange={(n) => set("photoY", n)} />
-            <button type="button" onClick={() => setFraming({ zoom: 100, x: 0, y: 0 })} className="text-xs text-muted-foreground underline">
+            <button type="button" onClick={() => setFraming({ zoom: 100, x: 0, y: 0 })} className="text-xs text-white/60 underline">
               Reset framing
             </button>
             {reviewRequired && (
@@ -405,9 +430,9 @@ export function ApplicationForm({
             )}
           </div>
         ) : (
-          <p className="mt-4 text-center text-xs text-muted-foreground">Add a photo to see it on your card.</p>
+          <p className="mt-4 text-center text-xs text-white/60">Add a photo to see it on your card.</p>
         )}
-        <p className="mt-3 text-center text-[11px] text-muted-foreground">Ratings are set by the organisers.</p>
+        <p className="mt-3 text-center text-[11px] text-white/50">Ratings are set by the organisers.</p>
       </aside>
     </form>
   );

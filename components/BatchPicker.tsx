@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { batchInfo, formatBatch, parseBatch, type BatchMeaning, type Term } from "@/lib/batch";
 
-const SELECT = "rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-pitch";
+const SELECT = "min-w-0 flex-1 rounded-xl border border-line bg-background px-4 py-3 text-base outline-none transition focus:border-pitch focus:ring-4 focus:ring-pitch/15";
 
 /**
  * Picks an intake batch ("Fall 24") from two dropdowns and says, as you choose,

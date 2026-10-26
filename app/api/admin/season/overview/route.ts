@@ -12,7 +12,7 @@ export async function GET() {
   const season = await getCurrentSeason();
   if (!season) return NextResponse.json({ season: null, steps: [] });
   return NextResponse.json({
-    season: { id: season.id, name: season.name, status: season.status, teamFormation: season.teamFormation, registrationOpen: season.registrationOpen },
+    season: { id: season.id, name: season.name, status: season.status, teamFormation: season.teamFormation, registrationOpen: season.registrationOpen, registrationSelfServeEnabled: season.registrationSelfServeEnabled, applicationDeadline: season.applicationDeadline },
     steps: await getSeasonProgress(season),
   });
 }
