@@ -63,6 +63,10 @@ async function main() {
     await page.getByLabel("Batch term").selectOption("FALL");
     await page.getByLabel("Batch year").selectOption("2027");
     await page.getByLabel("Contact").fill("x");
+    // a photo means the card must be reviewed; skip the (slow) background removal
+    const skip = page.getByRole("button", { name: "Use my photo as it is" });
+    if (await skip.count()) await skip.click();
+    await page.getByRole("checkbox").check();
     await page.getByRole("button", { name: "Submit application" }).click();
     await page.getByLabel("Your private edit link").waitFor(T);
     await page.getByText("Share your card").waitFor(T);
