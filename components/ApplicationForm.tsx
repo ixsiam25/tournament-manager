@@ -8,7 +8,8 @@ import { PHOTO_OFFSET_RANGE, PHOTO_ZOOM_RANGE, type ApplicationConfig } from "@/
 import { PlayerCardPreview, type CardFraming } from "@/components/PlayerCardPreview";
 import { BatchPicker } from "@/components/BatchPicker";
 import { semesterLabel } from "@/lib/cardLabels";
-import { storyPng } from "@/lib/cardImage";
+import { storyPngWithRetry } from "@/lib/cardImage";
+import { buildCardModel, type Position } from "@/lib/playerCard";
 
 export type ApplicationValues = {
   name: string;
@@ -163,7 +164,6 @@ export function ApplicationForm({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
-  const cardBox = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     return () => {
@@ -227,10 +227,21 @@ export function ApplicationForm({
   }
 
   async function makeStory(): Promise<string | null> {
-    const card = cardBox.current?.querySelector<HTMLElement>(".pcard");
-    if (!card) return null;
     try {
-      return await storyPng(card, { title: v.name.trim() || "New player", subtitle: `${seasonName} · I'm in!` });
+      const model = buildCardModel({ position: (v.position || null) as Position | null, ratings: null });
+      return await storyPngWithRetry(
+        {
+          name: v.name,
+          position: model.position,
+          semester: semesterLabel(v.affiliation, config.batchMeaning),
+          stats: model.stats.map((st) => ({ label: st.label, value: st.value })),
+          imageUrl: cardImage,
+          isCutout: !!cutoutSrc,
+          framing,
+          footer: seasonName,
+        },
+        { title: v.name.trim() || "New player", subtitle: `${seasonName} · I'm in!` },
+      );
     } catch {
       return null;
     }
@@ -416,7 +427,6 @@ export function ApplicationForm({
 
       <aside className="card-stage rounded-2xl p-4 text-white shadow-lg md:sticky md:top-20 md:self-start">
         <p className="mb-3 text-center text-[11px] font-bold uppercase tracking-[0.2em] text-white/60">Your player card</p>
-        <div ref={cardBox}>
         <PlayerCardPreview
           name={v.name}
           position={cardPosition}
@@ -427,7 +437,6 @@ export function ApplicationForm({
           semester={semesterLabel(v.affiliation, config.batchMeaning)}
           onFramingChange={setFraming}
         />
-        </div>
         {file && cutout.status === "running" && (
           <div className="mt-3 text-xs" role="status">
             <p className="mb-1">Creating your card… {cutout.progress > 0 ? `${Math.round(cutout.progress * 100)}%` : "starting"}</p>

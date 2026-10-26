@@ -83,7 +83,13 @@ export function RegistrationForm() {
             </button>
           </div>
         </div>
-        {story && <StoryShare image={story} name={sharedName} seasonName={seasonName ?? ""} />}
+        {story ? (
+          <StoryShare image={story} name={sharedName} seasonName={seasonName ?? ""} />
+        ) : (
+          <p className="rounded-2xl border border-line bg-surface p-4 text-center text-sm text-muted-foreground">
+            Your application is in. We couldn&rsquo;t prepare your share image just now — once you&rsquo;re approved, your card will be on the Cards page, where you can download it.
+          </p>
+        )}
         <ol className="space-y-2 rounded-2xl border border-line bg-surface p-5 text-sm">
           <li className="font-bold">What happens next</li>
           <li>1. The organisers review your application.</li>

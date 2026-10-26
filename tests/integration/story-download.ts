@@ -56,7 +56,7 @@ async function main() {
     await page.getByLabel("Contact").fill("x");
     // a photo means the card must be reviewed; skip the (slow) background removal
     const skip = page.getByRole("button", { name: "Use my photo as it is" });
-    if (await skip.count()) await skip.click();
+    await skip.waitFor({ timeout: 20000 }).then(() => skip.click(), () => {});
     await page.getByRole("checkbox").check();
     await page.getByRole("button", { name: "Submit application" }).click();
     await page.getByLabel("Your private edit link").waitFor(T);
@@ -79,6 +79,7 @@ async function main() {
       return Array.from(g.getImageData(300, 1330, 1, 1).data);
     }, dataUrl);
     assert.ok(px[0] > 90 && px[1] < 60, `the card's red face is in the image (got rgb ${px.slice(0, 3)})`);
+    fs.copyFileSync(file2, "/tmp/story-check.png");
     fs.rmSync(file2, { force: true });
     await page.getByRole("link", { name: /Open Instagram/ }).waitFor(T);
     await page.getByRole("button", { name: /Copy a caption/ }).waitFor(T);
