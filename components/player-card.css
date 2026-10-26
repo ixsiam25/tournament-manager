@@ -1,30 +1,24 @@
-/* Player card (preview). Self-contained so it renders the same in both
-   themes. The gold tier is the default look; other tiers arrive with the
-   rating system. */
+/* Player card. Built from layered art (base + photo + frame overlay) with the
+   text laid on top; every coordinate comes from the 454x710 art, scaled to a
+   230px-wide card. Self-contained so it renders the same in both themes.
+   Fonts: Cinzel (engraved, matches the gold X) for names, Oswald for numbers. */
 .pcard {
+  --gold: #f3dd9c;
+  --gold-deep: #c9a24a;
   position: relative;
   width: 230px;
-  height: 330px;
+  height: 360px;
   margin: 0 auto;
-  color: #2a1d05;
-  background: linear-gradient(160deg, #fbe9a4, #c79a2b 70%);
-  clip-path: polygon(50% 0, 92% 6%, 100% 14%, 100% 88%, 50% 100%, 0 88%, 0 14%, 8% 6%);
+  color: var(--gold);
   user-select: none;
+  font-family: "Oswald", "Arial Narrow", sans-serif;
 }
-.pcard--silver { background: linear-gradient(160deg, #eef0f3, #9aa3ad 70%); color: #1c2229; }
-.pcard--bronze { background: linear-gradient(160deg, #e3b58a, #9a6238 70%); color: #2b1608; }
-.pcard--special { background: linear-gradient(160deg, #7a1128, #2a0710 75%); color: #f6dfa8; }
-.pcard__ovr { position: absolute; left: 30px; top: 44px; font: 800 34px/1 Georgia, serif; }
-.pcard__form { position: absolute; left: 62px; top: 56px; font: 800 12px/1 sans-serif; color: #1d6b3a; }
-.pcard__pos { position: absolute; left: 32px; top: 86px; font: 700 14px/1 sans-serif; }
-.pcard__badge {
-  position: absolute; left: 30px; top: 108px; width: 30px; height: 20px;
-  border: 1.5px solid currentColor; border-radius: 2px;
-  font: 700 9px/18px sans-serif; text-align: center;
-}
+.pcard__art { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .pcard__photo {
-  position: absolute; right: 20px; top: 34px; width: 130px; height: 150px;
+  position: absolute; left: 10px; top: 32px; width: 215px; height: 215px;
   overflow: hidden; touch-action: none;
+  /* follows the shield's inner edge so an uncut photo never spills past the frame */
+  clip-path: polygon(38.6px 0px, 31.0px 6px, 23.4px 12px, 10.3px 18px, 0.6px 24px, 0.6px 30px, 0.6px 36px, 0.6px 42px, 0.6px 48px, 0.6px 54px, 0.6px 60px, 0.6px 66px, 0.6px 72px, 0.6px 78px, 0.6px 84px, 0.6px 90px, 0.6px 96px, 0.6px 102px, 0.6px 108px, 0.6px 114px, 0.6px 120px, 0.6px 126px, 0.6px 132px, 0.6px 138px, 0.6px 144px, 0.6px 150px, 0.6px 156px, 0.6px 162px, 1.1px 168px, 1.1px 174px, 1.1px 180px, 1.1px 186px, 1.1px 192px, 1.1px 198px, 1.1px 204px, 1.1px 210px, 213.9px 210px, 213.9px 204px, 213.9px 198px, 213.9px 192px, 213.9px 186px, 213.9px 180px, 213.9px 174px, 213.9px 168px, 213.9px 162px, 213.9px 156px, 213.9px 150px, 213.9px 144px, 213.9px 138px, 213.9px 132px, 213.9px 126px, 213.9px 120px, 213.9px 114px, 213.9px 108px, 213.9px 102px, 213.9px 96px, 213.9px 90px, 213.9px 84px, 213.9px 78px, 213.9px 72px, 213.9px 66px, 213.9px 60px, 213.9px 54px, 213.9px 48px, 213.9px 42px, 213.9px 36px, 214.4px 30px, 214.4px 24px, 204.8px 18px, 191.6px 12px, 183.5px 6px, 175.9px 0px);
 }
 .pcard__photo--drag { cursor: grab; }
 .pcard__photo img {
@@ -32,17 +26,38 @@
   max-width: none; object-fit: cover; pointer-events: none;
 }
 .pcard__photo--cutout img { object-fit: contain; object-position: center bottom; }
-.pcard__placeholder { width: 100%; height: 100%; opacity: 0.35; }
+.pcard__placeholder { width: 78%; height: 78%; margin: 22% 11% 0; opacity: 0.16; color: #f3dd9c; }
+
+/* left strip: logo (in the art), then position and semester between/below the gold rules */
+.pcard__pos {
+  position: absolute; left: 24px; width: 53px; top: 136px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  font: 600 17px/1 "Oswald", sans-serif; letter-spacing: 0.06em; text-shadow: 0 1px 2px rgba(0,0,0,.45);
+}
+.pcard__sem {
+  position: absolute; left: 20px; width: 61px; top: 173px; text-align: center;
+  font: 500 9.5px/1.1 "Oswald", sans-serif; letter-spacing: 0.08em; text-shadow: 0 1px 2px rgba(0,0,0,.45);
+}
+/* overall, mirrored on the right */
+.pcard__ovr {
+  position: absolute; right: 22px; top: 40px; width: 50px; text-align: center;
+  font: 600 27px/1 "Oswald", sans-serif; text-shadow: 0 1px 3px rgba(0,0,0,.5);
+}
+.pcard__ovr small { display: block; margin-top: 3px; font: 500 8px/1 "Oswald", sans-serif; letter-spacing: 0.25em; opacity: 0.85; }
+.pcard__ovr em { display: block; margin-top: 2px; font: 600 10px/1 "Oswald", sans-serif; font-style: normal; color: #9be3a5; }
+
 .pcard__name {
-  position: absolute; left: 8px; right: 8px; top: 188px; text-align: center;
-  font: 800 17px/1.1 sans-serif; text-transform: uppercase; letter-spacing: 0.03em;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  position: absolute; left: 14px; right: 14px; top: 222px; height: 22px; text-align: center;
+  font: 800 16px/22px "Cinzel", Georgia, serif; text-transform: uppercase; letter-spacing: 0.06em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 3px rgba(0,0,0,.6);
 }
-.pcard__rule { position: absolute; left: 30px; right: 30px; top: 213px; border-top: 1.5px solid currentColor; opacity: 0.4; }
 .pcard__stats {
-  position: absolute; left: 34px; right: 34px; top: 222px;
-  display: grid; grid-template-columns: 1fr 1fr; gap: 1px 14px;
-  font: 700 13px/1.35 sans-serif;
+  position: absolute; left: 44px; right: 44px; top: 251px; height: 60px;
+  display: grid; grid-template-columns: 1fr 1fr; column-gap: 0;
 }
-.pcard__stats b { font-weight: 800; margin-right: 5px; }
-.pcard__foot { position: absolute; bottom: 34px; left: 0; right: 0; text-align: center; font: 600 9px/1 sans-serif; opacity: 0.7; }
+.pcard__col { display: flex; flex-direction: column; justify-content: space-between; padding: 0 9px; }
+.pcard__col--l { text-align: right; }
+.pcard__col--r { text-align: left; }
+.pcard__col span { display: block; font: 500 11px/1 "Oswald", sans-serif; letter-spacing: 0.08em; text-shadow: 0 1px 2px rgba(0,0,0,.5); }
+.pcard__col b { font-weight: 600; font-size: 14px; margin: 0 5px; color: #fff3cc; }
+.pcard__foot { position: absolute; top: 323px; left: 62px; right: 62px; text-align: center; font: 500 6.5px/1 "Oswald", sans-serif; letter-spacing: 0.14em; opacity: 0.75; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

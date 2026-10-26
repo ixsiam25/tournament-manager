@@ -45,8 +45,8 @@ assert.equal(m.tier, "gold", "form bonus lifts a 74 into gold");
 const capped = buildCardModel({ position: "FWD", ratings: { pac: 99, sho: 99, pas: 99, dri: 99, def: 99, phy: 99 }, stats: { goals: 9, assists: 0 } });
 assert.equal(capped.overall, 99);
 const unrated = buildCardModel({ position: "MID", ratings: null });
-assert.equal(unrated.overall, null);
-assert.equal(unrated.stats.every((s) => s.value === null), true);
+assert.equal(unrated.overall, 89, "unrated cards carry the default rating");
+assert.equal(unrated.stats.every((s) => s.value === 89), true);
 assert.equal(unrated.bonus, 0, "no bonus on an unrated card");
 
 console.log("✓ playerCard: weights, overall, tiers, sanitising, form bonus and card model");

@@ -103,7 +103,7 @@ async function main() {
 
     // ---- 3. organiser rates the players ----
     await adminPage.goto(`${base}/admin/cards`);
-    await adminPage.getByRole("button", { name: /Start unrated players at 60/ }).click();
+    await adminPage.getByRole("button", { name: /Start unrated players at 89/ }).click();
     await adminPage.getByText(/Set 4 unrated player/).waitFor(T);
     await adminPage.locator("li", { hasText: "ZZ Journey Alif" }).getByRole("button").first().click();
     for (const [k, v] of [["PAC", 88], ["SHO", 90], ["PAS", 75], ["DRI", 86], ["DEF", 45], ["PHY", 78]] as const) await adminPage.getByLabel(`${k} of ZZ Journey Alif`).fill(String(v));
@@ -125,7 +125,7 @@ async function main() {
     await pub.getByLabel("Download ZZ Journey Alif's card as an image").waitFor(T);
     assert.equal(await pub.locator("figure").count(), 4);
     const alifCard = pub.locator("figure", { hasText: "ZZ JOURNEY ALIF" });
-    assert.equal((await alifCard.locator(".pcard__ovr").innerText()).trim(), "85", "88/90/75/86/45/78 as a forward = 85");
+    assert.equal((await alifCard.locator(".pcard__ovrn").innerText()).trim(), "85", "88/90/75/86/45/78 as a forward = 85");
     const img = alifCard.locator(".pcard__photo--cutout img");
     assert.equal(await img.count(), 1, "the card shows the cut-out");
     assert.ok((await img.evaluate((el: HTMLImageElement) => el.decode().then(() => el.naturalWidth))) > 50, "the cut-out image loads");

@@ -13,7 +13,8 @@ function loadImage(src: string): Promise<HTMLImageElement> {
 
 /** The card itself as a transparent PNG (3x for crispness). */
 export async function cardPng(card: HTMLElement): Promise<string> {
-  return toPng(card, { pixelRatio: 3, cacheBust: true });
+  // no cacheBust: it appends ?timestamp to every image URL, which breaks blob: previews
+  return toPng(card, { pixelRatio: 3 });
 }
 
 /**
@@ -21,6 +22,7 @@ export async function cardPng(card: HTMLElement): Promise<string> {
  * stories use — so it can be posted as-is.
  */
 export async function storyPng(card: HTMLElement, { title, subtitle }: { title: string; subtitle: string }): Promise<string> {
+  await Promise.all([document.fonts.load('800 64px "Cinzel"'), document.fonts.load('600 40px "Oswald"')]).catch(() => {});
   const img = await loadImage(await cardPng(card));
   const canvas = document.createElement("canvas");
   canvas.width = STORY.w;
@@ -28,32 +30,41 @@ export async function storyPng(card: HTMLElement, { title, subtitle }: { title: 
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("canvas unavailable");
 
-  const bg = ctx.createLinearGradient(0, 0, STORY.w, STORY.h);
-  bg.addColorStop(0, "#7a1128");
-  bg.addColorStop(0.55, "#2a0d16");
-  bg.addColorStop(1, "#0f0b0a");
-  ctx.fillStyle = bg;
+  try {
+    const marble = await loadImage("/card/marble.jpg");
+    const k = Math.max(STORY.w / marble.width, STORY.h / marble.height);
+    ctx.drawImage(marble, (STORY.w - marble.width * k) / 2, (STORY.h - marble.height * k) / 2, marble.width * k, marble.height * k);
+  } catch {
+    ctx.fillStyle = "#3a0b14";
+    ctx.fillRect(0, 0, STORY.w, STORY.h);
+  }
+  // darken, then a vignette and a soft spotlight so the card stands out
+  ctx.fillStyle = "rgba(12,3,5,0.55)";
   ctx.fillRect(0, 0, STORY.w, STORY.h);
-  // soft spotlight behind the card
-  const glow = ctx.createRadialGradient(STORY.w / 2, 930, 60, STORY.w / 2, 930, 720);
-  glow.addColorStop(0, "rgba(255,255,255,0.22)");
-  glow.addColorStop(1, "rgba(255,255,255,0)");
+  const vignette = ctx.createRadialGradient(STORY.w / 2, 960, 300, STORY.w / 2, 960, 1250);
+  vignette.addColorStop(0, "rgba(0,0,0,0)");
+  vignette.addColorStop(1, "rgba(5,1,2,0.8)");
+  ctx.fillStyle = vignette;
+  ctx.fillRect(0, 0, STORY.w, STORY.h);
+  const glow = ctx.createRadialGradient(STORY.w / 2, 960, 40, STORY.w / 2, 960, 640);
+  glow.addColorStop(0, "rgba(255,214,140,0.28)");
+  glow.addColorStop(1, "rgba(255,214,140,0)");
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, STORY.w, STORY.h);
 
-  const cardW = 800;
+  const cardW = 780;
   const cardH = Math.round((img.height / img.width) * cardW);
   ctx.drawImage(img, (STORY.w - cardW) / 2, (STORY.h - cardH) / 2 + 20, cardW, cardH);
 
   ctx.textAlign = "center";
-  ctx.fillStyle = "#ffffff";
-  ctx.font = "800 64px system-ui, -apple-system, 'Segoe UI', sans-serif";
+  ctx.fillStyle = "#f3dd9c";
+  ctx.font = "800 64px Cinzel, Georgia, serif";
   ctx.fillText(title.toUpperCase(), STORY.w / 2, 260);
-  ctx.fillStyle = "rgba(255,255,255,0.75)";
-  ctx.font = "500 40px system-ui, -apple-system, 'Segoe UI', sans-serif";
+  ctx.fillStyle = "rgba(255,255,255,0.8)";
+  ctx.font = "500 40px Oswald, system-ui, sans-serif";
   ctx.fillText(subtitle, STORY.w / 2, 330);
   ctx.fillStyle = "rgba(255,255,255,0.6)";
-  ctx.font = "600 36px system-ui, -apple-system, 'Segoe UI', sans-serif";
+  ctx.font = "500 36px Oswald, system-ui, sans-serif";
   ctx.fillText(window.location.host, STORY.w / 2, STORY.h - 150);
   return canvas.toDataURL("image/png");
 }

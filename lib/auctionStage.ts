@@ -9,7 +9,7 @@ export const RESULT_SECONDS = 12;
 
 /** Only what the room may see: names. Budgets and squad sizes stay on the organiser's console. */
 export type StageTeam = { id: string; name: string };
-export type StageCard = Pick<CardView, "name" | "model" | "imageUrl" | "isCutout" | "framing" | "badge" | "position">;
+export type StageCard = Pick<CardView, "name" | "model" | "imageUrl" | "isCutout" | "framing" | "badge" | "semester" | "position">;
 
 export type StageState =
   | { phase: "off" }
@@ -43,6 +43,7 @@ const toStageCard = (c: CardView): StageCard => ({
   isCutout: c.isCutout,
   framing: c.framing,
   badge: c.badge,
+  semester: c.semester,
   position: c.position,
 });
 

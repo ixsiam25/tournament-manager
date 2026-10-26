@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { PlayerCardView } from "@/components/PlayerCardView";
 import { removeBackgroundInWorker } from "@/lib/cutoutClient";
 import { PHOTO_OFFSET_RANGE, PHOTO_ZOOM_RANGE } from "@/lib/applicationConfig";
-import { RATING_MAX, RATING_MIN, STAT_LABELS, TIERS, buildCardModel, statKeysFor, type Position, type Ratings, type StatKey, type Tier } from "@/lib/playerCard";
+import { DEFAULT_RATING, RATING_MAX, RATING_MIN, STAT_LABELS, TIERS, buildCardModel, statKeysFor, type Position, type Ratings, type StatKey, type Tier } from "@/lib/playerCard";
 import type { CardView } from "@/lib/cardData";
 
 const FIELD = "rounded-lg border border-line bg-background px-2 py-1 text-sm outline-none focus:border-pitch";
@@ -39,21 +39,21 @@ export function CardEditor() {
   const visible = cards.filter(
     (c) =>
       (teamFilter === "" ? true : teamFilter === "__pool" ? !c.teamId : c.teamId === teamFilter) &&
-      (!unratedOnly || c.model.base === null) &&
+      (!unratedOnly || !c.model.rated) &&
       (!query.trim() || c.name.toLowerCase().includes(query.trim().toLowerCase())),
   );
-  const unrated = cards.filter((c) => c.model.base === null).length;
+  const unrated = cards.filter((c) => !c.model.rated).length;
 
   async function bulkFill() {
     setMessage(null);
     let done = 0;
-    for (const c of cards.filter((x) => x.model.base === null)) {
-      const ratings = Object.fromEntries(statKeysFor(c.position).map((k) => [k, 60]));
+    for (const c of cards.filter((x) => !x.model.rated)) {
+      const ratings = Object.fromEntries(statKeysFor(c.position).map((k) => [k, DEFAULT_RATING]));
       const res = await fetch(`/api/admin/players/${c.id}/card`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ratings }) });
       if (!res.ok) break;
       done++;
     }
-    setMessage({ ok: true, text: `Set ${done} unrated player(s) to a starting 60 — adjust them below.` });
+    setMessage({ ok: true, text: `Set ${done} unrated player(s) to a starting ${DEFAULT_RATING} — adjust them below.` });
     await load();
   }
 
@@ -79,7 +79,7 @@ export function CardEditor() {
         </label>
         {!frozen && unrated > 0 && (
           <button onClick={bulkFill} className="ml-auto rounded-full border border-pitch px-4 py-1.5 text-sm font-bold text-pitch">
-            Start unrated players at 60
+            Start unrated players at {DEFAULT_RATING}
           </button>
         )}
       </div>
@@ -176,7 +176,7 @@ function CardRow({ card, seasonName, frozen, onSaved }: { card: CardView; season
   return (
     <div className="grid gap-6 border-t border-line bg-background px-4 py-5 md:grid-cols-[15rem_1fr]">
       <div>
-        <PlayerCardView name={card.name} model={model} imageUrl={card.imageUrl} isCutout={card.isCutout} framing={framing} badge={card.badge} footer={seasonName.toUpperCase()} onFramingChange={frozen ? undefined : setFraming} />
+        <PlayerCardView name={card.name} model={model} imageUrl={card.imageUrl} isCutout={card.isCutout} framing={framing} semester={card.semester} footer={seasonName.toUpperCase()} onFramingChange={frozen ? undefined : setFraming} />
         <p className="mt-2 text-center text-[11px] text-muted-foreground">Drag the photo to re-frame it.</p>
       </div>
       <div className="space-y-4">

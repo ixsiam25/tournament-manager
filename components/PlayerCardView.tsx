@@ -26,20 +26,20 @@ export const PlayerCardView = forwardRef<
     isCutout?: boolean;
     framing: CardFraming;
     badge?: string;
+    /** Short semester text under the position, e.g. "5TH SEM" or "ALUMNI". */
+    semester?: string | null;
     footer?: string;
     onFramingChange?: (next: CardFraming) => void;
   }
->(function PlayerCardView({ name, model, imageUrl, isCutout = false, framing, badge, footer, onFramingChange }, ref) {
+>(function PlayerCardView({ name, model, imageUrl, isCutout = false, framing, semester, footer, onFramingChange }, ref) {
   const drag = useRef<{ x: number; y: number } | null>(null);
   const clamp = (n: number) => Math.min(PHOTO_OFFSET_RANGE.max, Math.max(PHOTO_OFFSET_RANGE.min, n));
   const draggable = !!imageUrl && !!onFramingChange;
 
   return (
     <div ref={ref} className={`pcard pcard--${model.tier}`} aria-label={`Player card: ${name || "new player"}`}>
-      <div className="pcard__ovr">{model.overall ?? "—"}</div>
-      {model.bonus > 0 && <div className="pcard__form" title="Form bonus from goals and assists">+{model.bonus}</div>}
-      <div className="pcard__pos">{model.position ?? "—"}</div>
-      <div className="pcard__badge">{(badge ?? "BFL").slice(0, 4)}</div>
+      {/* eslint-disable-next-line @next/next/no-img-element -- static art layers; the PNG export needs plain <img> */}
+      <img className="pcard__art" src="/card/base.png" alt="" draggable={false} />
       <div
         className={"pcard__photo" + (draggable ? " pcard__photo--drag" : "") + (isCutout ? " pcard__photo--cutout" : "")}
         onPointerDown={(e) => {
@@ -69,15 +69,33 @@ export const PlayerCardView = forwardRef<
           </svg>
         )}
       </div>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img className="pcard__art" src="/card/top.png" alt="" draggable={false} />
+      <div className="pcard__pos">{model.position ?? "—"}</div>
+      <div className="pcard__sem">{semester ?? "—"}</div>
+      <div className="pcard__ovr">
+        <span className="pcard__ovrn">{model.overall ?? "—"}</span>
+        <small>OVR</small>
+        {model.bonus > 0 && <em className="pcard__form" title="Form bonus from goals and assists">+{model.bonus}</em>}
+      </div>
       <div className="pcard__name">{name.trim() || "Your name"}</div>
-      <div className="pcard__rule" />
       <div className="pcard__stats">
-        {model.stats.map((s) => (
-          <span key={s.key}>
-            <b>{s.value ?? "—"}</b>
-            {s.label}
-          </span>
-        ))}
+        <div className="pcard__col pcard__col--l">
+          {model.stats.slice(0, 3).map((st) => (
+            <span key={st.key}>
+              <b>{st.value ?? "—"}</b>
+              {st.label}
+            </span>
+          ))}
+        </div>
+        <div className="pcard__col pcard__col--r">
+          {model.stats.slice(3).map((st) => (
+            <span key={st.key}>
+              <b>{st.value ?? "—"}</b>
+              {st.label}
+            </span>
+          ))}
+        </div>
       </div>
       {footer && <div className="pcard__foot">{footer}</div>}
     </div>

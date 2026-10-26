@@ -19,6 +19,8 @@ export const STAT_LABELS: Record<StatKey, string> = {
   div: "DIV", han: "HAN", kic: "KIC", ref: "REF", spe: "SPE", pos: "POS",
 };
 
+/** Until organisers rate players, every card shows this rating (temporary league-wide default). */
+export const DEFAULT_RATING = 89;
 export const RATING_MIN = 30;
 export const RATING_MAX = 99;
 
@@ -86,6 +88,8 @@ export type CardModel = {
   position: Position | null;
   /** Base (organiser) overall, null while unrated. */
   base: number | null;
+  /** True once an organiser has saved ratings for this player (until then the default shows). */
+  rated: boolean;
   bonus: number;
   /** What the card displays: base + form bonus, capped at 99. */
   overall: number | null;
@@ -100,13 +104,16 @@ export function buildCardModel(input: {
   cardTier?: string | null;
   stats?: { goals: number; assists: number };
 }): CardModel {
-  const ratings = sanitizeRatings(input.ratings, input.position);
+  const stored = sanitizeRatings(input.ratings, input.position);
+  const ratings: Ratings = Object.fromEntries(statKeysFor(input.position).map((key) => [key, stored[key] ?? DEFAULT_RATING]));
   const base = computeOverall(input.position, ratings);
+  const rated = statKeysFor(input.position).every((k) => stored[k] !== undefined);
   const bonus = base === null ? 0 : formBonus(input.position, input.stats ?? { goals: 0, assists: 0 });
   const overall = base === null ? null : Math.min(RATING_MAX, base + bonus);
   return {
     position: input.position,
     base,
+    rated,
     bonus,
     overall,
     tier: tierFor(overall, input.cardTier),

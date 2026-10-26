@@ -47,6 +47,9 @@ async function main() {
     const dl = page.getByRole("button", { name: /Download for stories/ });
     assert.equal(await dl.isDisabled(), true, "disabled until a name is typed");
     await page.getByLabel("Name", { exact: true }).fill("ZZ Story Player");
+    // a chosen photo (a blob: URL) must not break the export
+    const photo = fs.readdirSync("public/photos").find((f) => f.endsWith(".jpg"));
+    if (photo) await page.setInputFiles('input[type="file"]', `public/photos/${photo}`);
     assert.equal(await dl.isDisabled(), false);
     const [download] = await Promise.all([page.waitForEvent("download", { timeout: 60000 }), dl.click()]);
     const file = `/tmp/zz-story-${stamp}.png`;

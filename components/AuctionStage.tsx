@@ -38,7 +38,7 @@ export function AuctionStage({ initial }: { initial: StageState }) {
   }, []);
 
   return (
-    <main className="min-h-screen bg-[#0d0a0a] px-8 py-6 text-white" data-phase={state.phase}>
+    <main className="min-h-screen card-stage px-8 py-6 text-white" data-phase={state.phase}>
       {offline && <p className="fixed right-4 top-3 rounded bg-amber-500 px-2 py-1 text-xs font-bold text-black">Reconnecting…</p>}
       <Screen state={state} />
     </main>
@@ -182,9 +182,9 @@ function Screen({ state }: { state: StageState }) {
 
 function BigCard({ card }: { card: StageCard }) {
   return (
-    <div style={{ width: 230 * CARD_SCALE, height: 330 * CARD_SCALE }} className="shrink-0">
+    <div style={{ width: 230 * CARD_SCALE, height: 360 * CARD_SCALE }} className="shrink-0">
       <div style={{ transform: `scale(${CARD_SCALE})`, transformOrigin: "top left", width: 230 }}>
-        <PlayerCardView name={card.name} model={card.model} imageUrl={card.imageUrl} isCutout={card.isCutout} framing={card.framing} badge={card.badge} />
+        <PlayerCardView name={card.name} model={card.model} imageUrl={card.imageUrl} isCutout={card.isCutout} framing={card.framing} semester={card.semester} />
       </div>
     </div>
   );

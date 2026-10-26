@@ -36,6 +36,9 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${anton.variable} h-full antialiased`}
     >
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800&family=Oswald:wght@500;600&display=swap" rel="stylesheet" />
         <script dangerouslySetInnerHTML={{ __html: noFlashThemeScript }} />
         <noscript>
           {/* Scroll-reveal elements ship with opacity:0 baked into the HTML.

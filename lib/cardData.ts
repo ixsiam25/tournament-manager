@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/db";
+import { semesterLabel } from "@/lib/cardLabels";
+import { resolveApplicationConfig } from "@/lib/applicationConfig";
 import { buildCardModel, type CardModel, type Position, type Ratings, type Tier } from "@/lib/playerCard";
 
 export type CardView = {
@@ -10,6 +12,8 @@ export type CardView = {
   badge: string;
   number: number;
   position: Position | null;
+  /** Short semester text for the card: "5TH SEM", "ALUMNI". */
+  semester: string | null;
   model: CardModel;
   /** Raw ratings + override, for the organiser editor. */
   ratings: Ratings;
@@ -67,6 +71,13 @@ export async function getCards(seasonId: string, opts: { includePool?: boolean; 
   });
   const stat = (playerId: string, type: "GOAL" | "ASSIST") => events.find((e) => e.playerId === playerId && e.type === type)?._count._all ?? 0;
 
+  const [season, regs] = await Promise.all([
+    prisma.season.findUnique({ where: { id: seasonId }, select: { applicationConfig: true, startsOn: true } }),
+    prisma.registration.findMany({ where: { seasonId, personId: { in: players.map((p) => p.personId) }, status: "APPROVED" }, select: { personId: true, affiliation: true } }),
+  ]);
+  const meaning = resolveApplicationConfig(season?.applicationConfig).batchMeaning;
+  const affiliation = new Map(regs.map((r) => [r.personId!, r.affiliation]));
+
   return players.map((p) => {
     const goals = stat(p.id, "GOAL");
     const assists = stat(p.id, "ASSIST");
@@ -81,6 +92,7 @@ export async function getCards(seasonId: string, opts: { includePool?: boolean; 
       badge: badgeFor(p.team),
       number: p.jerseyNumber,
       position: p.position,
+      semester: semesterLabel(affiliation.get(p.personId), meaning, season?.startsOn ?? undefined),
       model,
       ratings: Object.fromEntries(model.stats.filter((s) => s.value !== null).map((s) => [s.key, s.value as number])) as Ratings,
       cardTier: (p.cardTier as Tier | null) ?? null,

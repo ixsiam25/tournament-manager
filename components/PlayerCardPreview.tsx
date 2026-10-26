@@ -14,6 +14,7 @@ export function PlayerCardPreview({
   isCutout,
   framing,
   footer,
+  semester,
   onFramingChange,
 }: {
   name: string;
@@ -22,6 +23,7 @@ export function PlayerCardPreview({
   isCutout?: boolean;
   framing: CardFraming;
   footer?: string;
+  semester?: string | null;
   onFramingChange?: (next: CardFraming) => void;
 }) {
   const model = buildCardModel({ position: (position as Position | null) ?? null, ratings: null });
@@ -33,6 +35,7 @@ export function PlayerCardPreview({
       isCutout={isCutout}
       framing={framing}
       footer={footer}
+      semester={semester}
       onFramingChange={onFramingChange}
     />
   );

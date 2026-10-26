@@ -7,6 +7,7 @@ import { checkPhoto, type PhotoCheck } from "@/lib/photoCheck";
 import { PHOTO_OFFSET_RANGE, PHOTO_ZOOM_RANGE, type ApplicationConfig } from "@/lib/applicationConfig";
 import { PlayerCardPreview, type CardFraming } from "@/components/PlayerCardPreview";
 import { BatchPicker } from "@/components/BatchPicker";
+import { semesterLabel } from "@/lib/cardLabels";
 import { cardFileName, downloadDataUrl, storyPng } from "@/lib/cardImage";
 
 export type ApplicationValues = {
@@ -422,7 +423,7 @@ export function ApplicationForm({
         </button>
       </div>
 
-      <aside className="rounded-2xl bg-gradient-to-b from-[#1b1412] to-[#34161f] p-4 text-white shadow-lg md:sticky md:top-20 md:self-start">
+      <aside className="card-stage rounded-2xl p-4 text-white shadow-lg md:sticky md:top-20 md:self-start">
         <p className="mb-3 text-center text-[11px] font-bold uppercase tracking-[0.2em] text-white/60">Your player card</p>
         <div ref={cardBox}>
         <PlayerCardPreview
@@ -432,6 +433,7 @@ export function ApplicationForm({
           isCutout={!!cutoutSrc}
           framing={framing}
           footer={seasonName.toUpperCase()}
+          semester={semesterLabel(v.affiliation, config.batchMeaning)}
           onFramingChange={setFraming}
         />
         </div>

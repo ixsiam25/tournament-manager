@@ -80,7 +80,9 @@ function GalleryCard({ card, seasonName }: { card: CardView; seasonName: string 
 
   return (
     <figure className="m-0 text-center">
-      <PlayerCardView ref={ref} name={card.name} model={card.model} imageUrl={card.imageUrl} isCutout={card.isCutout} framing={card.framing} badge={card.badge} footer={seasonName.toUpperCase()} />
+      <div className="card-stage rounded-2xl px-3 py-5">
+        <PlayerCardView ref={ref} name={card.name} model={card.model} imageUrl={card.imageUrl} isCutout={card.isCutout} framing={card.framing} semester={card.semester} footer={seasonName.toUpperCase()} />
+      </div>
       <figcaption className="mt-2 text-xs text-muted-foreground">
         {card.teamName}
         <button onClick={() => download("card")} disabled={busy} className="ml-3 font-bold text-pitch underline disabled:opacity-50" aria-label={`Download ${card.name}'s card as an image`}>

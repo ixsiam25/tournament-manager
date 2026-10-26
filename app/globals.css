@@ -242,3 +242,12 @@ body {
     @apply border-border outline-ring/50;
   }
 }
+
+/* The marble-and-gold backdrop the player card is shown on (application form,
+   auction screen, galleries): darkened so the red card stands out against it. */
+.card-stage {
+  background-color: #1a0709;
+  background-image: radial-gradient(ellipse at 50% 38%, rgba(0, 0, 0, 0) 0%, rgba(8, 2, 4, 0.72) 80%), linear-gradient(rgba(12, 3, 5, 0.5), rgba(12, 3, 5, 0.62)), url("/card/marble.jpg");
+  background-size: cover;
+  background-position: center;
+}
