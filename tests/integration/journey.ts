@@ -125,7 +125,6 @@ async function main() {
     await pub.getByLabel("Download ZZ Journey Alif's card as an image").waitFor(T);
     assert.equal(await pub.locator("figure").count(), 4);
     const alifCard = pub.locator("figure", { hasText: "ZZ JOURNEY ALIF" });
-    assert.equal((await alifCard.locator(".pcard__ovrn").innerText()).trim(), "85", "88/90/75/86/45/78 as a forward = 85");
     const img = alifCard.locator(".pcard__photo--cutout img");
     assert.equal(await img.count(), 1, "the card shows the cut-out");
     assert.ok((await img.evaluate((el: HTMLImageElement) => el.decode().then(() => el.naturalWidth))) > 50, "the cut-out image loads");

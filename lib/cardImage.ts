@@ -13,7 +13,12 @@ function loadImage(src: string): Promise<HTMLImageElement> {
 
 /** The card itself as a transparent PNG (3x for crispness). */
 export async function cardPng(card: HTMLElement): Promise<string> {
+  // Make sure every layer (frame art, photo) is decoded, and render once to warm up:
+  // the first html-to-image render often comes out without its images.
+  await Promise.all([...card.querySelectorAll("img")].map((i) => i.decode().catch(() => {})));
+  await document.fonts.ready.catch(() => {});
   // no cacheBust: it appends ?timestamp to every image URL, which breaks blob: previews
+  await toPng(card, { pixelRatio: 1 }).catch(() => {});
   return toPng(card, { pixelRatio: 3 });
 }
 

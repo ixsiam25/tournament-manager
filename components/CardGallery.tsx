@@ -1,10 +1,9 @@
 "use client";
 
-import { cardFileName, downloadDataUrl, storyPng } from "@/lib/cardImage";
+import { cardFileName, cardPng, downloadDataUrl, storyPng } from "@/lib/cardImage";
 import { EmptyState } from "@/components/EmptyState";
 import { plural } from "@/lib/plural";
 import { useMemo, useRef, useState } from "react";
-import { toPng } from "html-to-image";
 import { PlayerCardView } from "@/components/PlayerCardView";
 import type { CardView } from "@/lib/cardData";
 
@@ -71,7 +70,7 @@ function GalleryCard({ card, seasonName }: { card: CardView; seasonName: string 
     if (!ref.current) return;
     setBusy(true);
     try {
-      const url = kind === "story" ? await storyPng(ref.current, { title: card.name, subtitle: `${seasonName} · ${card.teamName}` }) : await toPng(ref.current, { pixelRatio: 3, cacheBust: true });
+      const url = kind === "story" ? await storyPng(ref.current, { title: card.name, subtitle: `${seasonName} · ${card.teamName}` }) : await cardPng(ref.current);
       downloadDataUrl(url, cardFileName(card.name, kind));
     } finally {
       setBusy(false);

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ApplicationForm } from "@/components/ApplicationForm";
-import { cardFileName, downloadDataUrl } from "@/lib/cardImage";
+import { StoryShare } from "@/components/StoryShare";
 import { DEFAULT_APPLICATION_CONFIG, type ApplicationConfig } from "@/lib/applicationConfig";
 
 /** Public "apply to play" experience: loads the season's form configuration,
@@ -83,21 +83,7 @@ export function RegistrationForm() {
             </button>
           </div>
         </div>
-        {story && (
-          <div className="rounded-2xl border border-line bg-surface p-5 text-center">
-            <p className="font-bold">Share your card</p>
-            <p className="mb-3 text-sm text-muted-foreground">Post it on your story and tag the league.</p>
-            {/* eslint-disable-next-line @next/next/no-img-element -- a generated data URL */}
-            <img src={story} alt="Your player card, story size" className="mx-auto mb-4 w-44 rounded-xl shadow-lg" />
-            <button
-              type="button"
-              onClick={() => downloadDataUrl(story, cardFileName(sharedName, "story"))}
-              className="rounded-full bg-pitch px-6 py-3 text-sm font-bold text-white"
-            >
-              ⬇ Download for stories
-            </button>
-          </div>
-        )}
+        {story && <StoryShare image={story} name={sharedName} seasonName={seasonName ?? ""} />}
         <ol className="space-y-2 rounded-2xl border border-line bg-surface p-5 text-sm">
           <li className="font-bold">What happens next</li>
           <li>1. The organisers review your application.</li>

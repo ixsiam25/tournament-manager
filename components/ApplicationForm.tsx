@@ -8,7 +8,7 @@ import { PHOTO_OFFSET_RANGE, PHOTO_ZOOM_RANGE, type ApplicationConfig } from "@/
 import { PlayerCardPreview, type CardFraming } from "@/components/PlayerCardPreview";
 import { BatchPicker } from "@/components/BatchPicker";
 import { semesterLabel } from "@/lib/cardLabels";
-import { cardFileName, downloadDataUrl, storyPng } from "@/lib/cardImage";
+import { storyPng } from "@/lib/cardImage";
 
 export type ApplicationValues = {
   name: string;
@@ -164,7 +164,6 @@ export function ApplicationForm({
   const [error, setError] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
   const cardBox = useRef<HTMLDivElement>(null);
-  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -235,14 +234,6 @@ export function ApplicationForm({
     } catch {
       return null;
     }
-  }
-
-  async function downloadStory() {
-    setSaving(true);
-    const url = await makeStory();
-    setSaving(false);
-    if (url) downloadDataUrl(url, cardFileName(v.name, "story"));
-    else setError("Couldn't make the image — try again in a moment.");
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -437,15 +428,6 @@ export function ApplicationForm({
           onFramingChange={setFraming}
         />
         </div>
-        <button
-          type="button"
-          onClick={downloadStory}
-          disabled={saving || !v.name.trim()}
-          className="mt-3 w-full rounded-full border border-white/30 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10 disabled:opacity-40"
-          title={v.name.trim() ? "Save your card as a story-size image" : "Type your name first"}
-        >
-          {saving ? "Preparing…" : "⬇ Download for stories"}
-        </button>
         {file && cutout.status === "running" && (
           <div className="mt-3 text-xs" role="status">
             <p className="mb-1">Creating your card… {cutout.progress > 0 ? `${Math.round(cutout.progress * 100)}%` : "starting"}</p>

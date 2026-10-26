@@ -43,20 +43,11 @@ async function main() {
     await page.getByRole("button", { name: "Choose photo" }).click();
     await chooser;
 
-    // saving needs a name
-    const dl = page.getByRole("button", { name: /Download for stories/ });
-    assert.equal(await dl.isDisabled(), true, "disabled until a name is typed");
     await page.getByLabel("Name", { exact: true }).fill("ZZ Story Player");
     // a chosen photo (a blob: URL) must not break the export
     const photo = fs.readdirSync("public/photos").find((f) => f.endsWith(".jpg"));
     if (photo) await page.setInputFiles('input[type="file"]', `public/photos/${photo}`);
-    assert.equal(await dl.isDisabled(), false);
-    const [download] = await Promise.all([page.waitForEvent("download", { timeout: 60000 }), dl.click()]);
-    const file = `/tmp/zz-story-${stamp}.png`;
-    await download.saveAs(file);
-    assert.deepEqual(pngSize(file), [1080, 1920], "story image is 1080x1920");
-    assert.ok(download.suggestedFilename().endsWith("-story.png"));
-    fs.rmSync(file, { force: true });
+    assert.equal(await page.getByRole("button", { name: /Download for stories/ }).count(), 0, "the download lives on the page after submitting");
 
     // submit, then the thank-you screen offers the same image
     await page.getByLabel("Student ID").fill(`zz-story-${stamp}`);
@@ -70,14 +61,30 @@ async function main() {
     await page.getByRole("button", { name: "Submit application" }).click();
     await page.getByLabel("Your private edit link").waitFor(T);
     await page.getByText("Share your card").waitFor(T);
-    const [again] = await Promise.all([page.waitForEvent("download", { timeout: 30000 }), page.getByRole("button", { name: /Download for stories/ }).click()]);
+    // the very first download must contain the card, not just the background
+    const [first] = await Promise.all([page.waitForEvent("download", { timeout: 30000 }), page.getByRole("button", { name: /Download for stories/ }).click()]);
     const file2 = `/tmp/zz-story2-${stamp}.png`;
-    await again.saveAs(file2);
+    await first.saveAs(file2);
     assert.deepEqual(pngSize(file2), [1080, 1920]);
+    const dataUrl = `data:image/png;base64,${fs.readFileSync(file2).toString("base64")}`;
+    const px = await page.evaluate(async (src) => {
+      const img = new Image();
+      img.src = src;
+      await img.decode();
+      const c = document.createElement("canvas");
+      c.width = img.width;
+      c.height = img.height;
+      const g = c.getContext("2d")!;
+      g.drawImage(img, 0, 0);
+      return Array.from(g.getImageData(300, 1330, 1, 1).data);
+    }, dataUrl);
+    assert.ok(px[0] > 90 && px[1] < 60, `the card's red face is in the image (got rgb ${px.slice(0, 3)})`);
     fs.rmSync(file2, { force: true });
+    await page.getByRole("link", { name: /Open Instagram/ }).waitFor(T);
+    await page.getByRole("button", { name: /Copy a caption/ }).waitFor(T);
 
     assert.deepEqual(errors, [], "no uncaught page errors");
-    console.log("✓ story download: photo button opens the picker, 1080x1920 image before and after submitting");
+    console.log("✓ story download: photo button opens the picker, story image with the card on the thank-you page, share options");
   } finally {
     await browser.close();
     await prisma.tournament.update({ where: { id: tournament.id }, data: { currentSeasonId: original } });

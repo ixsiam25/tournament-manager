@@ -72,12 +72,7 @@ export const PlayerCardView = forwardRef<
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img className="pcard__art" src="/card/top.png" alt="" draggable={false} />
       <div className="pcard__pos">{model.position ?? "—"}</div>
-      <div className="pcard__sem">{semester ?? "—"}</div>
-      <div className="pcard__ovr">
-        <span className="pcard__ovrn">{model.overall ?? "—"}</span>
-        <small>OVR</small>
-        {model.bonus > 0 && <em className="pcard__form" title="Form bonus from goals and assists">+{model.bonus}</em>}
-      </div>
+      <Semester text={semester} />
       <div className="pcard__name">{name.trim() || "Your name"}</div>
       <div className="pcard__stats">
         <div className="pcard__col pcard__col--l">
@@ -101,3 +96,15 @@ export const PlayerCardView = forwardRef<
     </div>
   );
 });
+
+/** "6TH SEM" → a big 6 with "TH SEM" beneath; "ALUMNI" / "NEW" stay as plain words. */
+function Semester({ text }: { text?: string | null }) {
+  const m = text ? /^(\d+)(ST|ND|RD|TH) SEM$/.exec(text) : null;
+  if (!m) return <div className="pcard__sem pcard__sem--word">{text ?? "—"}</div>;
+  return (
+    <div className="pcard__sem">
+      <span className="pcard__semn">{m[1]}</span>
+      <span className="pcard__semt">{m[2]} SEM</span>
+    </div>
+  );
+}

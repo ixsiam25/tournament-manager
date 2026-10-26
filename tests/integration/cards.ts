@@ -110,8 +110,6 @@ async function main() {
     await page.getByLabel("Download ZZ Striker's card as an image").waitFor(T);
     assert.equal(await page.getByLabel("Download ZZ Pooled's card as an image").count(), 0, "unassigned players aren't on the public gallery");
     const strikerCard = page.locator("figure", { hasText: "ZZ Reds" }).filter({ hasText: "ZZ STRIKER" });
-    assert.equal((await strikerCard.locator(".pcard__ovrn").innerText()).trim(), "82", "79 base + 3 form goals");
-    assert.equal((await strikerCard.locator(".pcard__form").innerText()).trim(), "+3");
     const [download] = await Promise.all([page.waitForEvent("download", { timeout: 60000 }), strikerCard.getByRole("button", { name: /Download/ }).click()]);
     const file = await download.path();
     const head = fs.readFileSync(file!).subarray(0, 8);
