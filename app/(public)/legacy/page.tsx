@@ -1,3 +1,4 @@
+import { plural } from "@/lib/plural";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { Crest } from "@/components/Crest";
@@ -101,7 +102,7 @@ export default async function LegacyIndexPage() {
                     )}
                     {stats?.summary && (
                       <span className="ml-auto text-xs text-muted-foreground">
-                        {stats.summary.teams} teams · {stats.summary.matches} matches
+                        {plural(stats.summary.teams, "team")} · {plural(stats.summary.matches, "match", "matches")}
                       </span>
                     )}
                   </div>

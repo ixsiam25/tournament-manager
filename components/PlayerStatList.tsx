@@ -31,7 +31,7 @@ export function PlayerStatList({
         {icon} {title}
       </h2>
       {visible.length === 0 ? (
-        <p className="p-5 text-sm text-muted-foreground">No data yet.</p>
+        <p className="p-5 text-sm text-muted-foreground">No goals scored yet — the first one will land here.</p>
       ) : (
         <ol className="divide-y-2 divide-line">
           {visible.map((row, i) => (

@@ -1,3 +1,4 @@
+import { EmptyState } from "@/components/EmptyState";
 import Image from "next/image";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
@@ -136,9 +137,7 @@ export default async function FixturesPage({
           );
         })}
         {filtered.length === 0 && (
-          <p className="text-muted-foreground">
-            {activeTeam ? `No fixtures found for ${activeTeam.name}.` : "No fixtures yet."}
-          </p>
+          <EmptyState icon="📅" title={activeTeam ? `No fixtures for ${activeTeam.name}` : "No fixtures yet"} text={activeTeam ? "Try another team, or show all teams." : "The match schedule will appear here once it's published."} />
         )}
       </div>
     </div>

@@ -1,3 +1,4 @@
+import { plural } from "@/lib/plural";
 import { prisma } from "@/lib/db";
 import type { Season } from "@/lib/generated/prisma/client";
 
@@ -43,8 +44,8 @@ export async function getSeasonProgress(season: Season): Promise<SetupStep[]> {
   const teamsReady =
     teams.length >= 2 && pool === 0 && teams.every((t) => t._count.players >= min) && (!isAuction || !!settings?.lockedAt);
   const teamsNote = isAuction
-    ? `${teams.length} teams · ${pool} player(s) not yet placed${settings?.lockedAt ? " · auction closed" : ""}`
-    : `${teams.length} team(s) · ${pool} player(s) waiting in the pool`;
+    ? `${plural(teams.length, "team")} · ${plural(pool, "player")} not yet placed${settings?.lockedAt ? " · auction closed" : ""}`
+    : `${plural(teams.length, "team")} · ${plural(pool, "player")} waiting in the pool`;
 
   const steps: Omit<SetupStep, "status">[] & { done?: boolean }[] = [];
   const add = (step: Omit<SetupStep, "status">, done: boolean) => steps.push({ ...step, done } as never);
@@ -84,7 +85,7 @@ export async function getSeasonProgress(season: Season): Promise<SetupStep[]> {
       {
         key: "teamsetup",
         title: "Set up the teams (name, logo, captain, manager)",
-        detail: !formationDone ? "Waiting for the formation choice" : teams.length >= 2 ? `${teams.length} team(s) created` : teams.length === 1 ? "1 team so far — add at least one more" : "No teams yet",
+        detail: !formationDone ? "Waiting for the formation choice" : teams.length >= 2 ? `${plural(teams.length, "team")} created` : teams.length === 1 ? "1 team so far — add at least one more" : "No teams yet",
         actions: formationDone ? [{ label: teams.length >= 2 ? "Edit the teams" : "Set up the teams", href: "/admin/season/teams", primary: teams.length < 2 }] : [],
       },
       formationDone && teams.length >= 2,

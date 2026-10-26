@@ -102,6 +102,8 @@ async function main() {
     await page.getByRole("checkbox").check();
     await page.getByRole("button", { name: "Submit application" }).click();
 
+    // the story image is prepared first, so the upload happens a moment after the click
+    await page.waitForFunction(() => ((window as unknown as { __uploads?: unknown[] }).__uploads ?? []).length > 0, undefined, { timeout: 30000 });
     const uploads = await page.evaluate(() => (window as unknown as { __uploads: [string, string][][] }).__uploads);
     const parts = Object.fromEntries(uploads[uploads.length - 1]);
     assert.match(parts.cutout ?? "", /^image\/png:\d+$/, "the cut-out PNG is uploaded with the application");

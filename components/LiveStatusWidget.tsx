@@ -1,5 +1,6 @@
 "use client";
 
+import { EmptyState } from "@/components/EmptyState";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -122,7 +123,7 @@ export function LiveStatusWidget({ initial }: { initial: LiveResponse }) {
       )}
       <RecentResults results={recentResults} />
       {!nextFixture && recentResults.length === 0 && (
-        <p className="text-center text-muted-foreground">No matches scheduled yet.</p>
+        <EmptyState icon="⚽" title="No matches scheduled yet" text="Kick-off times will appear here as soon as fixtures are published." />
       )}
     </div>
   );

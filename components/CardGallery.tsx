@@ -1,5 +1,8 @@
 "use client";
 
+import { cardFileName, downloadDataUrl, storyPng } from "@/lib/cardImage";
+import { EmptyState } from "@/components/EmptyState";
+import { plural } from "@/lib/plural";
 import { useMemo, useRef, useState } from "react";
 import { toPng } from "html-to-image";
 import { PlayerCardView } from "@/components/PlayerCardView";
@@ -25,7 +28,7 @@ export function CardGallery({ cards, seasonName }: { cards: CardView[]; seasonNa
           : (b.model.overall ?? -1) - (a.model.overall ?? -1) || a.name.localeCompare(b.name),
     );
 
-  if (cards.length === 0) return <p className="text-muted-foreground">No cards yet.</p>;
+  if (cards.length === 0) return <EmptyState icon="🃏" title="No cards yet" text="Player cards show up here once players are approved and rated." href="/register" cta="Apply to play" />;
 
   return (
     <div className="space-y-5">
@@ -49,7 +52,7 @@ export function CardGallery({ cards, seasonName }: { cards: CardView[]; seasonNa
           <option value="name">Name</option>
           <option value="team">Team</option>
         </select>
-        <span className="text-xs text-muted-foreground">{shown.length} cards</span>
+        <span className="text-xs text-muted-foreground">{plural(shown.length, "card")}</span>
       </div>
       <div className="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-8">
         {shown.map((c) => (
@@ -64,15 +67,12 @@ function GalleryCard({ card, seasonName }: { card: CardView; seasonName: string 
   const ref = useRef<HTMLDivElement>(null);
   const [busy, setBusy] = useState(false);
 
-  async function download() {
+  async function download(kind: "card" | "story" = "card") {
     if (!ref.current) return;
     setBusy(true);
     try {
-      const url = await toPng(ref.current, { pixelRatio: 3, cacheBust: true });
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${card.name.replace(/[^\p{L}\p{N}]+/gu, "-")}-card.png`;
-      a.click();
+      const url = kind === "story" ? await storyPng(ref.current, { title: card.name, subtitle: `${seasonName} · ${card.teamName}` }) : await toPng(ref.current, { pixelRatio: 3, cacheBust: true });
+      downloadDataUrl(url, cardFileName(card.name, kind));
     } finally {
       setBusy(false);
     }
@@ -83,8 +83,11 @@ function GalleryCard({ card, seasonName }: { card: CardView; seasonName: string 
       <PlayerCardView ref={ref} name={card.name} model={card.model} imageUrl={card.imageUrl} isCutout={card.isCutout} framing={card.framing} badge={card.badge} footer={seasonName.toUpperCase()} />
       <figcaption className="mt-2 text-xs text-muted-foreground">
         {card.teamName}
-        <button onClick={download} disabled={busy} className="ml-3 font-bold text-pitch underline disabled:opacity-50" aria-label={`Download ${card.name}'s card as an image`}>
+        <button onClick={() => download("card")} disabled={busy} className="ml-3 font-bold text-pitch underline disabled:opacity-50" aria-label={`Download ${card.name}'s card as an image`}>
           {busy ? "Preparing…" : "Download PNG"}
+        </button>
+        <button onClick={() => download("story")} disabled={busy} className="ml-3 font-bold text-pitch underline disabled:opacity-50" aria-label={`Story-size image of ${card.name}'s card`}>
+          Story size
         </button>
       </figcaption>
     </figure>

@@ -1,5 +1,6 @@
 "use client";
 
+import { plural } from "@/lib/plural";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { Crest } from "@/components/Crest";
@@ -44,7 +45,7 @@ export function TeamSetup() {
     <div className="space-y-6">
       {modal}
       <p className="text-sm text-muted-foreground">
-        {data.season.name} — {data.teams.length} team(s). {data.pool.length} player(s) have no team yet; any of them can be a captain.
+        {data.season.name} — {plural(data.teams.length, "team")}. {plural(data.pool.length, "player")} {data.pool.length === 1 ? "has" : "have"} no team yet; any of them can be a captain.
         {data.season.teamFormation === "AUCTION" && " A captain is placed with the team before the auction and is not offered again."}
       </p>
       {frozen && <p className="rounded-lg border border-line bg-surface p-3 text-sm">This season is frozen — teams can be viewed but not changed.</p>}

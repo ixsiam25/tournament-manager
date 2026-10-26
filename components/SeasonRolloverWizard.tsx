@@ -1,5 +1,6 @@
 "use client";
 
+import { plural } from "@/lib/plural";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { usePasswordConfirm } from "@/components/PasswordConfirm";
@@ -197,12 +198,12 @@ export function SeasonRolloverWizard() {
           </p>
           {status.preflight && !status.preflight.ok && (
             <ul className="mb-4 space-y-1 text-sm text-live">
-              {status.preflight.liveMatchCount > 0 && <li>{status.preflight.liveMatchCount} match(es) still LIVE</li>}
+              {status.preflight.liveMatchCount > 0 && <li>{plural(status.preflight.liveMatchCount, "match", "matches")} still LIVE</li>}
               {status.preflight.unfinishedMatchCount > 0 && (
-                <li>{status.preflight.unfinishedMatchCount} match(es) not yet FINISHED</li>
+                <li>{plural(status.preflight.unfinishedMatchCount, "match", "matches")} not yet FINISHED</li>
               )}
               {status.preflight.unresolvedDrawCount > 0 && (
-                <li>{status.preflight.unresolvedDrawCount} knockout draw(s) not resolved</li>
+                <li>{plural(status.preflight.unresolvedDrawCount, "knockout draw")} not resolved</li>
               )}
             </ul>
           )}

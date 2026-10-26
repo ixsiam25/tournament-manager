@@ -7,6 +7,7 @@ import { checkPhoto, type PhotoCheck } from "@/lib/photoCheck";
 import { PHOTO_OFFSET_RANGE, PHOTO_ZOOM_RANGE, type ApplicationConfig } from "@/lib/applicationConfig";
 import { PlayerCardPreview, type CardFraming } from "@/components/PlayerCardPreview";
 import { BatchPicker } from "@/components/BatchPicker";
+import { cardFileName, downloadDataUrl, storyPng } from "@/lib/cardImage";
 
 export type ApplicationValues = {
   name: string;
@@ -144,8 +145,9 @@ export function ApplicationForm({
   initial?: ApplicationValues;
   mode: "create" | "edit";
   submitLabel: string;
-  /** Returns an error message, or null when the submission succeeded. */
-  onSubmit: (formData: FormData) => Promise<string | null>;
+  /** Returns an error message, or null when the submission succeeded. `extra.storyPng` is
+   * the shareable story image of the card, when it could be made. */
+  onSubmit: (formData: FormData, extra: { storyPng: string | null }) => Promise<string | null>;
 }) {
   const [v, setV] = useState<ApplicationValues>(initial);
   const [file, setFile] = useState<File | null>(null);
@@ -159,6 +161,9 @@ export function ApplicationForm({
   const [reviewed, setReviewed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const fileInput = useRef<HTMLInputElement>(null);
+  const cardBox = useRef<HTMLDivElement>(null);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -221,6 +226,24 @@ export function ApplicationForm({
       });
   }
 
+  async function makeStory(): Promise<string | null> {
+    const card = cardBox.current?.querySelector<HTMLElement>(".pcard");
+    if (!card) return null;
+    try {
+      return await storyPng(card, { title: v.name.trim() || "New player", subtitle: `${seasonName} · I'm in!` });
+    } catch {
+      return null;
+    }
+  }
+
+  async function downloadStory() {
+    setSaving(true);
+    const url = await makeStory();
+    setSaving(false);
+    if (url) downloadDataUrl(url, cardFileName(v.name, "story"));
+    else setError("Couldn't make the image — try again in a moment.");
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -248,7 +271,7 @@ export function ApplicationForm({
         fd.append("photo", photoBlob, "photo.jpg");
         if (cutout.status === "done" && cutout.blob) fd.append("cutout", cutout.blob, "cutout.png");
       } else if (removed) fd.append("removePhoto", "1");
-      const problem = await onSubmit(fd);
+      const problem = await onSubmit(fd, { storyPng: await makeStory() });
       if (problem) setError(problem);
     } catch {
       setError("Couldn't process that photo — try a different one.");
@@ -341,12 +364,25 @@ export function ApplicationForm({
             </span>
             <PhotoGuide />
             <input
+              ref={fileInput}
               type="file"
               accept="image/jpeg,image/png,image/webp"
               aria-label="Choose a photo"
               onChange={(e) => pickPhoto(e.target.files?.[0] ?? null)}
-              className="w-full text-sm"
+              className="sr-only"
+              tabIndex={-1}
             />
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={() => fileInput.current?.click()}
+                className="inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-3 text-sm font-bold text-background shadow-sm transition hover:opacity-90"
+              >
+                <span aria-hidden>📷</span>
+                {photoSrc ? "Change photo" : "Choose photo"}
+              </button>
+              <span className="min-w-0 truncate text-sm text-muted-foreground">{file ? file.name : photoSrc ? "Photo added" : "JPG, PNG or WebP"}</span>
+            </div>
             {check?.blocking && <p className="mt-2 text-sm text-live">{check.blocking}</p>}
             {check && !check.blocking && check.warnings.length > 0 && (
               <ul className="mt-2 list-disc space-y-0.5 pl-5 text-xs text-amber-600">
@@ -388,6 +424,7 @@ export function ApplicationForm({
 
       <aside className="rounded-2xl bg-gradient-to-b from-[#1b1412] to-[#34161f] p-4 text-white shadow-lg md:sticky md:top-20 md:self-start">
         <p className="mb-3 text-center text-[11px] font-bold uppercase tracking-[0.2em] text-white/60">Your player card</p>
+        <div ref={cardBox}>
         <PlayerCardPreview
           name={v.name}
           position={cardPosition}
@@ -397,6 +434,16 @@ export function ApplicationForm({
           footer={seasonName.toUpperCase()}
           onFramingChange={setFraming}
         />
+        </div>
+        <button
+          type="button"
+          onClick={downloadStory}
+          disabled={saving || !v.name.trim()}
+          className="mt-3 w-full rounded-full border border-white/30 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10 disabled:opacity-40"
+          title={v.name.trim() ? "Save your card as a story-size image" : "Type your name first"}
+        >
+          {saving ? "Preparing…" : "⬇ Download for stories"}
+        </button>
         {file && cutout.status === "running" && (
           <div className="mt-3 text-xs" role="status">
             <p className="mb-1">Creating your card… {cutout.progress > 0 ? `${Math.round(cutout.progress * 100)}%` : "starting"}</p>

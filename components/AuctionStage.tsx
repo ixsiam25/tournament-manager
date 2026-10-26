@@ -1,5 +1,6 @@
 "use client";
 
+import { plural } from "@/lib/plural";
 import { useEffect, useState } from "react";
 import { Crest } from "@/components/Crest";
 import { PlayerCardView } from "@/components/PlayerCardView";
@@ -65,7 +66,7 @@ function Screen({ state }: { state: StageState }) {
           <div className="pt-16 text-center">
             <p className="text-7xl font-black uppercase tracking-widest">The auction begins</p>
             <p className="mt-6 text-3xl text-white/70">
-              {state.players} players · {state.teams.length} teams · base price {state.basePrice}
+              {plural(state.players, "player")} · {plural(state.teams.length, "team")} · base price {state.basePrice}
             </p>
             <div className="mt-14 flex flex-wrap justify-center gap-10">
               {state.teams.map((t) => (

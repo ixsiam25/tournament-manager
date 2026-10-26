@@ -1,3 +1,5 @@
+import { EmptyState } from "@/components/EmptyState";
+import { plural } from "@/lib/plural";
 import Image from "next/image";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
@@ -39,10 +41,10 @@ export default async function TeamsPage() {
             {team.managerName && (
               <span className="text-xs text-muted-foreground">Manager: {team.managerName}</span>
             )}
-            <span className="text-xs text-muted-foreground">{team._count.players} players</span>
+            <span className="text-xs text-muted-foreground">{plural(team._count.players, "player")}</span>
           </Link>
         ))}
-        {teams.length === 0 && <p className="text-muted-foreground">No teams yet.</p>}
+        {teams.length === 0 && <div className="col-span-full"><EmptyState icon="🛡️" title="No teams yet" text="Teams appear here once the organisers have formed them." /></div>}
       </div>
     </div>
   );

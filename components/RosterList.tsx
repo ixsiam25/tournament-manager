@@ -1,5 +1,6 @@
 "use client";
 
+import { plural } from "@/lib/plural";
 import Image from "next/image";
 import { PlayerPhoto } from "@/components/SafeImage";
 import Link from "next/link";
@@ -35,7 +36,7 @@ export function RosterList({ players }: { players: RosterPlayer[] }) {
     <div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">
-          {players.length} players across {teamCount} teams
+          {plural(players.length, "player")} across {plural(teamCount, "team")}
         </p>
         <button
           type="button"
@@ -108,7 +109,7 @@ export function RosterList({ players }: { players: RosterPlayer[] }) {
             </span>
           </li>
         ))}
-        {sorted.length === 0 && <li className="px-6 py-6 text-center text-muted-foreground">No players yet.</li>}
+        {sorted.length === 0 && <li className="px-6 py-6 text-center text-muted-foreground">No players yet — check back after the teams are formed.</li>}
       </ul>
     </div>
   );
