@@ -42,12 +42,30 @@ export function SeasonSetup() {
       </p>
     );
 
+  if (data.season.status === "ARCHIVED")
+    return (
+      <div className="space-y-4" data-testid="season-archived">
+        <div className="rounded-2xl border border-pitch bg-pitch/5 p-5 ring-2 ring-pitch/20">
+          <p className="text-lg font-bold">
+            {data.season.name} <span className="ml-2 rounded-full bg-line px-2 py-0.5 text-[10px] uppercase">archived</span>
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">This season is finished and kept as a read-only record. Start the next one when you&apos;re ready.</p>
+          <Link href="/admin/season/rollover" className="mt-4 inline-block rounded-full bg-pitch px-5 py-2 text-sm font-bold text-white">
+            Create a new season
+          </Link>
+        </div>
+      </div>
+    );
+
   return (
     <div className="space-y-4">
       <p className="text-lg font-bold">
         {data.season.name} <span className="ml-2 rounded-full bg-line px-2 py-0.5 text-[10px] uppercase">{data.season.status.toLowerCase()}</span>
       </p>
       {error && <p className="text-sm text-live">{error}</p>}
+      <p className="text-sm">
+        <Link href="/admin/season/rollover" className="font-medium text-pitch underline">Create a new season</Link>
+      </p>
       <ol className="space-y-3">
         {data.steps.map((s, i) => (
           <li
