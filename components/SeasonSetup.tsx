@@ -63,7 +63,8 @@ export function SeasonSetup() {
         {data.season.name} <span className="ml-2 rounded-full bg-line px-2 py-0.5 text-[10px] uppercase">{data.season.status.toLowerCase()}</span>
       </p>
       {error && <p className="text-sm text-live">{error}</p>}
-      <p className="text-sm">
+      <p className="flex gap-4 text-sm">
+        <Link href="/admin/season/details" className="font-medium text-pitch underline">Edit season details</Link>
         <Link href="/admin/season/rollover" className="font-medium text-pitch underline">Create a new season</Link>
       </p>
       <ol className="space-y-3">
