@@ -13,10 +13,10 @@ for (const s of ["", "  ", "Winter 24", "Fall", "24", "Fall 1999", "Fall 2100", 
 assert.equal(formatBatch({ term: "FALL", year: 2027 }), "Fall 27");
 assert.equal(formatBatch({ term: "SPRING", year: 2005 }), "Spring 05");
 
-// The calendar: Spring Apr–Aug, Fall Sep–Mar (Jan–Mar belong to the previous year's Fall).
+// The calendar: Spring Apr–Sep, Fall Oct–Mar (Jan–Mar belong to the previous year's Fall).
 assert.deepEqual(termOfDate(new Date(2026, 3, 1)), { term: "SPRING", year: 2026 });
-assert.deepEqual(termOfDate(new Date(2026, 7, 31)), { term: "SPRING", year: 2026 });
-assert.deepEqual(termOfDate(new Date(2026, 8, 1)), { term: "FALL", year: 2026 });
+assert.deepEqual(termOfDate(new Date(2026, 8, 30)), { term: "SPRING", year: 2026 });
+assert.deepEqual(termOfDate(new Date(2026, 9, 1)), { term: "FALL", year: 2026 });
 assert.deepEqual(termOfDate(new Date(2026, 11, 31)), { term: "FALL", year: 2026 });
 assert.deepEqual(termOfDate(new Date(2027, 0, 15)), { term: "FALL", year: 2026 });
 assert.deepEqual(termOfDate(new Date(2027, 2, 31)), { term: "FALL", year: 2026 });
@@ -44,37 +44,37 @@ assert.ok(alum.valid && alum.status === "alumni" && alum.text === "Alumni" && al
 const future = batchInfo("Fall 27", oct, "entry");
 assert.ok(future.valid && future.status === "incoming" && future.text === "Starts Fall 2027", "a batch that hasn't started yet is incoming");
 
-// Boundary: the term rolls over on 1 September.
-assert.equal(sem("Fall 25", new Date(2026, 7, 31)), 2);
-assert.equal(sem("Fall 25", new Date(2026, 8, 1)), 3);
+// Boundary: the term rolls over on 1 October.
+assert.equal(sem("Fall 25", new Date(2026, 8, 30)), 2);
+assert.equal(sem("Fall 25", new Date(2026, 9, 1)), 3);
 
 // Labels read the same whichever spelling was typed, and wording is human.
 const t = batchInfo("fall'25", ix, "entry");
 assert.ok(t.valid && t.label === "Fall 25" && t.text === "2nd semester");
 assert.deepEqual(batchInfo("nonsense", ix, "entry"), { valid: false });
 
-// The DEFAULT meaning: the label is the term the batch GRADUATES in (Fall 27 = graduates Fall 2027).
-// Today = 23 Oct 2026, i.e. the Fall 2026 term.
+// The DEFAULT meaning: the label is the term the batch GRADUATES in, after its 8th semester.
+// Today = 23 Oct 2026, i.e. the Fall 2026 term (Oct 2026 - Mar 2027).
 const grad = (label: string) => {
   const i = batchInfo(label, oct);
   return i.valid ? (i.status === "student" ? i.semester : i.status) : "invalid";
 };
-assert.equal(grad("Fall 26"), 8, "graduating this term = last (8th) semester");
-assert.equal(grad("Spring 27"), 7);
-assert.equal(grad("Fall 27"), 6, "Fall 27 is a current 6th-semester batch");
-assert.equal(grad("Spring 28"), 5);
-assert.equal(grad("Fall 28"), 4);
-assert.equal(grad("Spring 29"), 3);
-assert.equal(grad("Fall 29"), 2);
-assert.equal(grad("Spring 30"), 1, "the newest batch is in its 1st semester");
-assert.equal(grad("Fall 30"), "incoming", "a batch that graduates 8+ terms from now hasn't started");
-const notStarted = batchInfo("Fall 30", oct);
+assert.equal(grad("Spring 27"), 8, "Spring 27 graduates March 2027: its 8th (last) semester is this one");
+assert.equal(grad("Fall 27"), 7);
+assert.equal(grad("Spring 28"), 6);
+assert.equal(grad("Fall 28"), 5);
+assert.equal(grad("Spring 29"), 4);
+assert.equal(grad("Fall 29"), 3);
+assert.equal(grad("Spring 30"), 2);
+assert.equal(grad("Fall 30"), 1, "the newest batch is in its 1st semester");
+assert.equal(grad("Spring 31"), "incoming", "a batch that graduates 9+ terms from now hasn't started");
+const notStarted = batchInfo("Spring 31", oct);
 assert.ok(notStarted.valid && notStarted.text === "Starts Spring 2027");
-assert.equal(grad("Spring 26"), "alumni", "graduated last term");
-assert.equal(grad("Spring 24"), "alumni", "a past graduation term is alumni");
-// the term rolls over on 1 September for graduation batches too
-assert.equal((batchInfo("Spring 27", new Date(2026, 7, 31)) as { semester: number }).semester, 6, "31 Aug: still the Spring term");
-assert.equal((batchInfo("Spring 27", new Date(2026, 8, 1)) as { semester: number }).semester, 7, "1 Sep: the Fall term has begun");
+assert.equal(grad("Fall 26"), "alumni", "graduated in September");
+assert.equal(grad("Spring 26"), "alumni", "a past graduation term is alumni");
+// the term rolls over on 1 October for graduation batches too
+assert.equal((batchInfo("Spring 27", new Date(2026, 8, 30)) as { semester: number }).semester, 7, "30 Sep: still the Spring term");
+assert.equal((batchInfo("Spring 27", new Date(2026, 9, 1)) as { semester: number }).semester, 8, "1 Oct: the Fall term has begun");
 
 // batchLabelForSemester is the exact inverse (keeps demo/test data valid on any day).
 for (const meaning of ["graduation", "entry"] as const) {
@@ -87,7 +87,7 @@ for (const meaning of ["graduation", "entry"] as const) {
     assert.ok(old.valid && old.status === "alumni", "semester 9 is alumni");
   }
 }
-assert.equal(batchLabelForSemester(6, new Date(2026, 9, 23)), "Fall 27");
+assert.equal(batchLabelForSemester(6, new Date(2026, 9, 23)), "Spring 28");
 assert.equal(batchLabelForSemester(2, new Date(2026, 7, 4), "entry"), "Fall 25");
 
 console.log("✓ batch: parsing, APU calendar, semesters (graduation default; entry matches Season IX), alumni/incoming, inverse helper");

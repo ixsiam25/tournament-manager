@@ -534,8 +534,9 @@ The app is no longer "one live season". Every live row belongs to a `Season`
   / "Spring 25" (season setting `affiliationKind: "batch"`, default). The batch
   picker (`BatchPicker`) shows the meaning live; the server canonicalises any
   spelling and rejects non-batches and batches that haven't started. Calendar:
-  Spring = Apr–Aug, Fall = Sep–Mar; **semester = terms started since the batch's
-  own term; after 8 semesters (4 years) → alumni**. Verified against Season IX's
+  Spring = Apr–Sep, Fall = Oct–Mar; **semester = terms started since the batch's
+  first term; after 8 semesters (4 years) → alumni**. A graduation label names the term
+  after the 8th semester (Spring 27 = graduates March 2027 = 8th semester in Fall 2026). Verified against Season IX's
   real teams (Spring 26 → 1st, Fall 25 → 2nd, Fall 24 → 4th, Spring 23 → 7th).
   `batchMeaning: "graduation"` flips the label to the graduating term.
 - **Group by batch**: one team per batch (named by label, `Team.semester` set), all

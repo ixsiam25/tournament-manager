@@ -6,10 +6,12 @@ import { ordinalSemester } from "@/lib/semester";
  * the formation tools all agree.
  *
  * A batch is named by the term it GRADUATES in (the label meaning is
- * configurable per season — see `BatchMeaning`; "entry" names the term it started). Terms follow the APU calendar: the Spring
- * term runs April–August and the Fall term September–March, so a batch's
- * semester number is simply how many terms have started since its own. After
- * `MAX_SEMESTERS` (8 = four years) the batch counts as alumni; a batch whose
+ * configurable per season — see `BatchMeaning`; "entry" names the term it started).
+ * Terms follow the APU calendar: the Spring term starts in April (April–September)
+ * and the Fall term in October (October–March). A batch graduates at the END of its
+ * 8th semester, so "Spring 27" (graduating March 2027) is in its 8th semester during
+ * Fall 2026, and "Fall 27" (graduating September 2027) is in its 8th during Spring 2027.
+ * After `MAX_SEMESTERS` (8 = four years) the batch counts as alumni; a batch whose
  * first term hasn't started yet is "incoming".
  */
 export type Term = "SPRING" | "FALL";
@@ -21,11 +23,11 @@ export type TermYear = { term: Term; year: number };
 /** Monotonic index: Spring(Y) < Fall(Y) < Spring(Y+1). */
 const termIndex = (t: TermYear) => t.year * 2 + (t.term === "FALL" ? 1 : 0);
 
-/** The term in progress on a given date (Jan–Mar belongs to the Fall term that began the previous September). */
+/** The term in progress on a given date: Spring April–September, Fall October–March (Jan–Mar belong to the Fall that began the previous October). */
 export function termOfDate(date: Date): TermYear {
   const m = date.getMonth(); // 0 = Jan
-  if (m >= 3 && m <= 7) return { term: "SPRING", year: date.getFullYear() };
-  return { term: "FALL", year: m >= 8 ? date.getFullYear() : date.getFullYear() - 1 };
+  if (m >= 3 && m <= 8) return { term: "SPRING", year: date.getFullYear() };
+  return { term: "FALL", year: m >= 9 ? date.getFullYear() : date.getFullYear() - 1 };
 }
 
 const TERM_WORDS: Record<string, Term> = { spring: "SPRING", s: "SPRING", sp: "SPRING", fall: "FALL", autumn: "FALL", f: "FALL" };
@@ -69,7 +71,8 @@ export type BatchInfo =
 export function batchInfo(label: string | null | undefined, onDate: Date = new Date(), meaning: BatchMeaning = "graduation"): BatchInfo {
   const parsed = parseBatch(label);
   if (!parsed) return { valid: false };
-  const entryIndex = termIndex(parsed) - (meaning === "graduation" ? MAX_SEMESTERS - 1 : 0);
+  // graduation label = the term AFTER the 8th (last) semester, so the first semester is MAX terms earlier
+  const entryIndex = termIndex(parsed) - (meaning === "graduation" ? MAX_SEMESTERS : 0);
   const semester = termIndex(termOfDate(onDate)) - entryIndex + 1;
   const canonical = formatBatch(parsed);
   if (semester < 1) {
@@ -87,6 +90,6 @@ export function batchInfo(label: string | null | undefined, onDate: Date = new D
  */
 export function batchLabelForSemester(semester: number, onDate: Date = new Date(), meaning: BatchMeaning = "graduation"): string {
   const entryIndex = termIndex(termOfDate(onDate)) - (semester - 1);
-  const labelIndex = entryIndex + (meaning === "graduation" ? MAX_SEMESTERS - 1 : 0);
+  const labelIndex = entryIndex + (meaning === "graduation" ? MAX_SEMESTERS : 0);
   return formatBatch({ term: labelIndex % 2 === 1 ? "FALL" : "SPRING", year: Math.floor(labelIndex / 2) });
 }

@@ -302,7 +302,7 @@ export function ApplicationForm({
 
         {f.affiliation.enabled &&
           (config.affiliationKind === "batch" ? (
-            <Field label="Batch" required={f.affiliation.required} hint="The term your batch started, e.g. Fall 24 — we work out your current semester (or alumni) automatically">
+            <Field label="Batch" required={f.affiliation.required} hint={config.batchMeaning === "entry" ? "The term your batch started, e.g. Fall 24 — we work out your current semester (or alumni) automatically" : "The term your batch graduates, e.g. Spring 27 — we work out your current semester (or alumni) automatically"}>
               <BatchPicker value={v.affiliation} onChange={(label) => set("affiliation", label)} required={f.affiliation.required} meaning={config.batchMeaning} />
             </Field>
           ) : (
