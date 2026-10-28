@@ -51,8 +51,7 @@ async function main() {
 
     // submit, then the thank-you screen offers the same image
     await page.getByLabel("Student ID").fill(`zz-story-${stamp}`);
-    await page.getByLabel("Batch term").selectOption("FALL");
-    await page.getByLabel("Batch year").selectOption("2027");
+    await page.getByLabel("Current semester").selectOption("6");
     await page.getByLabel("Contact").fill("x");
     // a photo means the card must be reviewed; skip the (slow) background removal
     const skip = page.getByRole("button", { name: "Use my photo as it is" });

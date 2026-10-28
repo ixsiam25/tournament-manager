@@ -4,11 +4,12 @@
 // and restores everything afterwards — dev branch only.
 //
 // Needs a dev server on :3100.  Run: ALLOW_DB_WRITE_TESTS=1 npm run test:apply
+import { pickBatch } from "./_batch";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { config } from "dotenv";
-import { chromium, type Page } from "playwright-core";
-import { batchLabelForSemester, parseBatch } from "../../lib/batch";
+import { chromium } from "playwright-core";
+import { batchLabelForSemester } from "../../lib/batch";
 config({ path: process.env.TEST_ENV_FILE ?? ".env.local" });
 
 if (process.env.ALLOW_DB_WRITE_TESTS !== "1") {
@@ -16,12 +17,6 @@ if (process.env.ALLOW_DB_WRITE_TESTS !== "1") {
   process.exit(0);
 }
 const base = process.env.SMOKE_BASE_URL ?? "http://localhost:3100";
-
-/** Chooses a batch in the two-dropdown picker. */
-async function pickBatch(page: Page, term: "FALL" | "SPRING", year: number) {
-  await page.getByLabel("Batch term").selectOption(term);
-  await page.getByLabel("Batch year").selectOption(String(year));
-}
 
 async function main() {
   const { prisma } = await import("../../lib/db");
@@ -53,17 +48,15 @@ async function main() {
     // ---- default form ----
     await page.goto(`${base}/register`);
     await page.getByLabel("Student ID").waitFor({ timeout: 30000 });
-    assert.equal(await page.getByText("Batch", { exact: true }).count() > 0, true, "the form asks for a batch");
+    assert.equal(await page.getByLabel("Current semester").count() > 0, true, "the form asks for the current semester");
     await page.locator("input").first().fill("Test Applicant"); // Name
     assert.equal((await page.locator(".pcard__name").innerText()).trim(), "TEST APPLICANT", "card shows the typed name");
     await page.getByLabel("Student ID").fill(`zz-${stamp}`);
-    const current = parseBatch(batchLabelForSemester(5))!; // a batch in its 5th semester today
-    await pickBatch(page, current.term, current.year);
-    assert.equal((await page.getByTestId("batch-status").innerText()).trim(), `${batchLabelForSemester(5)} — 5th semester`, "the form works out the semester itself");
-    const old = parseBatch(batchLabelForSemester(11))!; // graduated a while ago
-    await pickBatch(page, old.term, old.year);
+    await pickBatch(page, batchLabelForSemester(5)); // "5th semester" → the batch is worked out
+    assert.equal((await page.getByTestId("batch-status").innerText()).trim(), `You’ll be in the ${batchLabelForSemester(5)} batch — 5th semester`, "the form works out the batch itself");
+    await pickBatch(page, batchLabelForSemester(11)); // graduated a while ago
     assert.match(await page.getByTestId("batch-status").innerText(), /— Alumni/, "an old batch is shown as alumni");
-    await pickBatch(page, current.term, current.year);
+    await pickBatch(page, batchLabelForSemester(5));
     await page.getByLabel("Contact").fill("090-0000-0000");
     await page.getByLabel("Preferred position").selectOption("GK");
     assert.equal((await page.locator(".pcard__pos").innerText()).trim(), "GK", "card shows the position");
@@ -84,7 +77,7 @@ async function main() {
     await page.getByLabel("Student ID").waitFor({ timeout: 30000 });
     await page.locator("input").first().fill("Test Applicant");
     await page.getByLabel("Student ID").fill(`zz-${stamp}`);
-    await pickBatch(page, "FALL", 2024);
+    await pickBatch(page, "Fall 24");
     await page.getByLabel("Contact").fill("090-0000-0000");
     await page.setInputFiles('input[type="file"]', `public/photos/${photo}`);
     await page.locator(".pcard__photo img").waitFor({ timeout: 15000 });
@@ -129,7 +122,7 @@ async function main() {
     await page.getByLabel("Student ID").waitFor();
     await page.locator("input").first().fill("Someone Else");
     await page.getByLabel("Student ID").fill(`ZZ-${stamp}`);
-    await pickBatch(page, "SPRING", 2025);
+    await pickBatch(page, "Spring 25");
     await page.getByLabel("Contact").fill("x");
     await page.getByRole("button", { name: "Submit application" }).click();
     await page.getByText("already exists for this season").waitFor({ timeout: 30000 });
@@ -170,7 +163,7 @@ async function main() {
     });
     await page.goto(`${base}/register`);
     await page.getByText("ZZ intro text").waitFor({ timeout: 30000 });
-    assert.equal(await page.getByLabel("Batch term").count(), 0, "disabled field must not render");
+    assert.equal(await page.getByLabel("Current semester").count(), 0, "disabled field must not render");
     assert.equal(await page.locator('input[type="file"]').count(), 0, "disabled photo must not render");
     await page.locator("input").first().fill("Config Person");
     await page.getByLabel("Student ID").fill(`ZZ-${stamp}-2`);

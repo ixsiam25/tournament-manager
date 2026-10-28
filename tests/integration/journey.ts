@@ -4,6 +4,7 @@
 //   teams -> public card gallery shows the cut-out card and it downloads.
 // Throwaway ZZ season; dev branch only; needs a dev server on :3100.
 // Run: ALLOW_DB_WRITE_TESTS=1 npm run test:journey
+import { pickBatch } from "./_batch";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { config } from "dotenv";
@@ -58,8 +59,7 @@ async function main() {
       await page.getByLabel("Student ID").waitFor(T);
       await page.locator("input").first().fill(a.name);
       await page.getByLabel("Student ID").fill(`ZZJ${stamp}${i}`);
-      await page.getByLabel("Batch term").selectOption(i % 2 ? "SPRING" : "FALL");
-      await page.getByLabel("Batch year").selectOption(i % 2 ? "2025" : "2024");
+      await pickBatch(page, i % 2 ? "Spring 25" : "Fall 24");
       await page.getByLabel("Contact").fill("090-1111-2222");
       await page.getByLabel("Preferred position").selectOption(a.position);
       if (a.photo) {

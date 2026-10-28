@@ -4,6 +4,7 @@
 //   the rest of the system.
 // Batches ("Fall 25") are turned into current semesters / alumni automatically.
 // Dev branch only; needs a dev server on :3100. Run: ALLOW_DB_WRITE_TESTS=1 npm run test:seasonflow
+import { pickBatch } from "./_batch";
 import assert from "node:assert/strict";
 import { config } from "dotenv";
 import { chromium, type Page } from "playwright-core";
@@ -74,14 +75,13 @@ async function main() {
       const t = parseBatch(batchLabelForSemester(semesters[i]))!;
       return [name, t.term, t.year] as const;
     });
-    for (const [i, [name, term, year]] of applicants.entries()) {
+    for (const [i, [name]] of applicants.entries()) {
       const p = await mk(false);
       await p.goto(`${base}/register`);
       await p.getByLabel("Student ID").waitFor(T);
       await p.locator("input").first().fill(name);
       await p.getByLabel("Student ID").fill(`ZZF${stamp}${i}`);
-      await p.getByLabel("Batch term").selectOption(term);
-      await p.getByLabel("Batch year").selectOption(String(year));
+      await pickBatch(p, batchLabelForSemester(semesters[i]));
       const info = batchInfo(batchLabelForSemester(semesters[i]));
       assert.ok(info.valid);
       assert.match(await p.getByTestId("batch-status").innerText(), new RegExp(info.status === "alumni" ? "Alumni" : info.text), "the form shows what the batch means today");
