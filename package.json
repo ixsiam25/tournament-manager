@@ -32,6 +32,7 @@
     "test:seasondetails": "tsx tests/integration/season-details.ts",
     "test:adminnav": "tsx tests/integration/admin-nav.ts",
     "test:story": "tsx tests/integration/story-download.ts",
+    "test:regedit": "tsx tests/integration/registration-edit.ts",
     "test:timetext": "tsx tests/unit/timeText.ts"
   },
   "prisma": {

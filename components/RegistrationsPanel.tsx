@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { BatchBadge } from "@/components/BatchBadge";
 import { BatchPicker } from "@/components/BatchPicker";
+import { RegistrationEditor } from "@/components/RegistrationEditor";
 
 type Position = "GK" | "DEF" | "MID" | "FWD" | "";
 type Source = "SELF_SERVE" | "ADMIN_MANUAL" | "EXCEL_IMPORT";
@@ -52,6 +53,7 @@ export function RegistrationsPanel() {
   const [contact, setContact] = useState("");
   const [studentId, setStudentId] = useState("");
   const [addingManual, setAddingManual] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   async function load() {
     const [seasonRes, regRes] = await Promise.all([
@@ -339,8 +341,8 @@ export function RegistrationsPanel() {
 
       <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
         {registrations.map((r) => (
+          <Fragment key={r.id}>
           <li
-            key={r.id}
             onClick={(e) => {
               // Clicking anywhere on a pending row selects it — except on its own buttons/inputs.
               if (r.status === "PENDING" && !(e.target as HTMLElement).closest("button, a, input, select, textarea")) toggle(r.id);
@@ -378,6 +380,9 @@ export function RegistrationsPanel() {
               </span>
             </div>
             <span className="text-xs text-muted-foreground">{r.contact}</span>
+            <button onClick={() => setEditingId(editingId === r.id ? null : r.id)} className="text-xs font-medium text-pitch underline" aria-label={`Edit ${r.name}`}>
+              Edit
+            </button>
             {r.status === "PENDING" ? (
               <div className="flex gap-2">
                 <button
@@ -406,6 +411,20 @@ export function RegistrationsPanel() {
               </span>
             )}
           </li>
+          {editingId === r.id && (
+            <li>
+              <RegistrationEditor
+                reg={r}
+                batch={season?.applicationConfig?.affiliationKind !== "text"}
+                meaning={season?.applicationConfig?.batchMeaning ?? "graduation"}
+                onDone={(saved) => {
+                  setEditingId(null);
+                  if (saved) load();
+                }}
+              />
+            </li>
+          )}
+          </Fragment>
         ))}
         {registrations.length === 0 && <li className="px-5 py-6 text-center text-muted-foreground">No registrations.</li>}
       </ul>
