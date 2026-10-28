@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Anton } from "next/font/google";
 import { noFlashThemeScript } from "@/components/ThemeToggle";
+import { getCurrentSeason } from "@/lib/currentSeason";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -19,10 +20,30 @@ const anton = Anton({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "BFL Season IX",
-  description: "League standings, fixtures, and live scores.",
-};
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://bfl.online.zahan.jp";
+
+/** Titles and link-preview (Facebook, Messenger, WhatsApp…) text follow the current season, so they never go stale. */
+export async function generateMetadata(): Promise<Metadata> {
+  let name = "Bangladesh Football League";
+  let open = false;
+  try {
+    const season = await getCurrentSeason();
+    if (season) {
+      name = season.name;
+      open = season.status === "ACTIVE" && season.registrationOpen && season.registrationSelfServeEnabled;
+    }
+  } catch {
+    /* fall back to the league name */
+  }
+  const description = open ? `Applications are open for ${name} — register to play and get your own player card.` : `${name}: league standings, fixtures, and live scores.`;
+  return {
+    metadataBase: new URL(SITE_URL),
+    title: { default: name, template: `%s · ${name}` },
+    description,
+    openGraph: { title: name, description, siteName: "Bangladesh Football League", type: "website" },
+    twitter: { card: "summary_large_image", title: name, description },
+  };
+}
 
 export default function RootLayout({
   children,
