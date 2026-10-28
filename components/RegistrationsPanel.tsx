@@ -5,6 +5,9 @@ import Link from "next/link";
 import { BatchBadge } from "@/components/BatchBadge";
 import { BatchPicker } from "@/components/BatchPicker";
 import { RegistrationEditor } from "@/components/RegistrationEditor";
+import { downscaleToJpeg } from "@/lib/downscaleImage";
+import { removeBackgroundInWorker } from "@/lib/cutoutClient";
+import { checkPhoto } from "@/lib/photoCheck";
 
 type Position = "GK" | "DEF" | "MID" | "FWD" | "";
 type Source = "SELF_SERVE" | "ADMIN_MANUAL" | "EXCEL_IMPORT";
@@ -53,6 +56,9 @@ export function RegistrationsPanel() {
   const [contact, setContact] = useState("");
   const [studentId, setStudentId] = useState("");
   const [addingManual, setAddingManual] = useState(false);
+  const [manualPhoto, setManualPhoto] = useState<File | null>(null);
+  const [manualStatus, setManualStatus] = useState<string | null>(null);
+  const manualPhotoInput = useRef<HTMLInputElement>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
 
   async function load() {
@@ -150,12 +156,43 @@ export function RegistrationsPanel() {
       setError(body.error ?? "Failed to add");
       return;
     }
+    const created = await res.json().catch(() => ({}));
+    if (manualPhoto && created.playerId) await uploadManualPhoto(created.playerId, manualPhoto);
+    else setManualStatus(null);
     setName("");
     setAffiliation("");
     setPosition("");
     setContact("");
     setStudentId("");
+    setManualPhoto(null);
+    if (manualPhotoInput.current) manualPhotoInput.current.value = "";
     load();
+  }
+
+  /** Photo → player card: upload the photo, then make the background-removed cut-out in this browser. */
+  async function uploadManualPhoto(playerId: string, file: File) {
+    try {
+      setManualStatus("Uploading the photo…");
+      const small = await downscaleToJpeg(file, "avatar");
+      const fd = new FormData();
+      fd.append("photo", small, "photo.jpg");
+      const up = await fetch(`/api/admin/players/${playerId}/photo`, { method: "POST", body: fd });
+      if (!up.ok) return setError((await up.json().catch(() => ({}))).error ?? "The applicant was added, but the photo couldn't be saved");
+      setManualStatus("Making the card cut-out… keep this tab open");
+      const run = removeBackgroundInWorker(small, (p) => setManualStatus(`Making the card cut-out… ${Math.round(p.fraction * 100)}%`));
+      const blob = await run.promise.catch(() => null);
+      if (blob) {
+        const cfd = new FormData();
+        cfd.append("cutout", blob, "cutout.png");
+        await fetch(`/api/admin/players/${playerId}/cutout`, { method: "POST", body: cfd });
+        setManualStatus("✓ Added with photo and card cut-out");
+      } else {
+        setManualStatus("✓ Added with photo (the cut-out couldn’t be made — the photo is used as it is)");
+      }
+    } catch {
+      setError("The applicant was added, but the photo couldn't be processed");
+      setManualStatus(null);
+    }
   }
 
   async function handleImport(file: File) {
@@ -256,6 +293,32 @@ export function RegistrationsPanel() {
                 className="flex-1 rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-pitch"
               />
             </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <input
+                ref={manualPhotoInput}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                aria-label="Player photo"
+                className="sr-only"
+                tabIndex={-1}
+                onChange={async (e) => {
+                  const f = e.target.files?.[0] ?? null;
+                  if (!f) return setManualPhoto(null);
+                  const check = await checkPhoto(f);
+                  if (check.blocking) {
+                    setError(check.blocking);
+                    e.target.value = "";
+                    return setManualPhoto(null);
+                  }
+                  setError(null);
+                  setManualPhoto(f);
+                }}
+              />
+              <button type="button" onClick={() => manualPhotoInput.current?.click()} className="rounded-full border border-line px-4 py-1.5 text-xs font-bold hover:bg-background">
+                📷 {manualPhoto ? "Change photo" : "Add photo for the card"}
+              </button>
+              <span className="min-w-0 truncate text-xs text-muted-foreground">{manualPhoto ? manualPhoto.name : "optional"}</span>
+            </div>
             <button
               type="submit"
               disabled={addingManual}
@@ -263,6 +326,7 @@ export function RegistrationsPanel() {
             >
               {addingManual ? "Adding…" : "Add (auto-approved)"}
             </button>
+            {manualStatus && <p className="text-xs font-medium text-pitch-dark" role="status">{manualStatus}</p>}
           </form>
         </section>
 
@@ -293,6 +357,13 @@ export function RegistrationsPanel() {
       </div>
 
       {error && <p className="mb-4 text-sm text-live">{error}</p>}
+
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-surface px-4 py-3">
+        <p className="text-sm text-muted-foreground">Editing the site a lot? Keep a copy of everyone who applied.</p>
+        <a href="/api/admin/registrations/export" download className="rounded-full bg-foreground px-5 py-2 text-sm font-bold text-background hover:opacity-90" data-testid="export-applicants">
+          ⬇ Download applicant list (Excel)
+        </a>
+      </div>
 
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex gap-2">

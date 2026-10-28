@@ -17,6 +17,9 @@ export async function POST(request: NextRequest) {
   if (!user || !roleOk || !(await verifyPassword(password, user.passwordHash))) {
     return NextResponse.json({ error: "Incorrect username or password" }, { status: 401 });
   }
+  if (user.pendingApproval) {
+    return NextResponse.json({ error: "Your profile is waiting for an admin to approve it. You'll be able to log in once it is." }, { status: 403 });
+  }
   if (!user.isActive) {
     return NextResponse.json({ error: "This account has been deactivated" }, { status: 403 });
   }

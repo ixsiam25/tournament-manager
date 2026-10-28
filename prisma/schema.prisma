@@ -304,17 +304,23 @@ model Team {
 /// everything but name (kept as a distinct role rather than reusing
 /// "manager" so the role enum reads the same way for every account type).
 model User {
-  id           String   @id @default(cuid())
-  name         String
-  username     String   @unique
-  passwordHash String
-  role         UserRole
-  teamId       String?
-  team         Team?    @relation(fields: [teamId], references: [id])
-  isActive     Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id              String   @id @default(cuid())
+  name            String
+  username        String   @unique
+  passwordHash    String
+  role            UserRole
+  teamId          String?
+  team            Team?    @relation(fields: [teamId], references: [id])
+  isActive        Boolean  @default(true)
+  /// The main admin: can never be deactivated, demoted or removed, so the console can't be locked out.
+  isOwner         Boolean  @default(false)
+  /// Joined through an invitation link and waiting for an admin to approve; inactive until then.
+  pendingApproval Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
+  invitesCreated        AdminInvite[]  @relation("InviteCreator")
+  inviteUsed            AdminInvite?   @relation("InviteUser")
   auditLogs             AuditLog[]
   reviewedRegistrations Registration[]
   auctionSales          AuctionLot[]
@@ -607,4 +613,24 @@ model AuctionLot {
 
   @@index([seasonId])
   @@index([status])
+}
+
+/// A one-time link an admin sends to onboard a new staff member. The token is
+/// shown once and stored only as a hash; whoever joins lands as a pending
+/// (inactive) user until an admin approves them.
+model AdminInvite {
+  id          String    @id @default(cuid())
+  tokenHash   String    @unique
+  role        UserRole
+  note        String?
+  createdById String
+  createdBy   User      @relation("InviteCreator", fields: [createdById], references: [id])
+  expiresAt   DateTime
+  usedAt      DateTime?
+  usedById    String?   @unique
+  usedBy      User?     @relation("InviteUser", fields: [usedById], references: [id])
+  revokedAt   DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([createdById])
 }

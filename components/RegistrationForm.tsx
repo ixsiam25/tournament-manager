@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { ApplicationForm } from "@/components/ApplicationForm";
 import { StoryShare } from "@/components/StoryShare";
+import { FORMATION_OPTIONS, formationLabel } from "@/lib/formationLabels";
 import { DEFAULT_APPLICATION_CONFIG, type ApplicationConfig } from "@/lib/applicationConfig";
 
 /** Public "apply to play" experience: loads the season's form configuration,
@@ -13,6 +14,7 @@ export function RegistrationForm() {
   const [open, setOpen] = useState(false);
   const [seasonName, setSeasonName] = useState<string | null>(null);
   const [deadline, setDeadline] = useState<string | null>(null);
+  const [formation, setFormation] = useState<string | null>(null);
   const [config, setConfig] = useState<ApplicationConfig>(DEFAULT_APPLICATION_CONFIG);
   const [editLink, setEditLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -28,6 +30,7 @@ export function RegistrationForm() {
         setOpen(!!body.open);
         setSeasonName(body.seasonName);
         setDeadline(body.deadline);
+        setFormation(body.formation ?? null);
         if (body.config) setConfig(body.config);
         setChecking(false);
       }
@@ -90,12 +93,37 @@ export function RegistrationForm() {
             Your application is in. We couldn&rsquo;t prepare your share image just now — once you&rsquo;re approved, your card will be on the Cards page, where you can download it.
           </p>
         )}
-        <ol className="space-y-2 rounded-2xl border border-line bg-surface p-5 text-sm">
-          <li className="font-bold">What happens next</li>
-          <li>1. The organisers review your application.</li>
-          <li>2. If approved, you join the player pool and get your rating.</li>
-          <li>3. Teams are formed — you&rsquo;ll be told which one is yours.</li>
-        </ol>
+        <section className="rounded-2xl border border-line bg-surface p-5 text-sm">
+          <h2 className="mb-3 text-base font-bold">What happens next</h2>
+          <ol className="space-y-3">
+            <li>
+              <b>1.</b> Save the edit link for later, and feel free to share your player card.
+            </li>
+            <li>
+              <b>2.</b> The organizer will review and approve your application.
+            </li>
+            <li>
+              <b>3.</b> Teams will be formed based on the formation system for this season:
+              {formation && formation !== "UNDECIDED" ? (
+                <span className="mt-1 block rounded-lg bg-pitch/10 px-3 py-2 font-medium">{formationLabel(formation)} — {FORMATION_OPTIONS.find((o) => o.key === formation)?.blurb}</span>
+              ) : (
+                <>
+                  <span className="mt-1 block text-muted-foreground">The organizers choose once applications close. The options are:</span>
+                  <ul className="mt-1 space-y-0.5 pl-4">
+                    {FORMATION_OPTIONS.map((o) => (
+                      <li key={o.key} className="list-disc">
+                        <b>{o.label}</b> — {o.blurb}
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+            </li>
+            <li>
+              <b>4.</b> You will be notified about the updates in the BFL group.
+            </li>
+          </ol>
+        </section>
       </div>
     );
   }
@@ -114,11 +142,7 @@ export function RegistrationForm() {
             </li>
           ))}
         </ol>
-        {deadline && (
-          <p className="mt-4 inline-block rounded-full bg-black/30 px-3 py-1 text-xs">
-            ⏰ Applications close {new Date(deadline).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}
-          </p>
-        )}
+        {deadline && <Deadline deadline={deadline} />}
       </header>
       <ApplicationForm
         config={config}
@@ -135,6 +159,27 @@ export function RegistrationForm() {
           return null;
         }}
       />
+    </div>
+  );
+}
+
+/** The closing date, loud on purpose: a gold banner with the date and how long is left. */
+function Deadline({ deadline }: { deadline: string }) {
+  const [now] = useState(() => Date.now());
+  const date = new Date(deadline);
+  const ms = date.getTime() - now;
+  const days = Math.ceil(ms / 86_400_000);
+  const left = ms <= 0 ? "closing now" : days <= 1 ? "closes within a day" : `${days} days left`;
+  return (
+    <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-2xl bg-amber-300 px-5 py-3 text-[#3a0b14] shadow-md" data-testid="deadline">
+      <span className="text-2xl" aria-hidden>
+        ⏰
+      </span>
+      <div>
+        <p className="text-[11px] font-bold uppercase tracking-[0.2em] opacity-80">Apply before</p>
+        <p className="text-xl font-black leading-tight sm:text-2xl">{date.toLocaleString("en-GB", { weekday: "short", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}</p>
+      </div>
+      <span className="ml-auto rounded-full bg-[#3a0b14] px-3 py-1 text-xs font-bold text-amber-200">{left}</span>
     </div>
   );
 }

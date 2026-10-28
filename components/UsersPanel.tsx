@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { usePasswordConfirm } from "@/components/PasswordConfirm";
 
 type Role = "ADMIN" | "SCORER";
-type User = { id: string; name: string; username: string; role: Role; isActive: boolean; createdAt: string };
+type User = { id: string; name: string; username: string; role: Role; isActive: boolean; isOwner: boolean; pendingApproval: boolean; createdAt: string };
+type Invite = { id: string; role: Role; note: string | null; expiresAt: string; createdAt: string; createdBy: { name: string } };
 
 /**
  * Manages ADMIN/SCORER (staff) accounts. Team OWNER accounts stay on
@@ -24,6 +25,44 @@ export function UsersPanel() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [resetPasswords, setResetPasswords] = useState<Record<string, string>>({});
   const { confirmWithPassword, modal } = usePasswordConfirm();
+  const [invites, setInvites] = useState<Invite[]>([]);
+  const [inviteRole, setInviteRole] = useState<Role>("SCORER");
+  const [inviteNote, setInviteNote] = useState("");
+  const [newLink, setNewLink] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [approveRole, setApproveRole] = useState<Record<string, Role>>({});
+
+  async function loadInvites() {
+    const res = await fetch("/api/admin/invites");
+    if (res.ok) setInvites((await res.json()).invites ?? []);
+  }
+
+  async function createInvite() {
+    setError(null);
+    const res = await fetch("/api/admin/invites", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ role: inviteRole, note: inviteNote || null }) });
+    if (!res.ok) return setError((await res.json().catch(() => ({}))).error ?? "Couldn't create the invitation");
+    const body = await res.json();
+    setNewLink(`${window.location.origin}/admin/join/${body.token}`);
+    setCopied(false);
+    setInviteNote("");
+    loadInvites();
+  }
+
+  async function revokeInvite(id: string) {
+    await fetch(`/api/admin/invites/${id}`, { method: "DELETE" });
+    loadInvites();
+  }
+
+  async function decide(u: User, approve: boolean) {
+    setBusyId(u.id);
+    setError(null);
+    const res = approve
+      ? await fetch(`/api/admin/users/${u.id}/approve`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ role: approveRole[u.id] ?? u.role }) })
+      : await fetch(`/api/admin/users/${u.id}/approve`, { method: "DELETE" });
+    setBusyId(null);
+    if (!res.ok) return setError((await res.json().catch(() => ({}))).error ?? "That didn't work");
+    load();
+  }
 
   async function load() {
     const res = await fetch("/api/admin/users");
@@ -41,6 +80,8 @@ export function UsersPanel() {
         setUsers(body.users ?? []);
         setLoading(false);
       }
+      const inv = await fetch("/api/admin/invites");
+      if (!ignore && inv.ok) setInvites((await inv.json()).invites ?? []);
     })();
     return () => {
       ignore = true;
@@ -111,6 +152,83 @@ export function UsersPanel() {
       {modal}
       <h1 className="mb-6 heading-display text-2xl">Users</h1>
 
+      {users.some((u) => u.pendingApproval) && (
+        <section className="mb-8 rounded-2xl border-2 border-pitch bg-pitch/5 p-6" data-testid="pending-users">
+          <h2 className="mb-1 font-bold">Waiting for your approval</h2>
+          <p className="mb-4 text-sm text-muted-foreground">These people joined with an invitation link. They can&rsquo;t log in until you approve them.</p>
+          <ul className="space-y-3">
+            {users.filter((u) => u.pendingApproval).map((u) => (
+              <li key={u.id} className="flex flex-wrap items-center gap-3">
+                <span className="font-bold">{u.name}</span>
+                <span className="text-sm text-muted-foreground">@{u.username}</span>
+                <select value={approveRole[u.id] ?? u.role} onChange={(e) => setApproveRole((p) => ({ ...p, [u.id]: e.target.value as Role }))} aria-label={`Role for ${u.username}`} className="rounded-lg border border-line bg-background px-2 py-1.5 text-xs">
+                  <option value="SCORER">Scorer</option>
+                  <option value="ADMIN">Admin</option>
+                </select>
+                <button onClick={() => decide(u, true)} disabled={busyId === u.id} className="rounded-full bg-pitch px-4 py-1.5 text-xs font-bold text-white disabled:opacity-40">
+                  Approve
+                </button>
+                <button onClick={() => decide(u, false)} disabled={busyId === u.id} className="rounded-full border border-live px-4 py-1.5 text-xs font-bold text-live disabled:opacity-40">
+                  Decline
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <section className="mb-8 rounded-2xl border border-line bg-surface p-6" data-testid="invite-section">
+        <h2 className="mb-1 font-bold">Invite someone</h2>
+        <p className="mb-4 text-sm text-muted-foreground">Create a one-time link. They open it, set their own username and password, and you approve them here. The link works for 7 days.</p>
+        <div className="flex flex-wrap items-end gap-3">
+          <label className="block">
+            <span className="mb-1 block text-sm font-medium">Role</span>
+            <select value={inviteRole} onChange={(e) => setInviteRole(e.target.value as Role)} aria-label="Invitation role" className="rounded-lg border border-line bg-background px-3 py-2 text-sm">
+              <option value="SCORER">Scorer</option>
+              <option value="ADMIN">Admin</option>
+            </select>
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-sm font-medium">Note (who is it for?)</span>
+            <input value={inviteNote} onChange={(e) => setInviteNote(e.target.value)} maxLength={80} placeholder="optional" className="w-48 rounded-lg border border-line bg-background px-3 py-2 text-sm" />
+          </label>
+          <button onClick={createInvite} className="rounded-full bg-pitch px-5 py-2 text-sm font-bold text-white">
+            Create invitation link
+          </button>
+        </div>
+        {newLink && (
+          <div className="mt-4 rounded-xl border border-pitch bg-pitch/5 p-4" data-testid="new-invite">
+            <p className="mb-2 text-sm font-medium">Send this link — it won&rsquo;t be shown again:</p>
+            <div className="flex flex-wrap items-center gap-2">
+              <input readOnly value={newLink} aria-label="Invitation link" onFocus={(e) => e.currentTarget.select()} className="min-w-0 flex-1 rounded-lg border border-line bg-background px-3 py-2 text-xs" />
+              <button
+                onClick={async () => {
+                  await navigator.clipboard?.writeText(newLink).catch(() => {});
+                  setCopied(true);
+                }}
+                className="rounded-full bg-pitch px-4 py-2 text-xs font-bold text-white"
+              >
+                {copied ? "Copied ✓" : "Copy link"}
+              </button>
+            </div>
+          </div>
+        )}
+        {invites.length > 0 && (
+          <ul className="mt-4 divide-y divide-line rounded-xl border border-line text-sm">
+            {invites.map((i) => (
+              <li key={i.id} className="flex flex-wrap items-center gap-3 px-4 py-2.5">
+                <span className="rounded-full bg-line px-2 py-0.5 text-xs font-bold uppercase text-muted-foreground">{i.role}</span>
+                <span className="flex-1">{i.note || "Open invitation"}</span>
+                <span className="text-xs text-muted-foreground">expires {new Date(i.expiresAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
+                <button onClick={() => revokeInvite(i.id)} className="text-xs font-medium text-live underline">
+                  Revoke
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
       <section className="mb-8 rounded-2xl border border-line bg-surface p-6">
         <h2 className="mb-1 font-bold">New account</h2>
         <p className="mb-4 text-sm text-muted-foreground">
@@ -173,7 +291,7 @@ export function UsersPanel() {
         <p className="text-muted-foreground">Loading…</p>
       ) : (
         <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
-          {users.map((u) => (
+          {users.filter((u) => !u.pendingApproval).map((u) => (
             <li key={u.id} className="space-y-2.5 px-5 py-4">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="font-bold">{u.name}</span>
@@ -181,6 +299,11 @@ export function UsersPanel() {
                 <span className="rounded-full bg-line px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-muted-foreground">
                   {u.role}
                 </span>
+                {u.isOwner && (
+                  <span className="rounded-full bg-pitch/10 px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-pitch-dark" title="The main admin can't be deactivated or demoted">
+                    Main admin
+                  </span>
+                )}
                 {!u.isActive && (
                   <span className="rounded-full bg-live/10 px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-live">
                     Deactivated
@@ -188,6 +311,7 @@ export function UsersPanel() {
                 )}
               </div>
               <div className="flex flex-wrap items-center gap-2">
+                {!u.isOwner && (
                 <select
                   value={u.role}
                   onChange={(e) => patchUser(u.id, { role: e.target.value as Role })}
@@ -197,6 +321,8 @@ export function UsersPanel() {
                   <option value="SCORER">Scorer</option>
                   <option value="ADMIN">Admin</option>
                 </select>
+                )}
+                {!u.isOwner && (
                 <button
                   onClick={() => handleToggleActive(u)}
                   disabled={busyId === u.id}
@@ -207,6 +333,8 @@ export function UsersPanel() {
                 >
                   {u.isActive ? "Deactivate" : "Reactivate"}
                 </button>
+                )}
+                {u.isOwner && <span className="text-xs text-muted-foreground">The main admin can&rsquo;t be deactivated.</span>}
                 <input
                   type="password"
                   placeholder="New password"

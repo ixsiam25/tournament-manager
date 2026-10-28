@@ -34,6 +34,8 @@ export async function GET() {
       username: true,
       role: true,
       isActive: true,
+      isOwner: true,
+      pendingApproval: true,
       createdAt: true,
     },
     orderBy: [{ role: "asc" }, { name: "asc" }],

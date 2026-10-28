@@ -64,7 +64,8 @@ export async function POST(request: NextRequest) {
     },
   });
 
-  await approveRegistration(registration, season);
+  const { personId } = await approveRegistration(registration, season);
+  const player = await prisma.player.findUnique({ where: { seasonId_personId: { seasonId: season.id, personId } }, select: { id: true } });
   await logAudit({
     actor,
     action: "registration.create",
@@ -73,5 +74,5 @@ export async function POST(request: NextRequest) {
     summary: `Manually added registration for "${registration.name}"`,
   });
 
-  return NextResponse.json({ registration }, { status: 201 });
+  return NextResponse.json({ registration, playerId: player?.id ?? null }, { status: 201 });
 }

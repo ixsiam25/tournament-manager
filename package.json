@@ -33,6 +33,7 @@
     "test:adminnav": "tsx tests/integration/admin-nav.ts",
     "test:story": "tsx tests/integration/story-download.ts",
     "test:regedit": "tsx tests/integration/registration-edit.ts",
+    "test:adminteam": "tsx tests/integration/admin-team.ts",
     "test:timetext": "tsx tests/unit/timeText.ts"
   },
   "prisma": {

@@ -31,10 +31,23 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   if (!before || before.role === "OWNER") {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
+  // The main admin keeps the system reachable: it can't be deactivated or demoted.
+  if (before.isOwner && (parsed.data.isActive === false || (parsed.data.role !== undefined && parsed.data.role !== "ADMIN"))) {
+    return NextResponse.json({ error: "The main admin can't be deactivated or demoted — it keeps the system from being locked out" }, { status: 400 });
+  }
   // An ADMIN deactivating themselves would lock everyone out with no way
   // back in short of a direct DB edit — refuse it.
   if (before.id === actor.id && parsed.data.isActive === false) {
     return NextResponse.json({ error: "You can't deactivate your own account" }, { status: 400 });
+  }
+
+  if (before.pendingApproval && parsed.data.isActive === true) {
+    return NextResponse.json({ error: "Approve this person first (they joined by invitation)" }, { status: 400 });
+  }
+  // Never leave the console without an active admin.
+  if (before.role === "ADMIN" && before.isActive && (parsed.data.isActive === false || parsed.data.role === "SCORER")) {
+    const others = await prisma.user.count({ where: { role: "ADMIN", isActive: true, id: { not: id } } });
+    if (others === 0) return NextResponse.json({ error: "There must always be at least one active admin" }, { status: 400 });
   }
 
   const data: { role?: "ADMIN" | "SCORER"; isActive?: boolean; passwordHash?: string } = {};
@@ -45,7 +58,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   const user = await prisma.user.update({
     where: { id },
     data,
-    select: { id: true, name: true, username: true, role: true, isActive: true, createdAt: true },
+    select: { id: true, name: true, username: true, role: true, isActive: true, isOwner: true, pendingApproval: true, createdAt: true },
   });
 
   const summaryParts: string[] = [];

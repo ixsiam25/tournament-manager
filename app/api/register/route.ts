@@ -17,6 +17,7 @@ export async function GET() {
     open,
     seasonName: season?.name ?? null,
     deadline: season?.applicationDeadline?.toISOString() ?? null,
+    formation: season?.teamFormation ?? null,
     config: resolveApplicationConfig(season?.applicationConfig),
   });
 }
