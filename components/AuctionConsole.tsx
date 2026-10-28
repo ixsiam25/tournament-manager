@@ -6,7 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { usePasswordConfirm } from "@/components/PasswordConfirm";
 import { Crest } from "@/components/Crest";
 
-type Settings = { budgetPerTeam: number; basePrice: number; bidIncrement: number } | null;
+type Settings = { budgetPerTeam: number; basePrice: number; bidIncrement: number; posterKey?: string | null; stageMode?: string } | null;
 type Season = { id: string; name: string; teamFormation: string; squadSizeMin: number | null; squadSizeMax: number | null };
 type LotPlayer = { id: string; name: string; position: string | null; photoUrl: string | null };
 type Lot = { id: string; currentBid: number | null; currentBidTeamId: string | null; player: LotPlayer };
@@ -51,6 +51,7 @@ export function AuctionConsole() {
   const [proposal, setProposal] = useState<{ moves: { lotId: string; teamId: string }[]; leftOver: number; stillNeeded: number } | null>(null);
 
   const { confirmWithPassword, modal } = usePasswordConfirm();
+  const posterInput = useRef<HTMLInputElement>(null);
 
   const load = useCallback(async () => {
     const res = await fetch("/api/admin/auction");
@@ -83,6 +84,25 @@ export function AuctionConsole() {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- initial data load
     load();
   }, [load]);
+
+  async function uploadPoster(file: File) {
+    setBusy(true);
+    setError(null);
+    const fd = new FormData();
+    fd.append("poster", file);
+    const res = await fetch("/api/admin/auction/poster", { method: "POST", body: fd });
+    setBusy(false);
+    if (!res.ok) return setError((await res.json().catch(() => ({}))).error ?? "Couldn't upload the poster");
+    await load();
+    setNotice("Poster uploaded.");
+  }
+
+  async function removePoster() {
+    setBusy(true);
+    await fetch("/api/admin/auction/poster", { method: "DELETE" });
+    setBusy(false);
+    load();
+  }
 
   /** POSTs to an auction endpoint, surfaces errors, refreshes. Returns the result or null. */
   async function act<T = unknown>(path: string, body?: unknown, okMessage?: string): Promise<T | null> {
@@ -172,6 +192,9 @@ export function AuctionConsole() {
           <Link href="/stage/auction" target="_blank" className="font-bold text-pitch underline">
             Open projector view ↗
           </Link>
+          <a href="/api/admin/auction/players-pdf" download className="font-bold text-pitch underline" data-testid="players-pdf">
+            ⬇ Players list (PDF)
+          </a>
         </div>
       </div>
 
@@ -185,6 +208,15 @@ export function AuctionConsole() {
       )}
       {error && <p className="mb-4 text-sm text-live">{error}</p>}
       {notice && <p className="mb-4 text-sm text-pitch">{notice}</p>}
+
+      <Presentation
+        settings={settings}
+        busy={busy}
+        onMode={(mode) => act("stage", { mode })}
+        onPickPoster={() => posterInput.current?.click()}
+        onRemovePoster={removePoster}
+      />
+      <input ref={posterInput} type="file" accept="image/jpeg,image/png,image/webp" aria-label="Auction poster" className="sr-only" tabIndex={-1} onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadPoster(f); e.target.value = ""; }} />
 
       <section className="mb-6 rounded-2xl border border-line bg-surface p-5">
         {currentLot ? (
@@ -472,5 +504,85 @@ function PlaceRow({
         {retain ? "Retain" : "Place"}
       </button>
     </li>
+  );
+}
+
+const STEPS = [
+  { mode: "POSTER", label: "Poster" },
+  { mode: "CAPTAINS", label: "Captains" },
+  { mode: "BEGIN", label: "Let’s begin" },
+  { mode: "LIVE", label: "Auction" },
+] as const;
+
+/** The projector's run of show: poster → all captains → "let's begin" → the auction, plus a break
+ * button (shows the poster again) that can be used any time, e.g. before the unsold round. */
+function Presentation({ settings, busy, onMode, onPickPoster, onRemovePoster }: { settings: NonNullable<Settings>; busy: boolean; onMode: (mode: string) => void; onPickPoster: () => void; onRemovePoster: () => void }) {
+  const mode = settings.stageMode ?? "LIVE";
+  const hasPoster = !!settings.posterKey;
+  const onBreak = mode === "BREAK";
+  const index = STEPS.findIndex((s) => s.mode === mode);
+  const next = index >= 0 && index < STEPS.length - 1 ? STEPS[index + 1] : null;
+  const prev = index > 0 ? STEPS[index - 1] : null;
+  return (
+    <section className="mb-6 rounded-2xl border border-line bg-surface p-5" data-testid="presentation">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <h2 className="font-bold">Projector presentation</h2>
+        {onBreak && <span className="rounded-full bg-amber-300 px-3 py-1 text-xs font-bold uppercase text-[#3a0b14]">On a break — the poster is showing</span>}
+      </div>
+
+      <div className="mb-4 flex flex-wrap items-center gap-3 text-sm">
+        {hasPoster ? (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element -- admin thumbnail via the media proxy */}
+            <img src={`/api/photos/${settings.posterKey}`} alt="Auction poster" className="h-14 rounded-lg border border-line object-cover" />
+            <button onClick={onPickPoster} disabled={busy} className="font-medium text-pitch underline">Replace poster</button>
+            <button onClick={onRemovePoster} disabled={busy} className="text-xs text-muted-foreground underline">Remove</button>
+          </>
+        ) : (
+          <button onClick={onPickPoster} disabled={busy} className="rounded-full border border-pitch px-4 py-1.5 text-sm font-bold text-pitch">
+            📷 Upload the poster / freeze frame
+          </button>
+        )}
+        <span className="text-xs text-muted-foreground">Shown at the start and during breaks.</span>
+      </div>
+
+      <ol className="mb-4 flex flex-wrap gap-2 text-xs font-bold">
+        {STEPS.map((s, i) => (
+          <li key={s.mode} className={"rounded-full px-3 py-1.5 " + (s.mode === mode ? "bg-pitch text-white" : i < index ? "bg-pitch/15 text-pitch-dark" : "bg-line text-muted-foreground")}>
+            {i + 1}. {s.label}
+          </li>
+        ))}
+      </ol>
+
+      <div className="flex flex-wrap items-center gap-3">
+        {mode === "LIVE" && index === 3 && <p className="text-sm text-muted-foreground">The live auction is on the projector.</p>}
+        {!onBreak && prev && (
+          <button onClick={() => onMode(prev.mode)} disabled={busy} className="rounded-full border border-line px-4 py-2 text-sm font-medium disabled:opacity-40">
+            ← Back to {prev.label.toLowerCase()}
+          </button>
+        )}
+        {!onBreak && next && (
+          <button onClick={() => onMode(next.mode)} disabled={busy} className="rounded-full bg-pitch px-5 py-2 text-sm font-bold text-white disabled:opacity-40">
+            {next.mode === "LIVE" ? "Start the auction →" : `Next: ${next.label.toLowerCase()} →`}
+          </button>
+        )}
+        {mode === "LIVE" && !hasPoster && null}
+        {!onBreak && mode !== "POSTER" && (
+          <button onClick={() => onMode("BREAK")} disabled={busy || !hasPoster} title={hasPoster ? "Shows the poster for a break" : "Upload a poster first"} className="rounded-full border border-live px-4 py-2 text-sm font-bold text-live disabled:opacity-40">
+            ⏸ Take a break
+          </button>
+        )}
+        {mode === "LIVE" && STEPS[0] && !onBreak && (
+          <button onClick={() => onMode("POSTER")} disabled={busy || !hasPoster} className="text-xs text-muted-foreground underline disabled:opacity-40">
+            Restart the intro
+          </button>
+        )}
+        {onBreak && (
+          <button onClick={() => onMode("LIVE")} disabled={busy} className="rounded-full bg-pitch px-6 py-2.5 text-sm font-bold text-white disabled:opacity-40">
+            ▶ Resume the auction
+          </button>
+        )}
+      </div>
+    </section>
   );
 }

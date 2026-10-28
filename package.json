@@ -34,6 +34,7 @@
     "test:story": "tsx tests/integration/story-download.ts",
     "test:regedit": "tsx tests/integration/registration-edit.ts",
     "test:adminteam": "tsx tests/integration/admin-team.ts",
+    "test:auctionshow": "tsx tests/integration/auction-presentation.ts",
     "test:timetext": "tsx tests/unit/timeText.ts"
   },
   "prisma": {
@@ -50,6 +51,7 @@
     "lucide-react": "^1.43.0",
     "motion": "^13.2.0",
     "next": "16.2.11",
+    "pdf-lib": "^1.17.1",
     "prisma": "^7.9.0",
     "radix-ui": "^1.6.7",
     "react": "19.2.4",

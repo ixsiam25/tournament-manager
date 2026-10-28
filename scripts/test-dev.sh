@@ -14,7 +14,7 @@ trap 'kill $SERVER 2>/dev/null; pkill -f "next dev -p 3101" 2>/dev/null' EXIT
 for i in $(seq 1 60); do curl -s -o /dev/null http://localhost:3101/api/public/auction/stage && break; sleep 1; done
 FAILED=""
 npx playwright test || FAILED="$FAILED smoke"
-for t in card batch timetext formation stats scoping identity formationdb apply adminui cards auction auctionui journey seasonflow teamsetup seasondetails adminnav story regedit adminteam; do
+for t in card batch timetext formation stats scoping identity formationdb apply adminui cards auction auctionui journey seasonflow teamsetup seasondetails adminnav story regedit adminteam auctionshow; do
   printf "%s: " "$t"
   OUT=$(npm run --silent test:$t 2>&1) && STATUS=ok || STATUS=fail
   echo "$OUT" | tail -1

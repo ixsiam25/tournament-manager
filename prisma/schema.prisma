@@ -581,6 +581,10 @@ model AuctionSettings {
   basePrice     Int
   bidIncrement  Int
   lockedAt      DateTime?
+  /// Poster / freeze frame shown on the projector at the start and during breaks (a media key).
+  posterKey     String?
+  /// What the projector is doing: POSTER → CAPTAINS → BEGIN (the intro), LIVE (the auction itself) or BREAK (poster again).
+  stageMode     String    @default("LIVE")
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }

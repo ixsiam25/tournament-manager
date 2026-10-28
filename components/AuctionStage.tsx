@@ -59,6 +59,49 @@ function Screen({ state }: { state: StageState }) {
     case "off":
       return <h1 className="pt-40 text-center text-3xl font-normal text-white/60">No auction is running right now.</h1>;
 
+    case "poster":
+      return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black" data-testid="stage-poster">
+          {state.posterUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element -- full-screen poster from the media proxy
+            <img src={state.posterUrl} alt="" className="h-full w-full object-contain" />
+          ) : (
+            <p className="heading-display text-7xl text-white/80">{state.seasonName}</p>
+          )}
+          {state.onBreak && (
+            <p className="absolute bottom-10 left-1/2 -translate-x-1/2 rounded-full bg-black/70 px-8 py-3 text-3xl font-bold uppercase tracking-[0.2em] text-white" data-testid="stage-break">
+              We&rsquo;ll be right back
+            </p>
+          )}
+        </div>
+      );
+
+    case "captains":
+      return (
+        <div data-testid="stage-captains">
+          <Header seasonName={state.seasonName} right="The captains" />
+          <div className="flex flex-wrap justify-center gap-x-10 gap-y-8 pt-2">
+            {state.captains.map((c) => (
+              <div key={c.teamName} className="flex flex-col items-center gap-3">
+                {c.card ? <BigCard card={c.card} scale={0.95} /> : <div style={{ width: 230 * 0.95, height: 360 * 0.95 }} className="flex items-center justify-center rounded-2xl border border-white/20 text-white/50">No captain yet</div>}
+                <div className="flex items-center gap-3 text-2xl font-black uppercase tracking-wide">
+                  <Crest size={44} name={c.teamName} />
+                  {c.teamName}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+
+    case "begin":
+      return (
+        <div className="flex min-h-[80vh] flex-col items-center justify-center text-center" data-testid="stage-begin">
+          <p className="text-3xl font-bold uppercase tracking-[0.4em] text-white/60">{state.seasonName} · Auction</p>
+          <p className="mt-8 heading-display text-[9rem] leading-none text-amber-300">Let&rsquo;s begin</p>
+        </div>
+      );
+
     case "opening":
       return (
         <div>
@@ -180,10 +223,10 @@ function Screen({ state }: { state: StageState }) {
   }
 }
 
-function BigCard({ card }: { card: StageCard }) {
+function BigCard({ card, scale = CARD_SCALE }: { card: StageCard; scale?: number }) {
   return (
-    <div style={{ width: 230 * CARD_SCALE, height: 360 * CARD_SCALE }} className="shrink-0">
-      <div style={{ transform: `scale(${CARD_SCALE})`, transformOrigin: "top left", width: 230 }}>
+    <div style={{ width: 230 * scale, height: 360 * scale }} className="shrink-0">
+      <div style={{ transform: `scale(${scale})`, transformOrigin: "top left", width: 230 }}>
         <PlayerCardView name={card.name} model={card.model} imageUrl={card.imageUrl} isCutout={card.isCutout} framing={card.framing} semester={card.semester} />
       </div>
     </div>

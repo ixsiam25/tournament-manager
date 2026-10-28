@@ -13,6 +13,9 @@ export type StageCard = Pick<CardView, "name" | "model" | "imageUrl" | "isCutout
 
 export type StageState =
   | { phase: "off" }
+  | { phase: "poster"; seasonName: string; posterUrl: string | null; onBreak: boolean }
+  | { phase: "captains"; seasonName: string; captains: { teamName: string; logoUrl: string | null; card: StageCard | null; name: string }[] }
+  | { phase: "begin"; seasonName: string }
   | { phase: "opening"; seasonName: string; players: number; basePrice: number; teams: StageTeam[] }
   | {
       phase: "lot";
@@ -79,6 +82,28 @@ export async function getStageState(now = new Date()): Promise<StageState> {
       })),
     };
   }
+
+  // The organiser's presentation controls come first: the opening poster, the captains slide,
+  // "let's begin", and the break screen (the poster again) all pre-empt the auction itself.
+  const posterUrl = settings.posterKey ? `/api/photos/${settings.posterKey}` : null;
+  if (settings.stageMode === "POSTER" || settings.stageMode === "BREAK") {
+    return { phase: "poster", seasonName, posterUrl, onBreak: settings.stageMode === "BREAK" };
+  }
+  if (settings.stageMode === "CAPTAINS") {
+    const captains = await prisma.player.findMany({ where: { seasonId: season.id, isCaptain: true, teamId: { not: null }, status: "ACTIVE" }, select: { id: true, name: true, teamId: true } });
+    const cards = await getCards(season.id, { playerIds: captains.map((c) => c.id) });
+    const teamRows = await prisma.team.findMany({ where: { seasonId: season.id }, select: { id: true, name: true, logoUrl: true }, orderBy: { name: "asc" } });
+    return {
+      phase: "captains",
+      seasonName,
+      captains: teamRows.map((t) => {
+        const c = captains.find((x) => x.teamId === t.id);
+        const card = c ? cards.find((x) => x.id === c.id) : null;
+        return { teamName: t.name, logoUrl: t.logoUrl, name: c?.name ?? "", card: card ? toStageCard(card) : null };
+      }),
+    };
+  }
+  if (settings.stageMode === "BEGIN") return { phase: "begin", seasonName };
 
   const [current, lastResolved, sold, left, total] = await Promise.all([
     prisma.auctionLot.findFirst({ where: { seasonId: season.id, status: "IN_PROGRESS" } }),
