@@ -17,6 +17,7 @@ export function ApplicationSettingsPanel() {
   const [seasonName, setSeasonName] = useState<string | null>(null);
   const [config, setConfig] = useState<ApplicationConfig | null>(null);
   const [deadline, setDeadline] = useState("");
+  const [usage, setUsage] = useState<{ cap: number | null; used: number; full: boolean } | null>(null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
 
@@ -29,6 +30,7 @@ export function ApplicationSettingsPanel() {
       setSeasonName(body.season?.name ?? null);
       if (body.config) setConfig(body.config);
       setDeadline(body.deadline ? toLocalInput(body.deadline) : "");
+      setUsage(body.usage ?? null);
       setLoading(false);
     })();
     return () => {
@@ -181,6 +183,23 @@ export function ApplicationSettingsPanel() {
         <span className="mb-1 block text-sm font-bold">Applications close (optional)</span>
         <input type="datetime-local" value={deadline} onChange={(e) => setDeadline(e.target.value)} className={input} />
         <span className="mt-1 block text-xs text-muted-foreground">After this time the form closes by itself, even if registration is switched on.</span>
+      </label>
+
+      <label className="block">
+        <span className="mb-1 block text-sm font-bold">Maximum applications (optional)</span>
+        <input
+          type="number"
+          min={1}
+          value={config.maxApplications ?? ""}
+          onChange={(e) => setConfig({ ...config, maxApplications: e.target.value === "" ? null : Math.max(1, Math.round(Number(e.target.value))) })}
+          placeholder="no limit"
+          aria-label="Maximum applications"
+          className={input + " w-40"}
+        />
+        <span className="mt-1 block text-xs text-muted-foreground">
+          Once this many people have applied (waiting for review + approved), the public form closes by itself with an &ldquo;Applications are full&rdquo; message. A rejected application frees its place, and you can still add people by hand or by Excel.
+          {usage && <b className="text-foreground"> Right now: {usage.used}{usage.cap ? ` of ${usage.cap}` : ""} applied{usage.full ? " — full" : ""}.</b>}
+        </span>
       </label>
 
       {message && <p className={"text-sm " + (message.ok ? "text-pitch" : "text-live")}>{message.text}</p>}

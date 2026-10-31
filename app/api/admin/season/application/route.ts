@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/userAuth";
 import { logAudit } from "@/lib/audit";
 import { getActiveSeason } from "@/lib/currentSeason";
+import { applicationUsage } from "@/lib/applicationCap";
 import { applicationConfigSchema, resolveApplicationConfig } from "@/lib/applicationConfig";
 
 export const dynamic = "force-dynamic";
@@ -19,6 +20,7 @@ export async function GET() {
     season: { id: season.id, name: season.name, registrationOpen: season.registrationOpen },
     config: resolveApplicationConfig(season.applicationConfig),
     deadline: season.applicationDeadline?.toISOString() ?? null,
+    usage: await applicationUsage(season),
   });
 }
 

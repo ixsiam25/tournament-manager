@@ -28,6 +28,8 @@ export type ApplicationConfig = {
   affiliationKind: "text" | "batch";
   /** What a batch label names: the term the batch graduates ("graduation", the default) or started ("entry"). */
   batchMeaning: BatchMeaning;
+  /** Most applications the public form accepts (pending + approved); null = no limit. Admins can still add people by hand. */
+  maxApplications: number | null;
 };
 
 export const FIELD_LABELS: Record<FieldKey, string> = {
@@ -50,6 +52,7 @@ export const DEFAULT_APPLICATION_CONFIG: ApplicationConfig = {
   intro: "",
   affiliationKind: "batch",
   batchMeaning: "graduation",
+  maxApplications: null,
 };
 
 export const MAX_QUESTIONS = 6;
@@ -77,6 +80,7 @@ export const applicationConfigSchema = z
     intro: z.string().trim().max(600),
     affiliationKind: z.enum(["text", "batch"]).default("batch"),
     batchMeaning: z.enum(["entry", "graduation"]).default("graduation"),
+    maxApplications: z.number().int("Use a whole number").min(1, "The limit must be at least 1").max(5000).nullable().default(null),
   })
   .superRefine((cfg, ctx) => {
     const ids = new Set<string>();

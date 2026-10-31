@@ -1,3 +1,4 @@
+import { applicationUsage } from "@/lib/applicationCap";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isRateLimited, clientIp } from "@/lib/rateLimit";
@@ -13,8 +14,11 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const season = await getActiveSeason();
   const open = !!season && isApplicationOpen(season);
+  const usage = season ? await applicationUsage(season) : null;
   return NextResponse.json({
-    open,
+    open: open && !usage?.full,
+    full: open && !!usage?.full,
+    cap: usage?.cap ?? null,
     seasonName: season?.name ?? null,
     deadline: season?.applicationDeadline?.toISOString() ?? null,
     formation: season?.teamFormation ?? null,
@@ -33,6 +37,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Applications are not open right now" }, { status: 403 });
   }
   const config = resolveApplicationConfig(season.applicationConfig);
+  const usage = await applicationUsage(season);
+  if (usage.full) {
+    return NextResponse.json({ error: `Applications are full — the limit of ${usage.cap} has been reached` }, { status: 403 });
+  }
 
   const formData = await request.formData().catch(() => null);
   if (!formData) return NextResponse.json({ error: "Invalid form" }, { status: 400 });

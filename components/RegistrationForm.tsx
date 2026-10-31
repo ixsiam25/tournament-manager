@@ -15,6 +15,8 @@ export function RegistrationForm() {
   const [seasonName, setSeasonName] = useState<string | null>(null);
   const [deadline, setDeadline] = useState<string | null>(null);
   const [formation, setFormation] = useState<string | null>(null);
+  const [full, setFull] = useState(false);
+  const [cap, setCap] = useState<number | null>(null);
   const [config, setConfig] = useState<ApplicationConfig>(DEFAULT_APPLICATION_CONFIG);
   const [editLink, setEditLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -31,6 +33,8 @@ export function RegistrationForm() {
         setSeasonName(body.seasonName);
         setDeadline(body.deadline);
         setFormation(body.formation ?? null);
+        setFull(!!body.full);
+        setCap(body.cap ?? null);
         if (body.config) setConfig(body.config);
         setChecking(false);
       }
@@ -41,6 +45,20 @@ export function RegistrationForm() {
   }, []);
 
   if (checking) return <p className="text-muted-foreground">Loading…</p>;
+
+  if (full) {
+    return (
+      <div className="rounded-3xl border border-line bg-surface p-8 text-center" data-testid="applications-full">
+        <p className="text-4xl" aria-hidden>
+          🎟️
+        </p>
+        <h1 className="mt-3 text-xl font-bold">Applications are full</h1>
+        <p className="mt-1 text-muted-foreground">
+          {seasonName ?? "This season"} has reached its limit{cap ? ` of ${cap} applications` : ""}. Follow the BFL group for updates — if a place opens up, the form will reopen.
+        </p>
+      </div>
+    );
+  }
 
   if (!open) {
     return (
