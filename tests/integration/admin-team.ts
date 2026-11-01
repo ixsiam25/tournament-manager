@@ -115,11 +115,11 @@ async function main() {
     assert.match(dl.suggestedFilename(), /^bfl-applicants-zz-team-.*\.xlsx$/);
     const file = `/tmp/zz-export-${stamp}.xlsx`;
     await dl.saveAs(file);
-    const rows = XLSX.utils.sheet_to_json<Record<string, string>>(XLSX.readFile(file).Sheets["Applicants"]);
+    const rows = XLSX.utils.sheet_to_json<Record<string, string>>(XLSX.readFile(file).Sheets["All applicants"]);
     fs.rmSync(file, { force: true });
     const row = rows.find((r) => r["Name"] === "ZZ Export Person");
     assert.ok(row, "the applicant is in the file");
-    assert.deepEqual([row!["Affiliation"], row!["Position"], row!["Student ID"], row!["Status"], row!["Current semester"]], ["Spring 28", "FWD", `ZZEXP${stamp}`, "PENDING", "6th semester"], "columns match the import template + extras");
+    assert.deepEqual([row!["Affiliation"], row!["Position"], row!["Student ID"], row!["Status"], row!["Current semester"]], ["Spring 28", "FWD", `ZZEXP${stamp}`, "Pending", "6th semester"], "the columns after No. match the import template + extras");
     assert.equal((await fetch(`${base}/api/admin/registrations/export`)).status, 401, "export needs an admin login");
 
     // ---- manual add with a photo ----

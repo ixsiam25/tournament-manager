@@ -47,6 +47,9 @@ export async function POST(request: NextRequest) {
   if (rows.length === 0) {
     return NextResponse.json({ error: "That file has no rows" }, { status: 400 });
   }
+  // A downloaded applicant list starts with a "No." column; skip it so the same file can be imported back.
+  const hasNumbering = ["no", "no.", "#"].includes(String(rows[0][0] ?? "").trim().toLowerCase());
+  if (hasNumbering) rows = rows.map((r) => r.slice(1));
   const header = rows[0].map((h) => String(h ?? "").trim().toLowerCase());
   const headerMatches = EXPECTED_HEADERS.every((h, i) => header[i] === h);
   if (!headerMatches) {

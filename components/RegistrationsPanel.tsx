@@ -360,9 +360,16 @@ export function RegistrationsPanel() {
 
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-surface px-4 py-3">
         <p className="text-sm text-muted-foreground">Editing the site a lot? Keep a copy of everyone who applied.</p>
-        <a href="/api/admin/registrations/export" download className="rounded-full bg-foreground px-5 py-2 text-sm font-bold text-background hover:opacity-90" data-testid="export-applicants">
-          ⬇ Download applicant list (Excel)
-        </a>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <a href="/api/admin/registrations/export" download className="rounded-full bg-foreground px-5 py-2 text-sm font-bold text-background hover:opacity-90" data-testid="export-applicants" title="Everyone, numbered and grouped: approved, pending, rejected">
+            ⬇ Download applicant list (Excel)
+          </a>
+          {(["approved", "pending", "rejected"] as const).map((st) => (
+            <a key={st} href={`/api/admin/registrations/export?status=${st}`} download className="text-xs font-medium text-pitch underline" data-testid={`export-${st}`}>
+              {st} only
+            </a>
+          ))}
+        </div>
       </div>
 
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">

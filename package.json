@@ -36,6 +36,7 @@
     "test:adminteam": "tsx tests/integration/admin-team.ts",
     "test:auctionshow": "tsx tests/integration/auction-presentation.ts",
     "test:appcap": "tsx tests/integration/application-cap.ts",
+    "test:export": "tsx tests/integration/applicant-export.ts",
     "test:timetext": "tsx tests/unit/timeText.ts"
   },
   "prisma": {
