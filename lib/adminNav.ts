@@ -6,7 +6,7 @@ export const NAV_GROUPS: NavGroup[] = [
   { key: "home", label: "Home", adminOnly: false, items: [{ href: "/admin", label: "Home", hint: "What to do next" }] },
   {
     key: "season",
-    label: "Season",
+    label: "Season set-up",
     adminOnly: true,
     items: [
       { href: "/admin/season", label: "Setup guide", hint: "Step-by-step from a new season to matchday" },

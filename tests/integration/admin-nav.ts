@@ -38,7 +38,7 @@ async function main() {
     await page.goto(`${base}/admin`);
     const main = page.getByRole("navigation", { name: "Main" });
     await main.waitFor(T);
-    assert.deepEqual((await main.getByRole("link").allTextContents()).map((t) => t.trim()), ["Home", "Season", "Players", "Matches", "Website", "Access"]);
+    assert.deepEqual((await main.getByRole("link").allTextContents()).map((t) => t.trim()), ["Home", "Season set-up", "Players", "Matches", "Website", "Access"]);
     await page.getByTestId("next-step").waitFor(T);
     assert.ok(/Next:/.test((await page.getByTestId("next-step").textContent()) ?? ""));
     const link = page.getByLabel("Application link");
@@ -47,7 +47,7 @@ async function main() {
 
     // Season area: sub-menu with the pages of that area, and the link again.
     await page.goto(`${base}/admin/season`);
-    const sub = page.getByRole("navigation", { name: "Season" });
+    const sub = page.getByRole("navigation", { name: "Season set-up" });
     await sub.waitFor(T);
     const labels = (await sub.getByRole("link").allTextContents()).map((t) => t.trim());
     assert.ok(["Setup guide", "Applications", "Team formation", "Auction", "Teams", "Season details", "Application form"].every((l) => labels.includes(l)), `season sub-menu: ${labels}`);
@@ -62,7 +62,7 @@ async function main() {
     // Applications page carries the link too; the sub-menu highlights it.
     await page.goto(`${base}/admin/registrations`);
     await page.getByLabel("Application link").waitFor(T);
-    assert.equal(await page.getByRole("navigation", { name: "Season" }).getByRole("link", { name: "Applications" }).getAttribute("aria-current"), "page");
+    assert.equal(await page.getByRole("navigation", { name: "Season set-up" }).getByRole("link", { name: "Applications" }).getAttribute("aria-current"), "page");
 
     // Once applications close the link goes away everywhere.
     await prisma.season.update({ where: { id: season.id }, data: { registrationOpen: false } });

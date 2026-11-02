@@ -2,8 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { getCurrentSeason } from "@/lib/currentSeason";
-import { getSeasonProgress } from "@/lib/seasonProgress";
-import { ApplicationLinkCard } from "@/components/ApplicationLinkCard";
 import { StartMatchButton } from "@/components/StartMatchButton";
 import { Crest } from "@/components/Crest";
 import { getSessionUser } from "@/lib/userAuth";
@@ -18,9 +16,6 @@ export default async function AdminDashboardPage() {
   const season = await getCurrentSeason();
   const seasonId = season?.id ?? "none";
   const archived = season?.status === "ARCHIVED";
-  const steps = isAdmin && season && !archived ? await getSeasonProgress(season) : [];
-  const nextStep = steps.find((st) => st.status === "current");
-  const doneCount = steps.filter((st) => st.status === "done").length;
   const pendingApps = isAdmin && season ? await prisma.registration.count({ where: { seasonId, status: "PENDING" } }) : 0;
   const [teamCount, playerCount, matchCount, liveMatch, upcoming] = await Promise.all([
     prisma.team.count({ where: { seasonId } }),
@@ -53,33 +48,7 @@ export default async function AdminDashboardPage() {
                 Create a new season
               </Link>
             </section>
-          ) : (
-            <>
-              {nextStep && (
-                <section className="rounded-2xl border-2 border-pitch bg-pitch/5 p-5" data-testid="next-step">
-                  <p className="text-xs font-bold uppercase tracking-wide text-pitch">
-                    {season.name} · Step {doneCount + 1} of {steps.length}
-                  </p>
-                  <h2 className="mt-1 text-xl font-bold">Next: {nextStep.title}</h2>
-                  <p className="mt-1 text-sm text-muted-foreground">{nextStep.detail}</p>
-                  <div className="mt-4 flex flex-wrap items-center gap-3">
-                    {nextStep.actions
-                      .filter((a) => a.href)
-                      .slice(0, 2)
-                      .map((a) => (
-                        <Link key={a.label} href={a.href!} className={a.primary ? "rounded-full bg-pitch px-5 py-2 text-sm font-bold text-white" : "text-sm font-medium text-pitch underline"}>
-                          {a.label}
-                        </Link>
-                      ))}
-                    <Link href="/admin/season" className="text-sm text-muted-foreground underline">
-                      See all steps
-                    </Link>
-                  </div>
-                </section>
-              )}
-              {season.registrationOpen && season.registrationSelfServeEnabled && <ApplicationLinkCard deadline={season.applicationDeadline?.toISOString() ?? null} />}
-            </>
-          )}
+          ) : null}
         </div>
       )}
 
