@@ -62,7 +62,7 @@ async function main() {
   try {
     // ---- the form is closed because the closing time passed — and the admin is told so ----
     const s0 = await publicStatus();
-    assert.deepEqual([s0.open, s0.full, s0.closedReason], [false, true === false, "deadline"], "closed by the deadline, not by the limit");
+    assert.deepEqual([s0.open, s0.full, s0.closedReason], [false, false, "deadline"], "closed by the deadline, not by the limit");
     await page.goto(`${base}/admin/settings`);
     const card = page.getByTestId("apply-status");
     await card.getByRole("button", { name: "Remove the closing time" }).waitFor(T);
