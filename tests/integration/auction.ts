@@ -62,7 +62,7 @@ async function main() {
     await svc.setBid(await A.ctx(), 60);
     assert.equal((await prisma.auctionLot.findUniqueOrThrow({ where: { id: first.id } })).currentBidTeamId, null, "no bidding team is recorded");
     stage = await getStageState();
-    assert.ok(stage.phase === "lot" && stage.currentBid === 60 && stage.leader === null, "the projector shows the live bid and no team");
+    assert.ok(stage.phase === "lot" && !("currentBid" in stage) && !("leader" in stage), "the projector never carries the live bid");
     await svc.clearBid(await A.ctx());
     assert.equal((await prisma.auctionLot.findUniqueOrThrow({ where: { id: first.id } })).currentBid, null);
     await svc.setBid(await A.ctx(), 60);
@@ -79,8 +79,9 @@ async function main() {
     assert.equal(soldLot.player.jerseyNumber, 1);
     stage = await getStageState();
     assert.ok(stage.phase === "result" && stage.kind === "SOLD" && stage.price === 60 && stage.team?.name === "ZZ A");
-    stage = await getStageState(new Date(Date.now() + 60_000));
-    assert.equal(stage.phase, "between", "the result clears after a few seconds");
+    await new Promise((r) => setTimeout(r, 1200));
+    stage = await getStageState();
+    assert.ok(stage.phase === "result" && stage.kind === "SOLD" && stage.price === 60, "the sold card stays up until the next lot is drawn");
 
     // ---- unsold is the only "not now" outcome; undo puts the player back ----
     const second = await svc.nextLot(await A.ctx());
@@ -90,11 +91,11 @@ async function main() {
     assert.equal((await prisma.auctionLot.findUniqueOrThrow({ where: { id: second.id } })).status, "QUEUED", "undo puts the player back in the queue");
     await assert.rejects(async () => svc.sellLot(await A.ctx(), ta.id), /No lot is currently up/);
     await svc.nextLot(await A.ctx());
-    await assert.rejects(async () => svc.sellLot(await A.ctx(), ta.id), /no bid has been recorded/i);
+    await assert.rejects(async () => svc.sellLot(await A.ctx(), ta.id), /Enter the final price/i);
     await svc.markUnsold(await A.ctx()); // the lot brought up above
     stage = await getStageState();
     assert.ok(stage.phase === "result" && stage.kind === "UNSOLD");
-    for (const state of [stage, await getStageState(new Date(Date.now() + 60_000))]) {
+    for (const state of [stage]) {
       assert.ok(!/budget|remaining|squad/i.test(JSON.stringify(state)), "the projector state carries no budgets or squad data");
     }
 

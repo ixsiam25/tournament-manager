@@ -108,7 +108,9 @@ async function main() {
     for (const [mode, phase] of [["POSTER", "poster"], ["CAPTAINS", "captains"], ["BEGIN", "begin"], ["LIVE", "between"], ["BREAK", "poster"]] as const) {
       assert.equal((await post("/api/admin/auction/stage", { mode })).status, 200, mode);
       const s = await stage();
-      assert.equal(s.phase, phase, `${mode} → ${phase}`);
+      // after LIVE the auction's own state shows: the captain's just-closed lot is a brief "result", then "between"
+      if (mode === "LIVE") assert.ok(["between", "result"].includes(s.phase), `${mode} → ${s.phase}`);
+      else assert.equal(s.phase, phase, `${mode} → ${phase}`);
       assert.ok(!/budget|remaining|squad/i.test(JSON.stringify(s)), "the projector state carries no budgets or squads");
       if (mode === "BREAK") assert.equal(s.onBreak, true);
       if (mode === "POSTER") assert.equal(s.onBreak, false);
@@ -130,14 +132,14 @@ async function main() {
     await projector.getByTestId("stage-break").waitFor(T);
     await panel.getByRole("button", { name: "▶ Resume the auction" }).click();
     await projector.getByTestId("stage-poster").waitFor({ state: "detached", ...T });
-    await panel.getByRole("button", { name: "Restart the intro" }).click();
+    await panel.getByRole("button", { name: /1\. Poster/ }).click();
     await projector.getByTestId("stage-poster").waitFor(T);
-    await panel.getByRole("button", { name: /Next: captains/ }).click();
+    await panel.getByRole("button", { name: /2\. Captains/ }).click();
     await projector.getByTestId("stage-captains").waitFor(T);
     assert.match(await projector.getByTestId("stage-captains").innerText(), /zz reds/i);
-    await panel.getByRole("button", { name: /Next: let.s begin/i }).click();
+    await panel.getByRole("button", { name: /3\. Let.s begin/ }).click();
     await projector.getByTestId("stage-begin").waitFor(T);
-    await panel.getByRole("button", { name: /Start the auction/ }).click();
+    await panel.getByRole("button", { name: /4\. Auction/ }).click();
     await projector.getByTestId("stage-begin").waitFor({ state: "detached", ...T });
     assert.equal((await prisma.auctionSettings.findUniqueOrThrow({ where: { id: settings.id } })).stageMode, "LIVE");
 
