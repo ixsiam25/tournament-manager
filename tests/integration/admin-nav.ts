@@ -34,16 +34,13 @@ async function main() {
   const T = { timeout: 30000 };
 
   try {
-    // Home: a short menu, a next step, and the application link.
+    // Home: a short menu.
     await page.goto(`${base}/admin`);
     const main = page.getByRole("navigation", { name: "Main" });
     await main.waitFor(T);
     assert.deepEqual((await main.getByRole("link").allTextContents()).map((t) => t.trim()), ["Home", "Season set-up", "Players", "Matches", "Website", "Access"]);
-    await page.getByTestId("next-step").waitFor(T);
-    assert.ok(/Next:/.test((await page.getByTestId("next-step").textContent()) ?? ""));
-    const link = page.getByLabel("Application link");
-    await link.waitFor(T);
-    assert.ok((await link.inputValue()).endsWith("/register"), "the share link points at the sign-up form");
+    // (Home no longer carries the next-step and share-link cards — they live on Season set-up and Applications.)
+    assert.equal(await page.getByTestId("next-step").count(), 0);
 
     // Season area: sub-menu with the pages of that area, and the link again.
     await page.goto(`${base}/admin/season`);
@@ -52,7 +49,9 @@ async function main() {
     const labels = (await sub.getByRole("link").allTextContents()).map((t) => t.trim());
     assert.ok(["Setup guide", "Applications", "Team formation", "Auction", "Teams", "Season details", "Application form"].every((l) => labels.includes(l)), `season sub-menu: ${labels}`);
     assert.equal(await sub.getByRole("link", { name: "Setup guide" }).getAttribute("aria-current"), "page");
-    await page.getByLabel("Application link").waitFor(T);
+    const link = page.getByLabel("Application link");
+    await link.waitFor(T);
+    assert.ok((await link.inputValue()).endsWith("/register"), "the share link points at the sign-up form");
 
     // Right after creating a season the page says so and shows the link.
     await page.goto(`${base}/admin/season?created=1`);
