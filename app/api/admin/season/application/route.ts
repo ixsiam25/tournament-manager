@@ -21,6 +21,11 @@ export async function GET() {
     config: resolveApplicationConfig(season.applicationConfig),
     deadline: season.applicationDeadline?.toISOString() ?? null,
     usage: await applicationUsage(season),
+    status: {
+      selfServe: season.registrationSelfServeEnabled,
+      switchOn: season.registrationOpen,
+      deadlinePassed: !!season.applicationDeadline && new Date() >= season.applicationDeadline,
+    },
   });
 }
 

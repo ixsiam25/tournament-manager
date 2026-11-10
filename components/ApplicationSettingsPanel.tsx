@@ -18,6 +18,8 @@ export function ApplicationSettingsPanel() {
   const [config, setConfig] = useState<ApplicationConfig | null>(null);
   const [deadline, setDeadline] = useState("");
   const [usage, setUsage] = useState<{ cap: number | null; used: number; full: boolean } | null>(null);
+  const [status, setStatus] = useState<{ selfServe: boolean; switchOn: boolean; deadlinePassed: boolean } | null>(null);
+  const [fixing, setFixing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
 
@@ -31,6 +33,7 @@ export function ApplicationSettingsPanel() {
       if (body.config) setConfig(body.config);
       setDeadline(body.deadline ? toLocalInput(body.deadline) : "");
       setUsage(body.usage ?? null);
+      setStatus(body.status ?? null);
       setLoading(false);
     })();
     return () => {
@@ -79,8 +82,58 @@ export function ApplicationSettingsPanel() {
 
   const input = "rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-pitch";
 
+  async function refreshStatus() {
+    const body = await (await fetch("/api/admin/season/application")).json();
+    setUsage(body.usage ?? null);
+    setStatus(body.status ?? null);
+    setDeadline(body.deadline ? toLocalInput(body.deadline) : "");
+  }
+
+  /** One-click fixes for the reasons the public form can be closed. */
+  async function reopenSwitch() {
+    setFixing(true);
+    await fetch("/api/admin/season/active", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ registrationOpen: true }) });
+    await refreshStatus();
+    setFixing(false);
+  }
+  async function clearDeadline() {
+    if (!config) return;
+    setFixing(true);
+    const res = await fetch("/api/admin/season/application", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ config, deadline: null }) });
+    if (res.ok) setMessage({ ok: true, text: "Closing time removed — the form is no longer closed by a date." });
+    await refreshStatus();
+    setFixing(false);
+  }
+
+  const reasons: { text: string; fix?: { label: string; run: () => void } }[] = [];
+  if (status && !status.selfServe) reasons.push({ text: "The public form is switched off for this season (Season details → Registration channels)." });
+  if (status && status.selfServe && !status.switchOn) reasons.push({ text: "Registration is switched off.", fix: { label: "Reopen registration", run: reopenSwitch } });
+  if (status?.deadlinePassed && deadline) reasons.push({ text: `The closing time (${new Date(deadline).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}) has passed. Raising the limit does not reopen the form — set a new closing time below, or remove it.`, fix: { label: "Remove the closing time", run: clearDeadline } });
+  if (usage?.full) reasons.push({ text: `The limit is reached (${usage.used} of ${usage.cap}). Raise the limit below or reject/remove someone.` });
+
   return (
     <section className="mb-10 space-y-5 rounded-2xl border border-line bg-surface p-5">
+      <div
+        className={"rounded-xl border p-4 " + (reasons.length === 0 ? "border-pitch bg-pitch/5" : "border-live/40 bg-live/10")}
+        data-testid="apply-status"
+      >
+        <p className="text-sm font-bold">{reasons.length === 0 ? "✅ The public form is open — people can apply." : "⛔ The public form is closed right now"}</p>
+        {reasons.length > 0 && (
+          <ul className="mt-2 space-y-2 text-sm">
+            {reasons.map((r) => (
+              <li key={r.text} className="flex flex-wrap items-center gap-3">
+                <span className="flex-1">{r.text}</span>
+                {r.fix && (
+                  <button type="button" onClick={r.fix.run} disabled={fixing} className="rounded-full bg-pitch px-4 py-1.5 text-xs font-bold text-white disabled:opacity-40">
+                    {r.fix.label}
+                  </button>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
       <div>
         <h2 className="text-lg font-bold">Application form</h2>
         <p className="text-sm text-muted-foreground">

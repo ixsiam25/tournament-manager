@@ -16,6 +16,7 @@ export function RegistrationForm() {
   const [deadline, setDeadline] = useState<string | null>(null);
   const [formation, setFormation] = useState<string | null>(null);
   const [full, setFull] = useState(false);
+  const [closedReason, setClosedReason] = useState<string | null>(null);
   const [cap, setCap] = useState<number | null>(null);
   const [config, setConfig] = useState<ApplicationConfig>(DEFAULT_APPLICATION_CONFIG);
   const [editLink, setEditLink] = useState<string | null>(null);
@@ -34,6 +35,7 @@ export function RegistrationForm() {
         setDeadline(body.deadline);
         setFormation(body.formation ?? null);
         setFull(!!body.full);
+        setClosedReason(body.closedReason ?? null);
         setCap(body.cap ?? null);
         if (body.config) setConfig(body.config);
         setChecking(false);
@@ -68,7 +70,9 @@ export function RegistrationForm() {
         </p>
         <h1 className="mt-3 text-xl font-bold">Applications are closed</h1>
         <p className="mt-1 text-muted-foreground">
-          Registration isn&apos;t open right now{seasonName ? ` for ${seasonName}` : ""}. Check back later.
+          {closedReason === "deadline" && deadline
+            ? `Applications${seasonName ? ` for ${seasonName}` : ""} closed on ${new Date(deadline).toLocaleString("en-GB", { dateStyle: "long", timeStyle: "short" })}.`
+            : `Registration isn't open right now${seasonName ? ` for ${seasonName}` : ""}. Check back later.`}
         </p>
       </div>
     );

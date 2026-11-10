@@ -17,6 +17,7 @@ export async function GET() {
   const usage = season ? await applicationUsage(season) : null;
   return NextResponse.json({
     open: open && !usage?.full,
+    closedReason: !season ? "none" : !season.registrationSelfServeEnabled || !season.registrationOpen ? "switch" : season.applicationDeadline && new Date() >= season.applicationDeadline ? "deadline" : usage?.full ? "full" : null,
     full: open && !!usage?.full,
     cap: usage?.cap ?? null,
     seasonName: season?.name ?? null,

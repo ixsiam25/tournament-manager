@@ -14,6 +14,7 @@ type Source = "SELF_SERVE" | "ADMIN_MANUAL" | "EXCEL_IMPORT";
 type Status = "PENDING" | "APPROVED" | "REJECTED";
 type Registration = {
   id: string;
+  notes?: string | null;
   name: string;
   affiliation: string;
   position: Position | null;
@@ -459,7 +460,7 @@ export function RegistrationsPanel() {
             </div>
             <span className="text-xs text-muted-foreground">{r.contact}</span>
             <button onClick={() => setEditingId(editingId === r.id ? null : r.id)} className="text-xs font-medium text-pitch underline" aria-label={`Edit ${r.name}`}>
-              Edit
+              Edit / remove
             </button>
             {r.status === "PENDING" ? (
               <div className="flex gap-2">
@@ -485,7 +486,7 @@ export function RegistrationsPanel() {
                   (r.status === "APPROVED" ? "bg-pitch/10 text-pitch-dark" : "bg-live/10 text-live")
                 }
               >
-                {r.status}
+                {r.status === "REJECTED" && r.notes?.startsWith("Removed by admin") ? "Removed" : r.status}
               </span>
             )}
           </li>
