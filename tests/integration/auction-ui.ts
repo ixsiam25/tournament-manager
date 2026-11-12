@@ -52,20 +52,34 @@ async function main() {
 
     await console_.goto(`${base}/admin/auction`);
     await console_.getByRole("button", { name: "Next lot" }).click();
-    await console_.getByLabel("Sale price").waitFor(T);
+    await console_.getByLabel("Bid amount").waitFor(T);
     const onTheBlock = (await console_.locator("p.text-lg.font-bold").first().innerText()).trim();
     await stage.locator('[data-phase="lot"]').waitFor(T);
     await stage.getByText(onTheBlock.toUpperCase(), { exact: false }).first().waitFor(T);
-    assert.equal(await stage.getByTestId("stage-bid").count(), 0, "the projector shows no bid");
+    assert.equal((await stage.getByTestId("stage-bid").innerText()).trim(), "50", "opening price shows until someone bids");
 
-    assert.equal(await console_.getByLabel("Bid amount").count(), 0, "there is no bid entry — only the final price is recorded");
+    // bids are just amounts typed into one box: Enter records them, no team involved
+    await console_.getByLabel("Bid amount").fill("70");
+    await console_.getByLabel("Bid amount").press("Enter");
+    await console_.getByTestId("leading-bid").filter({ hasText: "70" }).waitFor(T);
+    await stage.getByTestId("stage-bid").filter({ hasText: "70" }).waitFor(T);
+    assert.equal(await console_.getByLabel("Bid amount").inputValue(), "", "the box clears, ready for the next bid");
+    assert.equal(await console_.getByLabel("Bidding team").count(), 0, "there is no 'which team bid' selector");
+    // a too-small raise is refused with the rule explained
+    await console_.getByLabel("Bid amount").fill("75");
+    await console_.getByLabel("Bid amount").press("Enter");
+    await console_.getByText(/beat 70 by at least 10/).waitFor(T);
+    await console_.getByLabel("Bid amount").fill("");
+    // the +step shortcut raises by one increment
+    await console_.getByRole("button", { name: /\+10 → 80/ }).click();
+    await console_.getByTestId("leading-bid").filter({ hasText: "80" }).waitFor(T);
 
     // the team is chosen only when the player is sold; the price defaults to the bid
-    await console_.getByLabel("Sale price").fill("80");
+    assert.equal(await console_.getByLabel("Sale price").inputValue(), "80");
     await console_.getByLabel("Sold to").selectOption(teams[1].id);
     await console_.getByRole("button", { name: "Sold", exact: true }).click();
     await stage.getByTestId("stage-result").getByText("Sold", { exact: true }).waitFor(T);
-    await stage.getByTestId("stage-price").filter({ hasText: "80" }).waitFor(T);
+    await stage.getByText("for 80").waitFor(T);
     const sold = await prisma.auctionLot.findFirstOrThrow({ where: { seasonId: season.id, status: "SOLD" } });
     assert.equal(sold.soldPrice, 80);
     assert.equal(sold.soldToTeamId, teams[1].id);
