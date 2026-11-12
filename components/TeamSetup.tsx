@@ -18,7 +18,7 @@ type TeamRow = {
   captainId: string | null;
   squad: Candidate[];
 };
-type Data = { season: { id: string; name: string; status: string; teamFormation: string; squadSizeMax: number | null } | null; teams: TeamRow[]; pool: Candidate[] };
+type Data = { season: { id: string; name: string; status: string; teamFormation: string; squadSizeMax: number | null } | null; teams: TeamRow[]; pool: Candidate[]; missingPlayers?: number };
 
 const FIELD = "w-full rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-pitch";
 
@@ -40,6 +40,12 @@ export function TeamSetup() {
   if (!data) return <p className="text-muted-foreground">Loading…</p>;
   if (!data.season) return <p className="text-muted-foreground">No season yet.</p>;
   const frozen = data.season.status !== "ACTIVE";
+  const missing = data.missingPlayers ?? 0;
+
+  async function restoreMissing() {
+    const res = await fetch("/api/admin/season/teams/restore-missing", { method: "POST" });
+    if (res.ok) await load();
+  }
 
   return (
     <div className="space-y-6">
@@ -48,6 +54,16 @@ export function TeamSetup() {
         {data.season.name} — {plural(data.teams.length, "team")}. {plural(data.pool.length, "player")} {data.pool.length === 1 ? "has" : "have"} no team yet; any of them can be a captain.
         {data.season.teamFormation === "AUCTION" && " A captain is placed with the team before the auction and is not offered again."}
       </p>
+      {missing > 0 && !frozen && (
+        <div className="flex flex-wrap items-center gap-3 rounded-xl border-2 border-live/50 bg-live/10 p-4 text-sm" data-testid="missing-players">
+          <p className="flex-1">
+            <b>{plural(missing, "approved player")} {missing === 1 ? "is" : "are"} missing from the season.</b> This happens when a team was deleted with an older version of the system, which removed its players along with it.
+          </p>
+          <button onClick={restoreMissing} className="rounded-full bg-pitch px-5 py-2 text-xs font-bold text-white">
+            Restore {missing === 1 ? "this player" : `these ${missing} players`}
+          </button>
+        </div>
+      )}
       {frozen && <p className="rounded-lg border border-line bg-surface p-3 text-sm">This season is frozen — teams can be viewed but not changed.</p>}
 
       {!frozen && (
@@ -144,7 +160,7 @@ function TeamCard({
   }
 
   async function remove() {
-    if (!team || !(await confirmWithPassword(`Delete ${team.name}? This also removes its players from the team.`))) return;
+    if (!team || !(await confirmWithPassword(`Delete ${team.name}? Its players go back to the player pool (and back into the auction queue) — nobody is deleted.`))) return;
     setBusy(true);
     const res = await fetch(`/api/admin/teams/${team.id}`, { method: "DELETE" });
     if (!res.ok) return fail(res, "Could not delete (teams with match history can't be deleted)");

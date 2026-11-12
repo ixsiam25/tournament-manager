@@ -5,6 +5,7 @@ import { requireUser } from "@/lib/userAuth";
 import { logAudit } from "@/lib/audit";
 import { frozenSeasonResponse } from "@/lib/seasonGuard";
 import { recordTeamRename } from "@/lib/franchise";
+import { returnPlayerToPool } from "@/lib/teamRoster";
 
 export const dynamic = "force-dynamic";
 
@@ -56,6 +57,10 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
   const before = await prisma.team.findUnique({ where: { id } });
   const frozen = await frozenSeasonResponse(before?.seasonId);
   if (frozen) return frozen;
+  // A team's players belong to the season, not to the team: they go back to the pool (and back into the
+  // auction queue) instead of being deleted along with it.
+  const members = await prisma.player.findMany({ where: { teamId: id }, select: { id: true } });
+  for (const m of members) await returnPlayerToPool(m.id);
   await prisma.team.delete({ where: { id } });
   await logAudit({
     actor,

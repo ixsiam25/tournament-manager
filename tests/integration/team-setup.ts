@@ -128,15 +128,16 @@ async function main() {
     assert.equal(blues.managerName, null);
     assert.equal(await prisma.user.count({ where: { teamId: blues.id } }), 0, "no manager login unless asked");
 
-    // change the captain: exactly one captain per team, and the old one stays on the squad
+    // change the captain: exactly one captain per team, and the old captain (only there to captain) goes back to the pool
     await page.getByRole("form", { name: "Team ZZ Reds" }).getByLabel("Captain").selectOption(poolNames[1].id);
     await page.getByRole("form", { name: "Team ZZ Reds" }).getByRole("button", { name: "Save team" }).click();
     await page.getByRole("form", { name: "Team ZZ Reds" }).getByText("Saved.").waitFor(T);
     const squad = await prisma.player.findMany({ where: { teamId: reds.id }, orderBy: { jerseyNumber: "asc" } });
-    assert.deepEqual(squad.map((p) => [p.id, p.isCaptain]), [[poolNames[0].id, false], [poolNames[1].id, true]]);
+    assert.deepEqual(squad.map((p) => [p.id, p.isCaptain]), [[poolNames[1].id, true]], "the new captain replaces the old one instead of being added on top");
+    assert.equal((await prisma.player.findUniqueOrThrow({ where: { id: poolNames[0].id } })).teamId, null, "the previous captain is available again");
 
     // the captain endpoint refuses someone who is already on another team
-    const bad = await api(`/api/admin/teams/${blues.id}/captain`, "POST", { playerId: poolNames[0].id });
+    const bad = await api(`/api/admin/teams/${blues.id}/captain`, "POST", { playerId: poolNames[1].id });
     assert.equal(bad.status, 409);
 
     // the checklist moves on
@@ -159,11 +160,12 @@ async function main() {
     assert.equal(lot.status, "SOLD", "the captain's auction lot is closed out");
     assert.equal(lot.soldPrice, 0, "at no charge");
     assert.equal(await prisma.auctionLot.count({ where: { seasonId: s2.id, status: "QUEUED" } }), 2, "the auction will not offer the captain again");
-    // clearing the captain keeps the player on the team
+    // clearing the captain gives the player back to the pool — and the auction offers them again
     assert.equal((await api(`/api/admin/teams/${t2.team.id}/captain`, "POST", { playerId: null })).status, 200);
     const after = await prisma.player.findUniqueOrThrow({ where: { id: auctionCaptain.id } });
     assert.equal(after.isCaptain, false);
-    assert.equal(after.teamId, t2.team.id);
+    assert.equal(after.teamId, null);
+    assert.equal((await prisma.auctionLot.findUniqueOrThrow({ where: { playerId: auctionCaptain.id } })).status, "QUEUED");
 
     // a frozen season can't be edited
     await prisma.season.update({ where: { id: s2.id }, data: { status: "ARCHIVED" } });

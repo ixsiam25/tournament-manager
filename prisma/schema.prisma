@@ -363,45 +363,47 @@ model AppSetting {
 }
 
 model Player {
-  id           String       @id @default(cuid())
-  seasonId     String
-  season       Season       @relation(fields: [seasonId], references: [id], onDelete: Cascade)
-  name         String
-  jerseyNumber Int
-  position     Position?
-  isCaptain    Boolean      @default(false)
-  photoUrl     String?
+  id              String       @id @default(cuid())
+  seasonId        String
+  season          Season       @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  name            String
+  jerseyNumber    Int
+  position        Position?
+  isCaptain       Boolean      @default(false)
+  /// Put on the team for free just to be its captain (so swapping the captain returns them to the pool).
+  placedAsCaptain Boolean      @default(false)
+  photoUrl        String?
   /// Nullable so an AUCTION season's unsold players (registered but not yet
   /// bought by a team) can exist. Postgres doesn't treat NULLs as equal, so
   /// the [teamId, jerseyNumber] uniqueness below still allows any number of
   /// unsold players to coexist.
-  teamId       String?
-  team         Team?        @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId          String?
+  team            Team?        @relation(fields: [teamId], references: [id], onDelete: Cascade)
   /// The stable cross-season identity of the human on this roster slot.
   /// Required: a Player row is "a Person on a Team in one edition".
-  personId     String
-  person       Person       @relation(fields: [personId], references: [id])
+  personId        String
+  person          Person       @relation(fields: [personId], references: [id])
   /// RELEASED = dropped from the squad mid-season (injury, replacement). The
   /// row stays so goals/assists already logged keep their player; the jersey
   /// number is parked as a negative so the real number can be reused.
-  status       PlayerStatus @default(ACTIVE)
-  releasedAt   DateTime?
+  status          PlayerStatus @default(ACTIVE)
+  releasedAt      DateTime?
   /// Background-removed PNG of the photo (object key in R2), used on the
   /// player card. Null = the card falls back to the plain photo.
-  cutoutKey    String?
+  cutoutKey       String?
   /// Where the photo/cut-out sits inside the card's photo window (zoom in
   /// percent, offsets in px) — copied from the application, editable by an
   /// organiser.
-  photoZoom    Int          @default(100)
-  photoX       Int          @default(0)
-  photoY       Int          @default(0)
+  photoZoom       Int          @default(100)
+  photoX          Int          @default(0)
+  photoY          Int          @default(0)
   /// Organiser-set base ratings keyed by stat (pac, sho, … / div, han, …) —
   /// see `lib/playerCard.ts`. Null until rated; the card shows dashes.
-  ratings      Json?
+  ratings         Json?
   /// Organiser override of the rating-derived card tier (e.g. "special").
-  cardTier     String?
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  cardTier        String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 
   events     MatchEvent[]
   auctionLot AuctionLot?

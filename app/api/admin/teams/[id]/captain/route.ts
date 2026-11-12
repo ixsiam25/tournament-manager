@@ -5,6 +5,7 @@ import { requireUser } from "@/lib/userAuth";
 import { logAudit } from "@/lib/audit";
 import { frozenSeasonResponse } from "@/lib/seasonGuard";
 import { placePlayerFree } from "@/lib/auctionService";
+import { returnPlayerToPool } from "@/lib/teamRoster";
 
 export const dynamic = "force-dynamic";
 
@@ -32,8 +33,16 @@ export async function POST(request: NextRequest, { params }: Params) {
   if (frozen) return frozen;
 
   const playerId = parsed.data.playerId;
+  /** Old captains who were only on the team to captain it go back to the pool; anyone who is a real member just loses the armband. */
+  const releaseOldCaptains = async (exceptId?: string) => {
+    const olds = await prisma.player.findMany({ where: { teamId: id, isCaptain: true, ...(exceptId ? { id: { not: exceptId } } : {}) }, select: { id: true, placedAsCaptain: true } });
+    for (const old of olds) {
+      if (old.placedAsCaptain) await returnPlayerToPool(old.id, { onlyFree: true });
+      else await prisma.player.update({ where: { id: old.id }, data: { isCaptain: false } });
+    }
+  };
   if (playerId === null) {
-    await prisma.player.updateMany({ where: { teamId: id, isCaptain: true }, data: { isCaptain: false } });
+    await releaseOldCaptains();
     await logAudit({ actor, action: "team.captain", entityType: "Team", entityId: id, summary: `Cleared the captain of "${team.name}"` });
     return NextResponse.json({ ok: true });
   }
@@ -51,11 +60,10 @@ export async function POST(request: NextRequest, { params }: Params) {
       return NextResponse.json({ error: `${team.name} already has the maximum of ${max} players` }, { status: 409 });
     }
     await placePlayerFree({ playerId, teamId: id, actor });
+    await prisma.player.update({ where: { id: playerId }, data: { placedAsCaptain: true } });
   }
-  await prisma.$transaction([
-    prisma.player.updateMany({ where: { teamId: id, isCaptain: true, id: { not: playerId } }, data: { isCaptain: false } }),
-    prisma.player.update({ where: { id: playerId }, data: { isCaptain: true } }),
-  ]);
+  await releaseOldCaptains(playerId);
+  await prisma.player.update({ where: { id: playerId }, data: { isCaptain: true } });
   await logAudit({ actor, action: "team.captain", entityType: "Team", entityId: id, summary: `${player.name} is captain of "${team.name}"` });
   return NextResponse.json({ ok: true });
 }

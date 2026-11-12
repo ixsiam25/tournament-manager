@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/userAuth";
 import { getCurrentSeason } from "@/lib/currentSeason";
+import { countMissingPlayers } from "@/lib/missingPlayers";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,7 @@ export async function GET() {
     prisma.user.findMany({ where: { role: "OWNER", team: { seasonId: season.id } }, select: { teamId: true } }),
   ]);
   const hasLogin = new Set(owners.map((o) => o.teamId));
+  const missingPlayers = await countMissingPlayers(season.id);
 
   return NextResponse.json({
     season: { id: season.id, name: season.name, status: season.status, teamFormation: season.teamFormation, squadSizeMax: season.squadSizeMax },
@@ -39,5 +41,6 @@ export async function GET() {
       squad: t.players.map((p) => ({ id: p.id, name: p.name, position: p.position })),
     })),
     pool,
+    missingPlayers,
   });
 }

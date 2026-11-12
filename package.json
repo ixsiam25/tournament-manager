@@ -40,6 +40,7 @@
     "test:appcap": "tsx tests/integration/application-cap.ts",
     "test:export": "tsx tests/integration/applicant-export.ts",
     "test:removal": "tsx tests/integration/player-removal.ts",
+    "test:captains": "tsx tests/integration/captain-swap.ts",
     "test:timetext": "tsx tests/unit/timeText.ts"
   },
   "prisma": {
