@@ -53,13 +53,13 @@ async function imageBytes(url: string): Promise<{ bytes: Uint8Array; type: strin
   return null;
 }
 
-/** A JPEG cropped to the photo cell's shape (faces sit near the top, so crop from there). */
+/** The photo scaled down to fit inside the cell (never cropped, never stretched); the row colour shows around it. */
 async function cellPhoto(url: string, w: number, h: number): Promise<{ bytes: Uint8Array; type: string } | null> {
   const raw = await imageBytes(url);
   if (!raw) return null;
   try {
     const sharp = (await import("sharp")).default;
-    const out = await sharp(Buffer.from(raw.bytes)).resize(w, h, { fit: "cover", position: "top" }).jpeg({ quality: 74 }).toBuffer();
+    const out = await sharp(Buffer.from(raw.bytes)).resize(w, h, { fit: "inside", withoutEnlargement: true }).jpeg({ quality: 76 }).toBuffer();
     return { bytes: new Uint8Array(out), type: "image/jpeg" };
   } catch {
     return raw.type === "image/webp" ? null : raw;
@@ -171,7 +171,14 @@ export async function buildPlayerListPdf(input: PlayerListInput): Promise<Uint8A
     });
     box(page, cx, y, COLS[3], ROW_H, fill);
     const pic = pics.get(i);
-    if (pic) page.drawImage(pic, { x: cx + 0.5, y: y - ROW_H + 0.5, width: COLS[3] - 1, height: ROW_H - 1 });
+    if (pic) {
+      // "fit": the whole picture, centred in the cell with its own proportions
+      const pad = 3;
+      const k = Math.min((COLS[3] - 2 * pad) / pic.width, (ROW_H - 2 * pad) / pic.height);
+      const pw = pic.width * k;
+      const ph = pic.height * k;
+      page.drawImage(pic, { x: cx + (COLS[3] - pw) / 2, y: y - ROW_H + (ROW_H - ph) / 2, width: pw, height: ph });
+    }
     y -= ROW_H;
   });
 
