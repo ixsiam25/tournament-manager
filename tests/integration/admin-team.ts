@@ -6,7 +6,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { config } from "dotenv";
 import { chromium } from "playwright-core";
-import * as XLSX from "xlsx";
+import { pdfText } from "./_pdf";
 config({ path: process.env.TEST_ENV_FILE ?? ".env.local" });
 
 if (process.env.ALLOW_DB_WRITE_TESTS !== "1") {
@@ -108,18 +108,17 @@ async function main() {
     assert.equal((await api(`/api/admin/users/${dec.id}/approve`, "DELETE")).status, 200);
     assert.equal(await prisma.user.count({ where: { id: dec.id } }), 0, "declined joiner is removed");
 
-    // ---- applicant list backup ----
-    const reg = await prisma.registration.create({ data: { seasonId: season.id, name: "ZZ Export Person", affiliation: "Spring 28", contact: "090", studentId: `ZZEXP${stamp}`, position: "FWD", source: "SELF_SERVE", status: "PENDING" } });
+    // ---- applicant list as a PDF ----
+    await prisma.registration.create({ data: { seasonId: season.id, name: "ZZ Export Person", affiliation: "Spring 28", contact: "090", studentId: `ZZEXP${stamp}`, position: "FWD", source: "SELF_SERVE", status: "PENDING" } });
     await page.goto(`${base}/admin/registrations`);
-    const [dl] = await Promise.all([page.waitForEvent("download", { timeout: 30000 }), page.getByTestId("export-applicants").click()]);
-    assert.match(dl.suggestedFilename(), /^bfl-applicants-zz-team-.*\.xlsx$/);
-    const file = `/tmp/zz-export-${stamp}.xlsx`;
+    const [dl] = await Promise.all([page.waitForEvent("download", { timeout: 30000 }), page.getByTestId("export-pending").click()]);
+    assert.match(dl.suggestedFilename(), /^bfl-pending-applications-zz-team-.*\.pdf$/);
+    const file = `/tmp/zz-export-${stamp}.pdf`;
     await dl.saveAs(file);
-    const rows = XLSX.utils.sheet_to_json<Record<string, string>>(XLSX.readFile(file).Sheets["All applicants"]);
+    const text = pdfText(fs.readFileSync(file));
     fs.rmSync(file, { force: true });
-    const row = rows.find((r) => r["Name"] === "ZZ Export Person");
-    assert.ok(row, "the applicant is in the file");
-    assert.deepEqual([row!["Affiliation"], row!["Position"], row!["Student ID"], row!["Status"], row!["Current semester"]], ["Spring 28", "FWD", `ZZEXP${stamp}`, "Pending", "6th semester"], "the columns after No. match the import template + extras");
+    assert.ok(text.includes("ZZ Export Person"), "the applicant is in the list");
+    assert.ok(text.includes("Pending applications") && text.includes("Forward") && text.includes("6"), "title, position word and semester");
     assert.equal((await fetch(`${base}/api/admin/registrations/export`)).status, 401, "export needs an admin login");
 
     // ---- manual add with a photo ----

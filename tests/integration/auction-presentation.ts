@@ -3,7 +3,7 @@
 // Throwaway ZZ season; dev/test branch only. Run: ALLOW_DB_WRITE_TESTS=1 npm run test:auctionshow
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import { inflateSync } from "node:zlib";
+import { pdfText } from "./_pdf";
 import { config } from "dotenv";
 import { chromium } from "playwright-core";
 config({ path: process.env.TEST_ENV_FILE ?? ".env.local" });
@@ -13,22 +13,6 @@ if (process.env.ALLOW_DB_WRITE_TESTS !== "1") {
   process.exit(0);
 }
 const base = process.env.SMOKE_BASE_URL ?? "http://localhost:3100";
-
-/** All text drawn in a pdf-lib document (its content streams are plain Flate). */
-function pdfText(buf: Buffer): string {
-  const raw = buf.toString("latin1");
-  let out = "";
-  for (const m of raw.matchAll(/stream\r?\n([\s\S]*?)\r?\nendstream/g)) {
-    try {
-      const content = inflateSync(Buffer.from(m[1], "latin1")).toString("latin1");
-      // pdf-lib writes shown text as hex strings: <5A5A…> Tj
-      for (const t of content.matchAll(/<([0-9A-Fa-f]+)>\s*Tj/g)) out += Buffer.from(t[1], "hex").toString("latin1") + "\n";
-    } catch {
-      /* image streams etc. */
-    }
-  }
-  return out;
-}
 
 async function main() {
   const { prisma } = await import("../../lib/db");
@@ -90,9 +74,11 @@ async function main() {
     assert.equal(pdf.subarray(0, 5).toString(), "%PDF-");
     const text = pdfText(pdf);
     for (const n of ["ZZ Bid Alpha", "ZZ Bid Beta", "ZZ Bid Gamma"]) assert.ok(text.includes(n), `${n} is in the PDF`);
-    assert.ok(text.includes("ZZ Captain One"), "the captain is listed in the captains section");
-    assert.ok(text.includes("not up for bidding"), "captains are marked as not up for bidding");
-    assert.ok(text.includes("3 players available for bidding"), "the count excludes the captain");
+    assert.ok(text.includes("ZZ Captain One (C)"), "the captain is listed, marked (C)");
+    assert.ok(text.includes("**Players in green boxes are captains**"), "the legend names the green rows");
+    assert.ok(text.includes("**These players will not be available for bidding**"), "captains/placed players are marked as not biddable");
+    assert.ok(text.includes("ZZ Show Season") && /\(Player list v\d\d\.\d\d-\d\d:\d\d\)/.test(text), "title + version stamp");
+    assert.ok(text.indexOf("Semester") < text.indexOf("ZZ Bid Alpha"), "header row first");
     assert.ok((pdf.toString("latin1").match(/\/Subtype\s*\/Image/g) ?? []).length >= 1, "pictures are embedded");
     assert.equal((await fetch(`${base}/api/admin/auction/players-pdf`)).status, 401, "needs an admin login");
 
