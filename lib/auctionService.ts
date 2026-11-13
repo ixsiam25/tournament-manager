@@ -119,7 +119,7 @@ export async function sellLot(ctx: AuctionCtx, teamId: string, priceInput?: numb
   assertOpen(ctx);
   const lot = await inProgress(ctx);
   const price = priceInput ?? lot.currentBid;
-  if (price == null) throw new AuctionError("Enter the price — no bid has been recorded for this player", 400);
+  if (price == null) throw new AuctionError("Enter the final price", 400);
   const { team, status } = await statusOf(ctx, teamId);
   if (price < ctx.settings.basePrice) throw new AuctionError(`Price must be at least the base price (${ctx.settings.basePrice})`, 400);
   if (price > status.maxAllowableBid) {
@@ -292,16 +292,14 @@ export async function placePlayerFree(args: { playerId: string; teamId: string; 
   ]);
 }
 
-export const STAGE_MODES = ["POSTER", "CAPTAINS", "BEGIN", "LIVE", "BREAK"] as const;
+export const STAGE_MODES = ["POSTER", "CAPTAINS", "BEGIN", "LIVE", "FINAL", "BREAK"] as const;
 export type StageMode = (typeof STAGE_MODES)[number];
 
-const STAGE_LABELS: Record<StageMode, string> = { POSTER: "the poster", CAPTAINS: "the captains slide", BEGIN: "“Let’s begin”", LIVE: "the live auction", BREAK: "the break screen" };
+const STAGE_LABELS: Record<StageMode, string> = { POSTER: "the poster", CAPTAINS: "the captains slide", BEGIN: "“Let’s begin”", LIVE: "the live auction", FINAL: "the final team lists", BREAK: "the break screen" };
 
 /** Moves the projector between the intro slides, the live auction and a break. */
 export async function setStageMode(ctx: AuctionCtx, mode: StageMode) {
   if (!STAGE_MODES.includes(mode)) throw new AuctionError("Unknown projector mode");
-  if (mode === "BREAK" && !ctx.settings.posterKey) throw new AuctionError("Upload a poster first — the break screen shows it");
-  if (mode === "POSTER" && !ctx.settings.posterKey) throw new AuctionError("Upload a poster first");
   await prisma.auctionSettings.update({ where: { id: ctx.settings.id }, data: { stageMode: mode } });
   await logAudit({ actor: ctx.actor, action: "auction.stage", entityType: "Season", entityId: ctx.season.id, summary: `Projector → ${STAGE_LABELS[mode]}` });
 }

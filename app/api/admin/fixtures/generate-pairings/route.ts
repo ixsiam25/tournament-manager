@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/userAuth";
 import { logAudit } from "@/lib/audit";
 import { getActiveSeason } from "@/lib/currentSeason";
+import { ensureKnockoutSlots } from "@/lib/knockoutSlots";
 import { generateRoundRobinPairs, generateDoubleRoundRobinPairs } from "@/lib/roundRobin";
 
 export const dynamic = "force-dynamic";
@@ -56,12 +57,14 @@ export async function POST(request: NextRequest) {
     ),
   );
 
+  const knockout = await ensureKnockoutSlots(season.id);
+
   await logAudit({
     actor,
     action: "fixture.generate_pairings",
     entityType: "Match",
-    summary: `Generated ${created.length} ${parsed.data.double ? "double" : "single"} round-robin fixtures for ${teams.length} teams`,
+    summary: `Generated ${created.length} ${parsed.data.double ? "double" : "single"} round-robin fixtures for ${teams.length} teams${knockout ? ` + ${knockout} knockout slots` : ""}`,
   });
 
-  return NextResponse.json({ count: created.length }, { status: 201 });
+  return NextResponse.json({ count: created.length, knockout }, { status: 201 });
 }

@@ -29,7 +29,19 @@ export async function GET() {
     closeChecks({ season, settings, actor: null }),
   ]);
 
+  // Each team's squad (with what was paid) for the console's team pop-up.
+  const squadPlayers = await prisma.player.findMany({
+    where: { seasonId: season.id, teamId: { not: null }, status: "ACTIVE" },
+    select: { id: true, name: true, position: true, jerseyNumber: true, isCaptain: true, teamId: true, auctionLot: { select: { status: true, soldPrice: true } } },
+    orderBy: { jerseyNumber: "asc" },
+  });
+  const squads: Record<string, { id: string; name: string; position: string | null; jerseyNumber: number; isCaptain: boolean; price: number | null }[]> = {};
+  for (const p of squadPlayers) {
+    (squads[p.teamId!] ??= []).push({ id: p.id, name: p.name, position: p.position, jerseyNumber: p.jerseyNumber, isCaptain: p.isCaptain, price: p.auctionLot?.status === "SOLD" ? p.auctionLot.soldPrice : null });
+  }
+
   return NextResponse.json({
+    squads,
     season: { id: season.id, name: season.name, teamFormation: season.teamFormation, squadSizeMin: season.squadSizeMin, squadSizeMax: season.squadSizeMax },
     settings,
     currentLot,

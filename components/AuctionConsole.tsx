@@ -11,6 +11,7 @@ type Season = { id: string; name: string; teamFormation: string; squadSizeMin: n
 type LotPlayer = { id: string; name: string; position: string | null; photoUrl: string | null };
 type Lot = { id: string; currentBid: number | null; currentBidTeamId: string | null; player: LotPlayer };
 type ListedLot = { id: string; player: LotPlayer };
+type SquadPlayer = { id: string; name: string; position: string | null; jerseyNumber: number; isCaptain: boolean; price: number | null };
 type TeamStatus = {
   teamId: string;
   teamName: string;
@@ -32,6 +33,8 @@ export function AuctionConsole() {
   const [queue, setQueue] = useState<ListedLot[]>([]);
   const [unsold, setUnsold] = useState<ListedLot[]>([]);
   const [teams, setTeams] = useState<TeamStatus[]>([]);
+  const [squads, setSquads] = useState<Record<string, SquadPlayer[]>>({});
+  const [openTeamId, setOpenTeamId] = useState<string | null>(null);
   const [closed, setClosed] = useState(false);
   const [blockers, setBlockers] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
@@ -43,8 +46,6 @@ export function AuctionConsole() {
   const [basePrice, setBasePrice] = useState(50);
   const [bidIncrement, setBidIncrement] = useState(10);
 
-  const [bidAmount, setBidAmount] = useState("");
-  const bidInput = useRef<HTMLInputElement>(null);
   const [sellTeamId, setSellTeamId] = useState("");
   const [sellPrice, setSellPrice] = useState("");
   const [seed, setSeed] = useState(() => Math.floor(Math.random() * 1_000_000));
@@ -75,6 +76,7 @@ export function AuctionConsole() {
     setQueue(body.queue ?? []);
     setUnsold(body.unsold ?? []);
     setTeams(body.teams ?? []);
+    setSquads(body.squads ?? {});
     setClosed(!!body.closed);
     setBlockers(body.closeBlockers ?? []);
     setLoading(false);
@@ -169,11 +171,9 @@ export function AuctionConsole() {
   }
 
   const teamName = (id: string | null) => teams.find((t) => t.teamId === id)?.teamName ?? "";
-  const leaderBid = currentLot?.currentBid ?? null;
   const resolved = !currentLot && queue.length === 0;
   const waiting = unsold.length;
-  const nextBid = (leaderBid ?? settings.basePrice - settings.bidIncrement) + settings.bidIncrement;
-  const sellPriceValue = sellPrice !== "" ? sellPrice : leaderBid != null ? String(leaderBid) : "";
+  const sellPriceValue = sellPrice;
 
   async function undo() {
     if (!(await confirmWithPassword("Undo the last sale / unsold result?"))) return;
@@ -235,60 +235,7 @@ export function AuctionConsole() {
                   {currentLot.player.position ?? "No position"} · base {settings.basePrice} · step {settings.bidIncrement}
                 </p>
               </div>
-              <div className="text-right">
-                <p className="text-xs uppercase text-muted-foreground">Leading bid</p>
-                <p className="text-3xl font-black" data-testid="leading-bid">
-                  {leaderBid ?? "—"}
-                </p>
-                <p className="text-sm font-medium">{leaderBid == null ? "no bids yet" : "current bid"}</p>
-              </div>
             </div>
-
-            <form
-              className="mb-4 flex flex-wrap items-end gap-3 rounded-xl border border-line p-3"
-              onSubmit={async (e) => {
-                e.preventDefault();
-                if (!bidAmount) return;
-                if (await act("bid", { amount: Number(bidAmount) })) {
-                  setBidAmount("");
-                  bidInput.current?.focus();
-                }
-              }}
-            >
-              <label className="text-xs font-bold uppercase text-muted-foreground">
-                Bid
-                <input
-                  ref={bidInput}
-                  autoFocus
-                  aria-label="Bid amount"
-                  inputMode="numeric"
-                  type="number"
-                  value={bidAmount}
-                  onChange={(e) => setBidAmount(e.target.value)}
-                  placeholder={String(nextBid)}
-                  className={FIELD + " mt-1 block w-32 text-lg font-bold"}
-                />
-              </label>
-              <button type="submit" disabled={busy || !bidAmount} className="rounded-full border border-pitch px-4 py-2 text-sm font-bold text-pitch disabled:opacity-40">
-                Record bid (Enter)
-              </button>
-              <button
-                type="button"
-                disabled={busy}
-                onClick={async () => {
-                  if (await act("bid", { amount: nextBid })) bidInput.current?.focus();
-                }}
-                className="rounded-full border border-line px-4 py-2 text-sm font-bold disabled:opacity-40"
-                title="Raise the bid by one step"
-              >
-                +{settings.bidIncrement} → {nextBid}
-              </button>
-              {leaderBid != null && (
-                <button type="button" disabled={busy} onClick={() => act("bid", { clear: true })} className="text-sm underline">
-                  Clear bids
-                </button>
-              )}
-            </form>
 
             <form
               className="flex flex-wrap items-end gap-3"
@@ -303,7 +250,7 @@ export function AuctionConsole() {
             >
               <label className="text-xs font-bold uppercase text-muted-foreground">
                 Sold to
-                <select aria-label="Sold to" value={sellTeamId} onChange={(e) => setSellTeamId(e.target.value)} className={FIELD + " mt-1 block"}>
+                <select autoFocus aria-label="Sold to" value={sellTeamId} onChange={(e) => setSellTeamId(e.target.value)} className={FIELD + " mt-1 block"}>
                   <option value="">Select team…</option>
                   {teams.map((t) => (
                     <option key={t.teamId} value={t.teamId}>
@@ -313,8 +260,8 @@ export function AuctionConsole() {
                 </select>
               </label>
               <label className="text-xs font-bold uppercase text-muted-foreground">
-                Price
-                <input aria-label="Sale price" type="number" value={sellPriceValue} onChange={(e) => setSellPrice(e.target.value)} className={FIELD + " mt-1 block w-28"} />
+                Final price
+                <input aria-label="Sale price" type="number" inputMode="numeric" placeholder={String(settings.basePrice)} value={sellPriceValue} onChange={(e) => setSellPrice(e.target.value)} className={FIELD + " mt-1 block w-28"} />
               </label>
               <button type="submit" disabled={busy || !sellTeamId || !sellPriceValue} className="rounded-full bg-pitch px-6 py-2 text-sm font-bold text-white disabled:opacity-40">
                 Sold
@@ -418,7 +365,13 @@ export function AuctionConsole() {
       <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">Teams</h2>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
         {teams.map((t) => (
-          <div key={t.teamId} className="rounded-2xl border border-line bg-surface p-4">
+          <button
+            key={t.teamId}
+            type="button"
+            onClick={() => setOpenTeamId(t.teamId)}
+            className="rounded-2xl border border-line bg-surface p-4 text-left transition hover:border-pitch"
+            aria-label={`Show ${t.teamName}'s players`}
+          >
             <p className="mb-1 flex items-center gap-2 font-bold">
               <Crest size={22} name={t.teamName} />
               {t.teamName}
@@ -429,10 +382,46 @@ export function AuctionConsole() {
             </p>
             <p className="text-sm text-muted-foreground">Remaining: {t.remainingBudget}</p>
             <p className="text-sm text-muted-foreground">Max bid: {t.maxAllowableBid}</p>
-          </div>
+          </button>
         ))}
         {teams.length === 0 && <p className="text-sm text-muted-foreground">No teams yet — set them up in the Season tab (Set up the teams).</p>}
       </div>
+
+      {openTeamId && (() => {
+        const team = teams.find((t) => t.teamId === openTeamId);
+        if (!team) return null;
+        const players = squads[openTeamId] ?? [];
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setOpenTeamId(null)} role="dialog" aria-modal="true" aria-label={`${team.teamName} squad`} data-testid="team-popup">
+            <div className="max-h-[85vh] w-full max-w-md overflow-y-auto rounded-2xl border border-line bg-surface p-5" onClick={(e) => e.stopPropagation()}>
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <h3 className="flex items-center gap-2 text-lg font-bold">
+                  <Crest size={28} name={team.teamName} />
+                  {team.teamName}
+                </h3>
+                <button onClick={() => setOpenTeamId(null)} className="rounded-full border border-line px-3 py-1 text-sm" autoFocus>Close</button>
+              </div>
+              <p className="mb-3 text-sm text-muted-foreground">
+                {players.length} player{players.length === 1 ? "" : "s"} · Remaining {team.remainingBudget} · Max bid {team.maxAllowableBid}
+              </p>
+              <ul className="divide-y divide-line text-sm">
+                {players.map((p) => (
+                  <li key={p.id} className="flex items-center gap-3 py-2">
+                    <span className="w-6 text-right text-muted-foreground">{p.jerseyNumber}</span>
+                    <span className="flex-1 font-medium">
+                      {p.name}
+                      {p.isCaptain && <span className="ml-2 rounded bg-pitch/15 px-1.5 py-0.5 text-xs font-bold text-pitch">C</span>}
+                    </span>
+                    <span className="text-muted-foreground">{p.position ?? "—"}</span>
+                    <span className="w-16 text-right font-semibold">{p.price != null ? (p.price === 0 ? "free" : p.price) : "free"}</span>
+                  </li>
+                ))}
+                {players.length === 0 && <li className="py-3 text-muted-foreground">No players yet.</li>}
+              </ul>
+            </div>
+          </div>
+        );
+      })()}
 
       {queue.length > 0 && (
         <>
@@ -512,6 +501,7 @@ const STEPS = [
   { mode: "CAPTAINS", label: "Captains" },
   { mode: "BEGIN", label: "Let’s begin" },
   { mode: "LIVE", label: "Auction" },
+  { mode: "FINAL", label: "Final teams" },
 ] as const;
 
 /** The projector's run of show: poster → all captains → "let's begin" → the auction, plus a break
@@ -521,8 +511,6 @@ function Presentation({ settings, busy, onMode, onPickPoster, onRemovePoster }: 
   const hasPoster = !!settings.posterKey;
   const onBreak = mode === "BREAK";
   const index = STEPS.findIndex((s) => s.mode === mode);
-  const next = index >= 0 && index < STEPS.length - 1 ? STEPS[index + 1] : null;
-  const prev = index > 0 ? STEPS[index - 1] : null;
   return (
     <section className="mb-6 rounded-2xl border border-line bg-surface p-5" data-testid="presentation">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
@@ -546,40 +534,30 @@ function Presentation({ settings, busy, onMode, onPickPoster, onRemovePoster }: 
         <span className="text-xs text-muted-foreground">Shown at the start and during breaks.</span>
       </div>
 
-      <ol className="mb-4 flex flex-wrap gap-2 text-xs font-bold">
-        {STEPS.map((s, i) => (
-          <li key={s.mode} className={"rounded-full px-3 py-1.5 " + (s.mode === mode ? "bg-pitch text-white" : i < index ? "bg-pitch/15 text-pitch-dark" : "bg-line text-muted-foreground")}>
-            {i + 1}. {s.label}
-          </li>
-        ))}
-      </ol>
-
-      <div className="flex flex-wrap items-center gap-3">
-        {mode === "LIVE" && index === 3 && <p className="text-sm text-muted-foreground">The live auction is on the projector.</p>}
-        {!onBreak && prev && (
-          <button onClick={() => onMode(prev.mode)} disabled={busy} className="rounded-full border border-line px-4 py-2 text-sm font-medium disabled:opacity-40">
-            ← Back to {prev.label.toLowerCase()}
-          </button>
-        )}
-        {!onBreak && next && (
-          <button onClick={() => onMode(next.mode)} disabled={busy} className="rounded-full bg-pitch px-5 py-2 text-sm font-bold text-white disabled:opacity-40">
-            {next.mode === "LIVE" ? "Start the auction →" : `Next: ${next.label.toLowerCase()} →`}
-          </button>
-        )}
-        {mode === "LIVE" && !hasPoster && null}
-        {!onBreak && mode !== "POSTER" && (
-          <button onClick={() => onMode("BREAK")} disabled={busy || !hasPoster} title={hasPoster ? "Shows the poster for a break" : "Upload a poster first"} className="rounded-full border border-live px-4 py-2 text-sm font-bold text-live disabled:opacity-40">
-            ⏸ Take a break
-          </button>
-        )}
-        {mode === "LIVE" && STEPS[0] && !onBreak && (
-          <button onClick={() => onMode("POSTER")} disabled={busy || !hasPoster} className="text-xs text-muted-foreground underline disabled:opacity-40">
-            Restart the intro
-          </button>
-        )}
-        {onBreak && (
-          <button onClick={() => onMode("LIVE")} disabled={busy} className="rounded-full bg-pitch px-6 py-2.5 text-sm font-bold text-white disabled:opacity-40">
+      <div className="flex flex-wrap items-center gap-2 text-xs font-bold">
+        <ol className="flex flex-wrap gap-2">
+          {STEPS.map((s, i) => (
+            <li key={s.mode}>
+              <button
+                type="button"
+                onClick={() => onMode(s.mode)}
+                disabled={busy || onBreak}
+                aria-current={s.mode === mode ? "step" : undefined}
+                title={`Show ${s.label.toLowerCase()} on the projector`}
+                className={"rounded-full px-3 py-1.5 transition disabled:cursor-not-allowed disabled:opacity-50 " + (s.mode === mode ? "bg-pitch text-white" : i < index ? "bg-pitch/15 text-pitch-dark hover:bg-pitch/25" : "bg-line text-muted-foreground hover:bg-line-strong")}
+              >
+                {i + 1}. {s.label}
+              </button>
+            </li>
+          ))}
+        </ol>
+        {onBreak ? (
+          <button onClick={() => onMode("LIVE")} disabled={busy} className="rounded-full bg-pitch px-4 py-1.5 text-xs font-bold text-white disabled:opacity-40">
             ▶ Resume the auction
+          </button>
+        ) : (
+          <button onClick={() => onMode("BREAK")} disabled={busy} title={hasPoster ? "Shows the poster for a break" : "Shows the season name and “We'll be right back”"} className="rounded-full border border-live px-4 py-1.5 text-xs font-bold text-live disabled:opacity-40">
+            ⏸ Take a break
           </button>
         )}
       </div>

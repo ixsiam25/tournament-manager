@@ -122,6 +122,32 @@ export default function FixturesAdminPage() {
     load();
   }
 
+  async function populateFinal() {
+    const confirmed = await confirmWithPassword("Fill the final from the two semifinal winners? This overwrites whichever teams are already assigned.");
+    if (!confirmed) return;
+    setPopulating(true);
+    setError(null);
+    const res = await fetch("/api/admin/fixtures/populate-final", { method: "POST" });
+    setPopulating(false);
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      setError(body.error ?? "Failed to fill the final");
+      return;
+    }
+    load();
+  }
+
+  async function addKnockoutSlots() {
+    setError(null);
+    const res = await fetch("/api/admin/fixtures/knockout-slots", { method: "POST" });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      setError(body.error ?? "Failed to add the knockout fixtures");
+      return;
+    }
+    load();
+  }
+
   function toggleTeam(teamId: string) {
     setPairingTeamIds((prev) => (prev.includes(teamId) ? prev.filter((id) => id !== teamId) : [...prev, teamId]));
   }
@@ -285,6 +311,15 @@ export default function FixturesAdminPage() {
 
       {error && <p className="mb-4 text-sm text-live">{error}</p>}
 
+      {!loading && byRound.get("LEAGUE") !== undefined && (byRound.get("SEMIFINAL") === undefined || byRound.get("FINAL") === undefined) && (
+        <div className="mb-6 flex flex-wrap items-center gap-3 rounded-2xl border border-line bg-surface p-4">
+          <p className="flex-1 text-sm text-muted-foreground">The semifinal and final fixtures haven&rsquo;t been added yet.</p>
+          <button onClick={addKnockoutSlots} className="rounded-full bg-pitch px-5 py-2 text-sm font-bold text-white">
+            Add semifinal &amp; final slots
+          </button>
+        </div>
+      )}
+
       {loading ? (
         <p className="text-muted-foreground">Loading…</p>
       ) : (
@@ -306,6 +341,16 @@ export default function FixturesAdminPage() {
                       className="rounded-full border border-line px-3 py-1 text-xs font-bold uppercase tracking-wide disabled:opacity-40"
                     >
                       {randomizing ? "Randomizing…" : "Randomize kickoff order"}
+                    </button>
+                  )}
+                  {r === "FINAL" && (
+                    <button
+                      onClick={populateFinal}
+                      disabled={populating}
+                      title="Semifinal 1's winner v Semifinal 2's winner — needs both semifinals finished"
+                      className="rounded-full border border-line px-3 py-1 text-xs font-bold uppercase tracking-wide disabled:opacity-40"
+                    >
+                      {populating ? "Filling…" : "Fill from semifinal winners"}
                     </button>
                   )}
                   {r === "SEMIFINAL" && (
