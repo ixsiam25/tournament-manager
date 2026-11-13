@@ -23,6 +23,12 @@ function assertOpen(ctx: AuctionCtx) {
   if (ctx.settings.lockedAt) throw new AuctionError("The auction has been closed — reopen it to make changes");
 }
 
+const LOT_POSITION_ORDER = ["DEF", "GK", "MID", "FWD"];
+/** Queue order: round, then position block (DEF → GK → MID → FWD → none), then admin order. */
+export function sortQueuedLots<T extends { round: number; order: number; player: { position: string | null } }>(lots: T[]): T[] {
+  const rank = (p: string | null) => { const i = LOT_POSITION_ORDER.indexOf(p ?? ""); return i === -1 ? LOT_POSITION_ORDER.length : i; };
+  return [...lots].sort((a, b) => a.round - b.round || rank(a.player.position) - rank(b.player.position) || a.order - b.order);
+}
 const lotWithPlayer = { player: { include: { person: true } } } as const;
 
 async function statusOf(ctx: AuctionCtx, teamId: string) {
@@ -50,11 +56,15 @@ export async function nextLot(ctx: AuctionCtx) {
   if (await prisma.auctionLot.findFirst({ where: { seasonId: ctx.season.id, status: "IN_PROGRESS" } })) {
     throw new AuctionError("Resolve the current lot (sold or unsold) before moving on");
   }
-  const next = await prisma.auctionLot.findFirst({
+  // Lots come up in position blocks: DEF → GK → MID → FWD (no position last),
+  // keeping the queue order within each block.
+  const queued = await prisma.auctionLot.findMany({
     where: { seasonId: ctx.season.id, status: "QUEUED" },
     orderBy: [{ round: "asc" }, { order: "asc" }],
+    include: { player: { select: { position: true } } },
   });
-  if (!next) throw new AuctionError("No lots left in the queue");
+  if (queued.length === 0) throw new AuctionError("No lots left in the queue");
+  const next = sortQueuedLots(queued)[0];
   const lot = await prisma.auctionLot.update({
     where: { id: next.id },
     data: { status: "IN_PROGRESS", currentBid: null, currentBidTeamId: null },

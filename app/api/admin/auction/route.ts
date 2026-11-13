@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/userAuth";
 import { getTeamAuctionStatuses } from "@/lib/auction";
 import { getActiveSeason } from "@/lib/currentSeason";
-import { closeChecks } from "@/lib/auctionService";
+import { closeChecks, sortQueuedLots } from "@/lib/auctionService";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +20,7 @@ export async function GET() {
   }
 
   const playerSelect = { id: true, name: true, position: true, photoUrl: true } as const;
-  const [currentLot, queue, unsold, teams, soldCount, checks] = await Promise.all([
+  const [currentLot, queueRaw, unsold, teams, soldCount, checks] = await Promise.all([
     prisma.auctionLot.findFirst({ where: { seasonId: season.id, status: "IN_PROGRESS" }, include: { player: { select: playerSelect } } }),
     prisma.auctionLot.findMany({ where: { seasonId: season.id, status: "QUEUED" }, include: { player: { select: playerSelect } }, orderBy: [{ round: "asc" }, { order: "asc" }] }),
     prisma.auctionLot.findMany({ where: { seasonId: season.id, status: { in: ["UNSOLD", "HELD"] } }, include: { player: { select: playerSelect } }, orderBy: { updatedAt: "asc" } }),
@@ -33,7 +33,7 @@ export async function GET() {
     season: { id: season.id, name: season.name, teamFormation: season.teamFormation, squadSizeMin: season.squadSizeMin, squadSizeMax: season.squadSizeMax },
     settings,
     currentLot,
-    queue,
+    queue: sortQueuedLots(queueRaw),
     unsold,
     unsoldCount: unsold.length,
     soldCount,
