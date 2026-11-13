@@ -62,7 +62,7 @@ async function main() {
 
     // the team is chosen only when the player is sold; the price defaults to the bid
     await console_.getByLabel("Sale price").fill("80");
-    await console_.getByLabel("Sold to").selectOption(teams[1].id);
+    await console_.getByRole("radio", { name: /ZZ Blues/ }).click();
     await console_.getByRole("button", { name: "Sold", exact: true }).click();
     await stage.getByTestId("stage-result").getByText("Sold", { exact: true }).waitFor(T);
     await stage.getByTestId("stage-price").filter({ hasText: "80" }).waitFor(T);

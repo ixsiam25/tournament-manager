@@ -64,6 +64,8 @@ export type TeamAuctionStatus = {
   teamId: string;
   teamName: string;
   logoUrl: string | null;
+  captainName: string | null;
+  managerName: string | null;
   squadCount: number;
   remainingBudget: number;
   maxAllowableBid: number;
@@ -78,10 +80,11 @@ export async function getTeamAuctionStatuses(
   season: Season,
   settings: AuctionSettings,
 ): Promise<TeamAuctionStatus[]> {
-  const [teams, soldLots, squads] = await Promise.all([
+  const [teams, soldLots, squads, captains] = await Promise.all([
     prisma.team.findMany({ where: { seasonId: season.id }, orderBy: { name: "asc" } }),
     prisma.auctionLot.findMany({ where: { seasonId: season.id, status: "SOLD" } }),
     prisma.player.groupBy({ by: ["teamId"], where: { seasonId: season.id, teamId: { not: null }, status: "ACTIVE" }, _count: { _all: true } }),
+    prisma.player.findMany({ where: { seasonId: season.id, isCaptain: true, teamId: { not: null }, status: "ACTIVE" }, select: { teamId: true, name: true } }),
   ]);
 
   return teams.map((team) => {
@@ -99,6 +102,8 @@ export async function getTeamAuctionStatuses(
       teamId: team.id,
       teamName: team.name,
       logoUrl: team.logoUrl,
+      captainName: captains.find((c) => c.teamId === team.id)?.name ?? null,
+      managerName: team.managerName,
       squadCount,
       remainingBudget,
       maxAllowableBid,

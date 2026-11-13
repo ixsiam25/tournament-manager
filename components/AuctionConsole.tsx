@@ -16,6 +16,8 @@ type TeamStatus = {
   teamId: string;
   teamName: string;
   logoUrl: string | null;
+  captainName: string | null;
+  managerName: string | null;
   squadCount: number;
   remainingBudget: number;
   maxAllowableBid: number;
@@ -248,17 +250,30 @@ export function AuctionConsole() {
                 }
               }}
             >
-              <label className="text-xs font-bold uppercase text-muted-foreground">
-                Sold to
-                <select autoFocus aria-label="Sold to" value={sellTeamId} onChange={(e) => setSellTeamId(e.target.value)} className={FIELD + " mt-1 block"}>
-                  <option value="">Select team…</option>
-                  {teams.map((t) => (
-                    <option key={t.teamId} value={t.teamId}>
-                      {t.teamName} (max {t.maxAllowableBid})
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <div className="w-full" role="radiogroup" aria-label="Sold to">
+                <p className="text-xs font-bold uppercase text-muted-foreground">Sold to</p>
+                <div className="mt-1 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+                  {teams.map((t) => {
+                    const selected = sellTeamId === t.teamId;
+                    const full = t.maxAllowableBid < (settings?.basePrice ?? 0);
+                    return (
+                      <button
+                        key={t.teamId}
+                        type="button"
+                        role="radio"
+                        aria-checked={selected}
+                        onClick={() => setSellTeamId(selected ? "" : t.teamId)}
+                        className={`rounded-xl border px-3 py-2 text-left transition ${selected ? "border-pitch bg-pitch/15 ring-2 ring-pitch" : "border-line bg-background hover:border-pitch"} ${full ? "opacity-50" : ""}`}
+                      >
+                        <span className="block text-sm font-bold leading-tight">{t.teamName}</span>
+                        <span className="block text-xs text-muted-foreground">Captain: {t.captainName ?? "—"}</span>
+                        <span className="block text-xs text-muted-foreground">Manager: {t.managerName ?? "—"}</span>
+                        <span className="mt-1 block text-[11px] text-muted-foreground">max {t.maxAllowableBid}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
               <label className="text-xs font-bold uppercase text-muted-foreground">
                 Final price
                 <input aria-label="Sale price" type="number" inputMode="numeric" placeholder={String(settings.basePrice)} value={sellPriceValue} onChange={(e) => setSellPrice(e.target.value)} className={FIELD + " mt-1 block w-28"} />
